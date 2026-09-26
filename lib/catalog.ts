@@ -13,6 +13,7 @@ export type MenuProduct = {
   imageUrl: string;
   imageAlt: string;
   available: boolean;
+  availableQty: number;
 };
 
 export type MenuCategory = {
@@ -86,15 +87,16 @@ export async function listStores(): Promise<Store[]> {
   return data;
 }
 
-async function loadAvailability(storeId: string): Promise<Set<string>> {
+// product_id -> quantity available (the public view caps it at 10).
+async function loadAvailability(storeId: string): Promise<Map<string, number>> {
   const supabase = await createPublicClient();
   const { data, error } = await supabase
     .from("product_availability")
-    .select("product_id, available")
+    .select("product_id, quantity")
     .eq("store_id", storeId);
 
   if (error) throw new Error(`Could not load availability: ${error.message}`);
-  return new Set(data.filter((row) => row.available).map((row) => row.product_id ?? ""));
+  return new Map(data.map((row) => [row.product_id ?? "", row.quantity ?? 0]));
 }
 
 async function loadVitrineCategories() {
@@ -138,7 +140,8 @@ export async function listVitrineMenu(storeId: string): Promise<MenuCategory[]> 
             priceCents: product.price_cents,
             imageUrl: productImageUrl(cover?.path ?? null),
             imageAlt: cover?.alt || product.name,
-            available: available.has(product.id),
+            available: (available.get(product.id) ?? 0) > 0,
+            availableQty: available.get(product.id) ?? 0,
           };
         }),
     }))

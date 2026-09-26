@@ -1,11 +1,25 @@
 # State
 
 **Last Updated:** 2026-09-26
-**Current Work:** 01 · Base concluída (PR #1 aguardando merge do Leonardo). Próximo: 02 · Painel de catálogo — Specify
+**Current Work:** 02 concluída (PR #2, base `feat/01-base`). 01: PR #1 aguardando merge. Próximo: 03 · Estoque — Specify.
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-007: Convite e nova senha por link, sem e-mail (2026-09-26)
+
+**Decision:** `auth.admin.generateLink` gera link de uso único para `/auth/confirm?token_hash=…`; o painel mostra Copiar / Enviar pelo WhatsApp. "Esqueci minha senha" orienta a pedir link ao admin. Primeiro link do Leonardo via `npm run admin:link`.
+**Reason:** SMTP do Supabase Free só entrega para a equipe da org e 2/h.
+**Trade-off:** Sem autoatendimento de senha até ter SMTP próprio.
+**Impact:** Antes do lançamento (M2), avaliar Resend/SMTP próprio; `/auth/confirm` já serve para links por e-mail.
+
+### AD-006: Escopo extra da etapa 02 (2026-09-26)
+
+**Decision:** Etapa 02 inclui tela de Usuários (convite/perfil/loja/desativar) e tela de Adicionais de bolo. Produto com `price_pending = true` não aparece no site.
+**Reason:** Usuários e adicionais estão no SPEC §8/§4 sem etapa definida; login já usa convite e etapa 05 precisa de atendente real. Esconder preço pendente evita pedido com valor ilustrativo.
+**Trade-off:** Etapa 02 maior.
+**Impact:** Regra de `price_pending` aplicada no RLS público e na view de disponibilidade, não só na UI.
 
 ### AD-005: Bebidas e preços pendentes entram pelo painel (2026-09-26)
 
@@ -61,6 +75,11 @@ Projeto `zwzngzjhjyfndxigyinq` (sa-east-1, Leo Org, Free). Chaves e `SUPABASE_DB
 
 Leonardo desligou "Allow new users to sign up" no painel.
 
+### B-006: Primeiro acesso do Leonardo ao painel
+
+**Impact:** a conta `comercial.servicoaki@gmail.com` ainda não tem senha (convite do seed nunca foi aceito).
+**Resolution:** `SITE_URL=<url do preview ou produção> npm run admin:link -- comercial.servicoaki@gmail.com`, abrir o link e definir a senha.
+
 ### B-005: Conector Vercel (MCP) só com leitura
 
 **Discovered:** 2026-09-26
@@ -97,6 +116,27 @@ Leonardo desligou "Allow new users to sign up" no painel.
 **Problem:** o projeto não aplica default privileges às tabelas novas do `public`.
 **Solution:** migration `20260926000500_grants.sql` com grants explícitos (anon só `select` no catálogo). O check local em PGlite passou a simular o mesmo (sem default privileges).
 **Prevents:** tabela nova invisível para a Data API. Regra 8 do `CLAUDE.md`.
+
+### L-005: Site público nunca usa a sessão do usuário
+
+**Problem:** com login existindo, `createClient()` (cookies) fazia um admin navegando no site ver produtos inativos e com preço a definir (política "admin manages").
+**Solution:** `lib/supabase/public.ts` (`createPublicClient`, anon sem sessão + `connection()`). Todo código do site público usa esse client.
+**Prevents:** vazamento de itens ocultos e divergência entre o que admin e cliente veem.
+
+### L-006: React 19 reseta formulário após action
+
+**Problem:** `<form action>` é resetado ao fim da action; `<select>`/checkbox não voltam ao `defaultValue` novo (categoria sumia após erro; valores antigos após salvar).
+**Solution:** `useAdminForm` (components/admin/use-admin-form.ts) numera respostas; `<form key={round}>` remonta com os padrões atuais; actions devolvem `values` no erro.
+**Prevents:** perda de dados digitados e tela mostrando valor desatualizado.
+
+### L-007: Funções SQL com RLS do chamador podem falhar ou silenciar
+
+**Context:** `set_product_addons` (security invoker) para atendente: `delete` filtrado em silêncio, `insert` gera 42501.
+**Prevents:** testes que assumem "sem efeito = sem erro". Testar com entrada que force a escrita.
+
+### L-008: `@dnd-kit` precisa de `id` estável
+
+**Solution:** `<DndContext id={useId()}>`; sem isso há erro de hidratação (`DndDescribedBy-N`).
 
 ### L-003: Commit no PowerShell 5.1
 

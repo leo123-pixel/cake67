@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { listStores } from "@/lib/catalog";
+import { HomeHighlights } from "@/components/site/home-highlights";
+import { listHomeHighlights, listStores } from "@/lib/catalog";
 
 export default async function HomePage() {
-  const stores = await listStores();
+  const [stores, highlights] = await Promise.all([listStores(), listHomeHighlights()]);
 
   return (
     <>
@@ -23,6 +24,8 @@ export default async function HomePage() {
           Ver a vitrine de hoje
         </Link>
       </section>
+
+      <HomeHighlights highlights={highlights} />
 
       <section id="lojas" className="bg-linen text-cocoa">
         <div className="mx-auto max-w-[1320px] px-4 py-20 sm:px-8">

@@ -439,6 +439,8 @@ export type Database = {
     };
     Functions: {
       is_admin: { Args: never; Returns: boolean };
+      reorder: { Args: { p_table: string; p_ids: string[] }; Returns: undefined };
+      set_product_addons: { Args: { p_product_id: string; p_addon_ids: string[] }; Returns: undefined };
       staff_store: { Args: never; Returns: string };
     };
     Enums: {

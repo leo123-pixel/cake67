@@ -82,3 +82,16 @@ describe("buildStockGrid", () => {
     ]);
   });
 });
+
+describe("day bounds in Campo Grande", async () => {
+  const { dayStartIso, dayEndExclusiveIso } = await import("@/lib/datetime");
+
+  it("maps a date to the local day window", () => {
+    expect(dayStartIso("2026-09-26")).toBe("2026-09-26T04:00:00.000Z");
+    expect(dayEndExclusiveIso("2026-09-26")).toBe("2026-09-27T04:00:00.000Z");
+  });
+
+  it.each([undefined, "", "26/09/2026", "2026-13-40"])("ignores %j", (value) => {
+    expect(dayStartIso(value)).toBeNull();
+  });
+});

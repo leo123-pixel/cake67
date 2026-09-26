@@ -44,3 +44,15 @@ describe("labels", () => {
     expect(todayInCampoGrande(new Date("2026-09-27T02:30:00.000Z"))).toBe("2026-09-26");
   });
 });
+
+describe("formatSince", async () => {
+  const { formatSince } = await import("@/lib/datetime");
+  const now = new Date("2026-09-26T15:00:00.000Z");
+  it.each([
+    ["2026-09-26T14:59:40.000Z", "agora"],
+    ["2026-09-26T14:55:00.000Z", "há 5 min"],
+    ["2026-09-26T12:00:00.000Z", "há 3 h"],
+  ])("%s -> %s", (iso, text) => {
+    expect(formatSince(iso, now)).toBe(text);
+  });
+});

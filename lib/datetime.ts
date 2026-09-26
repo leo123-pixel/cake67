@@ -60,6 +60,15 @@ export function formatWeekdayDate(date: string): string {
   }).format(new Date(`${date}T12:00:00${CAMPO_GRANDE_OFFSET}`));
 }
 
+// "agora", "há 5 min", "há 3 h", else the date and time.
+export function formatSince(iso: string, now: Date = new Date()): string {
+  const minutes = Math.floor((now.getTime() - new Date(iso).getTime()) / 60000);
+  if (minutes < 1) return "agora";
+  if (minutes < 60) return `há ${minutes} min`;
+  if (minutes < 24 * 60) return `há ${Math.floor(minutes / 60)} h`;
+  return formatDateTime(iso);
+}
+
 export function formatDateTime(iso: string): string {
   return new Intl.DateTimeFormat("pt-BR", {
     timeZone: TIME_ZONE,

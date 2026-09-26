@@ -1,7 +1,7 @@
 # State
 
 **Last Updated:** 2026-09-26
-**Current Work:** 04 · Pedido — Tasks (aguardando aprovação; spec e design aprovados 2026-09-26). PRs #1, #2 e #3 aguardando merge, nessa ordem.
+**Current Work:** 04 · Pedido concluída em localhost (T1–T24); T25 PR/preview. PRs #1, #2 e #3 aguardando merge, nessa ordem.
 
 ---
 
@@ -171,6 +171,16 @@ Leonardo desligou "Allow new users to sign up" no painel.
 **Context:** preview da etapa 03 falhou com `next/font … Cannot read properties of null (reading '1')` sem mudança nas fontes; o mesmo commit compilou no redeploy.
 **Solution:** `vercel redeploy <url> --target preview`. Se repetir, considerar fontes locais (`next/font/local`) com os arquivos no repo.
 **Prevents:** investigar código por um erro de rede do build.
+
+### L-012: Testes de integração compartilham o banco real
+
+**Problem:** checagens de invariante (soma dos movimentos = estoque) podem ver outro arquivo de teste no meio de uma operação.
+**Solution:** `fileParallelism: false` no projeto `integration`; ajustes de estoque em teste sempre por `set_stock` (atômico), nunca `update` direto.
+
+### L-013: `Set-Content -Encoding utf8` grava BOM no PowerShell 5.1
+
+**Problem:** mensagem de commit começou com BOM invisível.
+**Solution:** escrever mensagens de commit com a ferramenta Write (UTF-8 sem BOM) e `git commit -F`.
 
 ### L-003: Commit no PowerShell 5.1
 

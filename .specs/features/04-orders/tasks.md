@@ -1,7 +1,20 @@
 # 04 · Pedido — Tasks
 
 **Design**: `.specs/features/04-orders/design.md`
-**Status**: Draft
+**Status**: Done (2026-09-26) — aceite verificado em localhost; PR/preview em T25
+
+## Progress
+
+| Tarefas | Status | Notas |
+|---|---|---|
+| T1–T5 | ✅ `7c5a5a9` | PGlite: 40 checagens novas (bolo 2 kg Retangular + Velas = R$ 227,80 do SPEC); acréscimos: `order_items.position`, `get_public_settings()`, `expire_orders` para service_role. `pg_cron` aceito por migration; **agendador conferido no projeto**: pedido vencido expirou sozinho às 14:15 UTC e devolveu o estoque |
+| T6–T11 | ✅ `7c5a5a9` | 103 testes unitários; mensagem do WhatsApp idêntica ao exemplo do SPEC |
+| T12–T13 | ✅ `372092e` | queries em `lib/storefront.ts` |
+| T14–T21 | ✅ `fb5bcfe` | carrinho como hook (`useSyncExternalStore`) em vez de provider; checkout com `onSubmit` (não reseta em erro) |
+| T22 | ✅ | `orders.test.ts`: 5 pedidos simultâneos pela última unidade → 1 sucesso, 4 CK010; expiração devolve uma vez; integração 47/47; arquivos de integração em série (`fileParallelism: false`) |
+| T23 | ✅ | lint, typecheck, 103 unit, build |
+| T24 | ✅ | 375 px: cardápio → carrinho (preços do banco, Loja 1 marca Cheesecake "Acabou") → checkout (CPF inválido e privacidade barram, dados mantidos) → C67-000003 com mensagem certa, sem CPF na página; `/pedido` sem token → 404; encomenda com calculadora (15 pessoas → 2 kg), R$ 227,80, slots a partir de segunda 10h30 (Loja 2, 48 h), entrega → C67-000004 com mensagem completa. Dados de teste expirados/apagados e bolo de volta a "preço a definir". Capturas de tela do painel saíram distorcidas (emulação com `innerWidth` 527); layout conferido pelas medidas do DOM |
+| T25 | ⏳ | |
 
 Branch: `feat/04-orders`, a partir de `feat/03-stock` (PRs #1–#3 sem merge). Um commit por fase.
 

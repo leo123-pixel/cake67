@@ -17,6 +17,8 @@ const DB_MESSAGES: Record<string, string> = {
   CK003: "Quantidade acima de 9999. Confira o número.",
   CK004: "Este produto não é de vitrine.",
   "42501": "Você não tem permissão para esta ação.",
+  // check constraints (settings: reservation range, template variables)
+  "23514": "Revise os campos destacados: algum valor ficou fora do permitido.",
 };
 
 export function dbFailure(context: string, error: { message: string; code?: string }): ActionState {

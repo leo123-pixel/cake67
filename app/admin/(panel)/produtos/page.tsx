@@ -7,10 +7,9 @@ import { listAdminProducts } from "@/lib/admin/products";
 import { requireAdmin } from "@/lib/auth";
 import { productImageUrl } from "@/lib/images";
 import { formatBRL } from "@/lib/money";
+import { PRODUCT_TYPE_LABELS } from "@/lib/report";
 
 export const metadata: Metadata = { title: "Produtos" };
-
-const TYPE_LABELS = { vitrine: "Vitrine", bolo_kg: "Bolo por kg", cento: "Cento", kit: "Kit" } as const;
 
 type Props = { searchParams: Promise<{ categoria?: string; busca?: string }> };
 
@@ -64,7 +63,7 @@ export default async function ProductsPage({ searchParams }: Props) {
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium">{product.name}</p>
                   <p className="truncate text-sm text-cocoa-soft">
-                    {product.categoryName} · {TYPE_LABELS[product.type]}
+                    {product.categoryName} · {PRODUCT_TYPE_LABELS[product.type]}
                   </p>
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-1 text-sm">

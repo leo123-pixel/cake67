@@ -1,7 +1,7 @@
 # 01 · Base — Tasks
 
 **Design**: `.specs/features/01-base/design.md`
-**Status**: In Progress — T1–T21 done (2026-09-26); T22–T24 pending
+**Status**: Done — aceite verificado no preview em 2026-09-26; PR #1 aguardando merge
 
 ## Progress
 
@@ -12,7 +12,9 @@
 | T15–T19 | ✅ | `error.tsx` ficou em `app/(site)/` (cobre home e cardápio); `Logo` e placeholder SVG extras; teste unitário de `catalog` |
 | T20 | ✅ | migrations + seed aplicados; faltou GRANT (L-004) → migration `..500_grants.sql`; `npm run seed` 2x idempotente; tipos gerados bloqueados (B-003), mantidos à mão |
 | T21 | ✅ | lint/typecheck/15 unit/24 integração/build ok; navegador 360 px: fotos, troca de loja, esgotados certos por loja, sem scroll horizontal, `?loja=` inválido cai na Loja 1, produto desativado some sem deploy |
-| T22–T24 | ⏳ | Vercel, PR, aceite no preview |
+| T22 | ✅ | 8 variáveis via `vercel env add` (conector MCP só tem leitura); Root Directory e Framework trocados pelo Leonardo no painel |
+| T23 | ✅ | push `feat/01-base`, PR https://github.com/leo123-pixel/cake67/pull/1 |
+| T24 | ✅ | preview `cake67-bm8xncco3-…vercel.app` READY; `/cardapio?loja=afonso-pena` 200, 20 produtos, 3 esgotados, fotos do Storage |
 
 Desvio relevante: `createClient()` lê `cookies()` antes do env para forçar renderização dinâmica (o build estava pré-renderizando a home).
 

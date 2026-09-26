@@ -1,7 +1,7 @@
 # State
 
 **Last Updated:** 2026-09-26
-**Current Work:** 01 · Base - Implement: T1–T21 feitos na branch `feat/01-base`; próximo T22 (Vercel)
+**Current Work:** 01 · Base concluída (PR #1 aguardando merge do Leonardo). Próximo: 02 · Painel de catálogo — Specify
 
 ---
 
@@ -57,11 +57,15 @@ Projeto `zwzngzjhjyfndxigyinq` (sa-east-1, Leo Org, Free). Chaves e `SUPABASE_DB
 **Workaround:** atualizar o arquivo junto com cada migration; `test:integration` e typecheck pegam divergências nas tabelas usadas.
 **Resolution:** (a) Leonardo roda `supabase login` com a conta da Leo Org e usamos `supabase gen types --project-id`, ou (b) instalar Docker Desktop.
 
-### B-004: Cadastro público no Supabase Auth
+### B-004: ~~Cadastro público no Supabase Auth~~ — resolvido 2026-09-26
+
+Leonardo desligou "Allow new users to sign up" no painel.
+
+### B-005: Conector Vercel (MCP) só com leitura
 
 **Discovered:** 2026-09-26
-**Impact:** `config.toml` só vale localmente. No projeto, "Allow new users to sign up" precisa estar desligado (SPEC §6).
-**Resolution:** Leonardo confirma no painel (Authentication → Sign In / Providers).
+**Impact:** `update_project` e `create_project_env` retornam 403.
+**Workaround:** Vercel CLI logado como `leo123-pixel` (`vercel env add ... preview "" --value ... --yes --force`; o `""` é necessário para "todas as branches"). Configurações de build só pelo painel.
 
 ### B-002: Pendências da cliente (SPEC §12)
 

@@ -1,7 +1,7 @@
 # Roadmap
 
 **Current Milestone:** M1 · MVP
-**Status:** Planning
+**Status:** In Progress
 
 Cada feature = uma etapa do SPEC (seção 11). Uma por vez, com commit e deploy de preview ao final.
 
@@ -14,7 +14,7 @@ Cada feature = uma etapa do SPEC (seção 11). Uma por vez, com commit e deploy 
 
 ### Features
 
-**01 · Base** - PLANNED
+**01 · Base** - COMPLETE (verificado no preview em 2026-09-26; PR #1)
 
 - Protótipo movido para `prototipo/`, app Next.js na raiz
 - Tailwind com tokens e fontes do protótipo

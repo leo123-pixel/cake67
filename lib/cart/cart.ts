@@ -20,6 +20,9 @@ export type CartLine = {
   // Human-readable options, e.g. "2 kg · Retangular · Velas".
   label?: string;
   options?: CartOptions;
+  // Quantity stepper for cento (units) in the cart; defaults to 1/1.
+  minQty?: number;
+  stepQty?: number;
 };
 
 export type Cart = { storeSlug: string | null; lines: CartLine[] };

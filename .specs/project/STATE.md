@@ -1,7 +1,7 @@
 # State
 
 **Last Updated:** 2026-09-26
-**Current Work:** 03 · Estoque concluída em localhost (T1–T14); T15 PR/preview. PRs #1 e #2 aguardando merge.
+**Current Work:** 03 concluída (PR #3, base `feat/02-catalog-panel`). PRs #1, #2 e #3 aguardando merge, nessa ordem. Próximo: 04 · Pedido — Specify.
 
 ---
 
@@ -154,6 +154,12 @@ Leonardo desligou "Allow new users to sign up" no painel.
 ### L-010: `pattern` em input bloqueia a action com mensagem do navegador
 
 **Solution:** `noValidate` no form quando a validação e as mensagens vêm do servidor; manter `inputMode`/`pattern` só para o teclado numérico.
+
+### L-011: Build na Vercel pode falhar no download do Google Fonts
+
+**Context:** preview da etapa 03 falhou com `next/font … Cannot read properties of null (reading '1')` sem mudança nas fontes; o mesmo commit compilou no redeploy.
+**Solution:** `vercel redeploy <url> --target preview`. Se repetir, considerar fontes locais (`next/font/local`) com os arquivos no repo.
+**Prevents:** investigar código por um erro de rede do build.
 
 ### L-003: Commit no PowerShell 5.1
 

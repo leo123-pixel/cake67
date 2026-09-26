@@ -1,7 +1,7 @@
 # 03 · Estoque — Tasks
 
 **Design**: `.specs/features/03-stock/design.md`
-**Status**: Done (2026-09-26) — aceite verificado em localhost; PR/preview em T15
+**Status**: Done (2026-09-26) — aceite verificado em localhost e preview; PR #3 aguardando merge
 
 ## Progress
 
@@ -13,7 +13,7 @@
 | T12 | ✅ | `stock.test.ts` 7 casos; integração total 42/42; valores originais restaurados |
 | T13 | ✅ | lint, typecheck, 80 unit, build |
 | T14 | ✅ | 360 px: Esgotar Fatia Karen (Loja 1) → "Esgotado" no `/cardapio?loja=estiva`; 3 toques rápidos em "+" = 3; "Definir" recusa `2,5`; atendente fixo na Loja 2 mesmo com `?loja=estiva`; contagem com campo inválido não grava e mantém tudo; contagem de 3 itens → "3 itens atualizados" e 3 movimentos com autor; "Todas as lojas" no desktop. Correção: `noValidate` na contagem (o `pattern` do navegador bloqueava o envio com mensagem genérica). Valores e usuários de QA restaurados/removidos |
-| T15 | ⏳ | |
+| T15 | ✅ | PR https://github.com/leo123-pixel/cake67/pull/3 (base `feat/02-catalog-panel`). 1º preview falhou no `next/font` (download do Google Fonts, L-011); redeploy do mesmo commit `cake67-290pa96z8-…` Ready: `/admin/estoque` sem sessão → 307 login; `/cardapio?loja=estiva` 20 itens, 3 esgotados |
 
 Branch: `feat/03-stock`, a partir de `feat/02-catalog-panel` (PRs #1 e #2 ainda sem merge). Um commit por fase.
 

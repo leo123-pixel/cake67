@@ -30,7 +30,7 @@ Cada feature = uma etapa do SPEC (seção 11). Uma por vez, com commit e deploy 
 - Produto com preço a definir fica fora do site
 - Aceite: produto criado no painel aparece no site sem deploy
 
-**03 · Estoque** - PLANNED
+**03 · Estoque** - COMPLETE (verificado em localhost e preview em 2026-09-26; PR #3)
 
 - Grade produto × loja, ajuste +/−/definir, "esgotar", histórico de movimentos
 - Contagem da manhã (vitrine inteira de uma vez) — AD-008

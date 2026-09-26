@@ -1,7 +1,7 @@
 # 01 · Base — Tasks
 
 **Design**: `.specs/features/01-base/design.md`
-**Status**: In Progress — T1–T19 done (2026-09-26); T20–T24 blocked by B-001
+**Status**: In Progress — T1–T21 done (2026-09-26); T22–T24 pending
 
 ## Progress
 
@@ -10,7 +10,9 @@
 | T1–T3 | ✅ | commit `b2795e6`; `.gitattributes` com LF |
 | T4–T14 | ✅ | commit `022900e`; migrations + seed validados em PGlite (Postgres 17) com stubs de auth/storage: 34/34 checagens reais de RLS e idempotência |
 | T15–T19 | ✅ | `error.tsx` ficou em `app/(site)/` (cobre home e cardápio); `Logo` e placeholder SVG extras; teste unitário de `catalog` |
-| T20–T24 | 🔒 | aguardam projeto Supabase |
+| T20 | ✅ | migrations + seed aplicados; faltou GRANT (L-004) → migration `..500_grants.sql`; `npm run seed` 2x idempotente; tipos gerados bloqueados (B-003), mantidos à mão |
+| T21 | ✅ | lint/typecheck/15 unit/24 integração/build ok; navegador 360 px: fotos, troca de loja, esgotados certos por loja, sem scroll horizontal, `?loja=` inválido cai na Loja 1, produto desativado some sem deploy |
+| T22–T24 | ⏳ | Vercel, PR, aceite no preview |
 
 Desvio relevante: `createClient()` lê `cookies()` antes do env para forçar renderização dinâmica (o build estava pré-renderizando a home).
 

@@ -1,7 +1,7 @@
 # State
 
 **Last Updated:** 2026-09-26
-**Current Work:** 01 · Base - Implement: T1–T19 feitos na branch `feat/01-base`; T20 bloqueado por B-001
+**Current Work:** 01 · Base - Implement: T1–T21 feitos na branch `feat/01-base`; próximo T22 (Vercel)
 
 ---
 
@@ -46,12 +46,22 @@
 
 ## Active Blockers
 
-### B-001: Projeto Supabase ainda não existe
+### B-001: ~~Projeto Supabase ainda não existe~~ — resolvido 2026-09-26
 
-**Discovered:** 2026-09-25
-**Impact:** Bloqueia aplicar migrations e o aceite da etapa 01. Não bloqueia escrever código e SQL.
-**Workaround:** Escrever migrations e seed; validar SQL assim que houver projeto.
-**Resolution:** Leonardo cria `cake67` (região São Paulo) e passa URL, anon key e service role key. Plano Free permite 2 projetos ativos por organização.
+Projeto `zwzngzjhjyfndxigyinq` (sa-east-1, Leo Org, Free). Chaves e `SUPABASE_DB_URL` (session pooler `aws-0-sa-east-1`) só no `.env.local`.
+
+### B-003: Tipos do banco não são gerados automaticamente
+
+**Discovered:** 2026-09-26
+**Impact:** `lib/database.types.ts` é escrito à mão; risco de divergir do schema.
+**Workaround:** atualizar o arquivo junto com cada migration; `test:integration` e typecheck pegam divergências nas tabelas usadas.
+**Resolution:** (a) Leonardo roda `supabase login` com a conta da Leo Org e usamos `supabase gen types --project-id`, ou (b) instalar Docker Desktop.
+
+### B-004: Cadastro público no Supabase Auth
+
+**Discovered:** 2026-09-26
+**Impact:** `config.toml` só vale localmente. No projeto, "Allow new users to sign up" precisa estar desligado (SPEC §6).
+**Resolution:** Leonardo confirma no painel (Authentication → Sign In / Providers).
 
 ### B-002: Pendências da cliente (SPEC §12)
 
@@ -76,6 +86,13 @@
 **Context:** sem Docker local para `supabase start`.
 **Solution:** PGlite (Postgres 17 em WASM) com stubs de `auth.users`, `auth.uid()`, `storage`, papéis `anon`/`authenticated` e `set role` + `request.jwt.claim.sub` testa migrations, seed e RLS em segundos.
 **Prevents:** descobrir erro de SQL só no `db push` contra o projeto real.
+
+### L-004: Projeto Supabase sem GRANT automático
+
+**Context:** primeiro `npm run seed` falhou com "permission denied for table staff" até com a service role; anon recebia 401 em `stores`.
+**Problem:** o projeto não aplica default privileges às tabelas novas do `public`.
+**Solution:** migration `20260926000500_grants.sql` com grants explícitos (anon só `select` no catálogo). O check local em PGlite passou a simular o mesmo (sem default privileges).
+**Prevents:** tabela nova invisível para a Data API. Regra 8 do `CLAUDE.md`.
 
 ### L-003: Commit no PowerShell 5.1
 

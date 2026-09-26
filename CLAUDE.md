@@ -18,6 +18,7 @@ Este arquivo substitui, para este repositório, qualquer `CLAUDE.md` de pasta-pa
 5. Valores em centavos (`integer`). Datas `timestamptz`, exibição em `America/Campo_Grande`.
 6. Dado provisório (pendência da cliente) fica marcado como tal no seed e no painel.
 7. Não rediscutir decisões da seção 1 do SPEC sem o Leonardo.
+8. **Tabela nova precisa de GRANT explícito** na própria migration. O projeto Supabase não concede privilégios automáticos no `public` (nem para `service_role`). Anon só recebe `select` em tabela de catálogo.
 
 ## Idioma
 
@@ -39,6 +40,16 @@ npm run build
 ```
 
 Etapa só termina com `lint`, `typecheck`, `test` e `build` passando, commit e deploy de preview.
+
+Banco (sem Docker; a conta do CLI não enxerga a org do projeto, então tudo vai por `--db-url`):
+
+```bash
+npm run test:integration                                   # RLS contra o projeto real
+supabase db push --db-url "$SUPABASE_DB_URL" --yes         # aplica migrations (URL no .env.local)
+npm run seed                                               # fotos + admin (idempotente)
+```
+
+`supabase gen types --db-url` precisa de Docker; enquanto isso, `lib/database.types.ts` é mantido à mão junto com cada migration.
 
 ## Nunca commitar
 

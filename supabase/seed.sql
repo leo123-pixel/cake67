@@ -190,3 +190,15 @@ values (
   E'Olá, Cake 67! Pedido *{codigo}*\nLoja: {loja}\n{entrega}\n\n{itens}\n\nSubtotal: {subtotal}\nNome: {nome} · WhatsApp: {whatsapp}\n{observacoes}'
 )
 on conflict (id) do nothing;
+
+-- opening balance movements (see migration 20260928000100_stock) ----------
+
+insert into public.stock_movements
+  (product_id, store_id, delta, reason, quantity_after, actor_name, created_at)
+select s.product_id, s.store_id, s.quantity, 'ajuste', s.quantity, 'Saldo inicial', s.updated_at
+from public.stock s
+where s.quantity > 0
+  and not exists (
+    select 1 from public.stock_movements m
+    where m.product_id = s.product_id and m.store_id = s.store_id
+  );

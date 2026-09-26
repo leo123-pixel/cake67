@@ -3,6 +3,7 @@ import { requireStaff } from "@/lib/auth";
 
 const ADMIN_ITEMS: NavItem[] = [
   { href: "/admin", label: "Início" },
+  { href: "/admin/estoque", label: "Estoque" },
   { href: "/admin/produtos", label: "Produtos" },
   { href: "/admin/categorias", label: "Categorias" },
   { href: "/admin/adicionais", label: "Adicionais" },
@@ -11,7 +12,10 @@ const ADMIN_ITEMS: NavItem[] = [
   { href: "/admin/usuarios", label: "Usuários" },
 ];
 
-const ATTENDANT_ITEMS: NavItem[] = [{ href: "/admin", label: "Início" }];
+const ATTENDANT_ITEMS: NavItem[] = [
+  { href: "/admin", label: "Início" },
+  { href: "/admin/estoque", label: "Estoque" },
+];
 
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {
   const { supabase, staff } = await requireStaff();

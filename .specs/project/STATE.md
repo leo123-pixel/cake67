@@ -1,11 +1,22 @@
 # State
 
 **Last Updated:** 2026-09-26
-**Current Work:** 03 concluída (PR #3, base `feat/02-catalog-panel`). PRs #1, #2 e #3 aguardando merge, nessa ordem. Próximo: 04 · Pedido — Specify.
+**Current Work:** 04 · Pedido — Tasks (aguardando aprovação; spec e design aprovados 2026-09-26). PRs #1, #2 e #3 aguardando merge, nessa ordem.
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-009: Regras do pedido público (2026-09-26)
+
+**Decision:**
+- Anti-abuso só com limites no banco: máx. 10 un. por item de vitrine, 2 pedidos `novo` por WhatsApp, 30 linhas por pedido. Sem captcha.
+- Pedido só de vitrine não escolhe horário: "retire em até N horas" (tempo de reserva).
+- Checkout com aviso curto de privacidade e `/privacidade` provisória (texto de `settings`).
+- Campo **CPF ou CNPJ na nota**, opcional, validado (dígitos verificadores) no site e no banco; não vai para a tela pública nem para a mensagem do WhatsApp; visível no painel (etapa 05).
+**Reason:** Escolhas do Leonardo; CPF/CNPJ pedido para emissão de nota.
+**Trade-off:** Limites simples não param um ataque determinado; Turnstile fica como opção futura.
+**Impact:** Nova coluna `orders.customer_tax_id`; texto de privacidade precisa citar o documento.
 
 ### AD-008: Estoque para todo item de vitrine + contagem da manhã (2026-09-26)
 

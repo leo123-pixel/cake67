@@ -37,6 +37,24 @@ export function dayEndExclusiveIso(date: string | undefined): string | null {
   return start ? new Date(new Date(start).getTime() + 24 * 60 * 60 * 1000).toISOString() : null;
 }
 
+// "27/09 às 15h" / "27/09 às 15h30" (message and order summary style).
+export function formatPickup(iso: string): string {
+  const [date, time] = isoToLocalInput(iso).split("T");
+  const [, month, day] = date.split("-");
+  const [hour, minute] = time.split(":");
+  return `${day}/${month} às ${Number(hour)}h${minute === "00" ? "" : minute}`;
+}
+
+// "2026-09-28" -> "seg., 28/09".
+export function formatWeekdayDate(date: string): string {
+  return new Intl.DateTimeFormat("pt-BR", {
+    timeZone: TIME_ZONE,
+    weekday: "short",
+    day: "2-digit",
+    month: "2-digit",
+  }).format(new Date(`${date}T12:00:00${CAMPO_GRANDE_OFFSET}`));
+}
+
 export function formatDateTime(iso: string): string {
   return new Intl.DateTimeFormat("pt-BR", {
     timeZone: TIME_ZONE,

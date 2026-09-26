@@ -40,6 +40,7 @@ Cada feature = uma etapa do SPEC (seção 11). Uma por vez, com commit e deploy 
 
 - Carrinho (uma loja), encomendas (bolo kg, cento, kit), checkout, `create_order`, tela `/pedido/[code]`, link WhatsApp
 - `expire_orders()` com pg_cron a cada 5 min
+- Limites anti-abuso, CPF/CNPJ opcional para nota, `/privacidade` provisória (AD-009)
 - Aceite: disputa pela última unidade, só um vence; pedido não confirmado devolve estoque
 
 **05 · Operação** - PLANNED

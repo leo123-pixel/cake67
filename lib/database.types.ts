@@ -222,6 +222,7 @@ export type Database = {
           cancelled_at: string | null;
           cancel_reason: string | null;
           handled_by: string | null;
+          customer_tax_id: string | null;
         } & Timestamps;
         Insert: {
           id?: string;
@@ -242,6 +243,7 @@ export type Database = {
           cancelled_at?: string | null;
           cancel_reason?: string | null;
           handled_by?: string | null;
+          customer_tax_id?: string | null;
         } & Partial<Timestamps>;
         Update: Partial<Database["public"]["Tables"]["orders"]["Insert"]>;
         Relationships: [
@@ -265,6 +267,7 @@ export type Database = {
           unit_price_cents: number;
           total_cents: number;
           options: Json;
+          position: number;
         };
         Insert: {
           id?: string;
@@ -276,6 +279,7 @@ export type Database = {
           unit_price_cents: number;
           total_cents: number;
           options?: Json;
+          position?: number;
         };
         Update: Partial<Database["public"]["Tables"]["order_items"]["Insert"]>;
         Relationships: [
@@ -448,6 +452,11 @@ export type Database = {
       adjust_stock: { Args: { p_product_id: string; p_store_id: string; p_delta: number }; Returns: number };
       set_stock: { Args: { p_product_id: string; p_store_id: string; p_quantity: number }; Returns: number };
       count_stock: { Args: { p_store_id: string; p_items: Json }; Returns: number };
+      quote_order: { Args: { p_store_id: string; p_items: Json }; Returns: Json };
+      create_order: { Args: { p_store_id: string; p_customer: Json; p_items: Json }; Returns: Json };
+      get_order_public: { Args: { p_code: string; p_token: string }; Returns: Json };
+      get_public_settings: { Args: never; Returns: Json };
+      expire_orders: { Args: never; Returns: number };
       staff_store: { Args: never; Returns: string };
     };
     Enums: {

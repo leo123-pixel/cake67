@@ -54,7 +54,7 @@ export default async function MenuPage({ searchParams }: Props) {
           <h2 className="text-2xl text-peach-light">{category.name}</h2>
           <div className="mt-4 grid gap-px overflow-hidden rounded-2xl border border-peach/20 bg-peach/20 md:grid-cols-2">
             {category.products.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product.id} product={product} storeSlug={store.slug} />
             ))}
           </div>
         </section>

@@ -47,6 +47,7 @@ Cada feature = uma etapa do SPEC (seção 11). Uma por vez, com commit e deploy 
 
 - Lista/detalhe de pedidos, status, cancelar com motivo, WhatsApp do cliente, comanda
 - Dashboard com alerta sonoro (Realtime)
+- Reativar pedido expirado se houver estoque; "Hoje" pela data do pedido + "Saem hoje" (AD-010)
 - Aceite: atendente da Loja 2 não vê pedidos da Loja 1
 
 **06 · Relatório e acabamento** - PLANNED

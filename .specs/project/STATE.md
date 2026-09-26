@@ -1,11 +1,18 @@
 # State
 
 **Last Updated:** 2026-09-26
-**Current Work:** 04 concluída (PR #4, base `feat/03-stock`). PRs #1 → #2 → #3 → #4 aguardando merge, nessa ordem. Próximo: 05 · Operação — Specify.
+**Current Work:** 05 · Operação — Tasks (aguardando aprovação; spec e design aprovados 2026-09-26). PRs #1 → #2 → #3 → #4 aguardando merge, nessa ordem.
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-010: Operação de pedidos (2026-09-26)
+
+**Decision:** Pedido `expirado` pode ser **reativado e confirmado** pela equipe se ainda houver estoque (tudo ou nada; encomendas sem checar antecedência). Filtro "Hoje" da lista usa a **data em que o pedido foi feito**; o início também mostra "Saem hoje" (encomendas agendadas para hoje).
+**Reason:** Escolhas do Leonardo: cliente que manda o WhatsApp depois de 2 h não precisa refazer o pedido.
+**Trade-off:** "Saem hoje" complementa o filtro por data de criação para não esquecer encomendas antigas.
+**Impact:** Função de reativação no banco com a mesma reserva atômica do `create_order`.
 
 ### AD-009: Regras do pedido público (2026-09-26)
 

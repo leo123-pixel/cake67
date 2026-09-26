@@ -16,7 +16,8 @@ export function CountForm({ storeId, storeSlug, groups }: Props) {
   const back = `/admin/estoque?loja=${storeSlug}`;
 
   return (
-    <form key={round} action={action} className="space-y-6">
+    // noValidate: messages come from the server, consistent across browsers.
+    <form key={round} action={action} noValidate className="space-y-6">
       <FormMessage state={state} />
 
       {groups.map((group) => (

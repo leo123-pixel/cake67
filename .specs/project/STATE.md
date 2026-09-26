@@ -1,7 +1,7 @@
 # State
 
 **Last Updated:** 2026-09-26
-**Current Work:** 03 · Estoque — Tasks (aguardando aprovação; spec e design aprovados 2026-09-26). 02 concluída (PR #2). 01: PR #1 aguardando merge.
+**Current Work:** 03 · Estoque concluída em localhost (T1–T14); T15 PR/preview. PRs #1 e #2 aguardando merge.
 
 ---
 
@@ -144,6 +144,16 @@ Leonardo desligou "Allow new users to sign up" no painel.
 ### L-008: `@dnd-kit` precisa de `id` estável
 
 **Solution:** `<DndContext id={useId()}>`; sem isso há erro de hidratação (`DndDescribedBy-N`).
+
+### L-009: Dado que migration cria precisa ir também para o seed
+
+**Context:** a migration de estoque grava "Saldo inicial" para linhas existentes, mas num banco novo o `seed.sql` roda depois das migrations.
+**Solution:** mesmo insert idempotente no fim do `seed.sql`.
+**Prevents:** ambiente novo com histórico que não fecha com o estoque.
+
+### L-010: `pattern` em input bloqueia a action com mensagem do navegador
+
+**Solution:** `noValidate` no form quando a validação e as mensagens vêm do servidor; manter `inputMode`/`pattern` só para o teclado numérico.
 
 ### L-003: Commit no PowerShell 5.1
 

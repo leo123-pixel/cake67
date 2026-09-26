@@ -36,7 +36,7 @@ Cada feature = uma etapa do SPEC (seção 11). Uma por vez, com commit e deploy 
 - Contagem da manhã (vitrine inteira de uma vez) — AD-008
 - Aceite: zerar item mostra "Esgotado" no site em até 1 min
 
-**04 · Pedido** - PLANNED
+**04 · Pedido** - COMPLETE (verificado em localhost e preview em 2026-09-26; PR #4)
 
 - Carrinho (uma loja), encomendas (bolo kg, cento, kit), checkout, `create_order`, tela `/pedido/[code]`, link WhatsApp
 - `expire_orders()` com pg_cron a cada 5 min

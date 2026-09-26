@@ -1,7 +1,7 @@
 # State
 
 **Last Updated:** 2026-09-26
-**Current Work:** 04 · Pedido concluída em localhost (T1–T24); T25 PR/preview. PRs #1, #2 e #3 aguardando merge, nessa ordem.
+**Current Work:** 04 concluída (PR #4, base `feat/03-stock`). PRs #1 → #2 → #3 → #4 aguardando merge, nessa ordem. Próximo: 05 · Operação — Specify.
 
 ---
 

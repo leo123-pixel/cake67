@@ -1,7 +1,7 @@
 # 04 · Pedido — Tasks
 
 **Design**: `.specs/features/04-orders/design.md`
-**Status**: Done (2026-09-26) — aceite verificado em localhost; PR/preview em T25
+**Status**: Done (2026-09-26) — aceite verificado em localhost e preview; PR #4 aguardando merge
 
 ## Progress
 
@@ -14,7 +14,7 @@
 | T22 | ✅ | `orders.test.ts`: 5 pedidos simultâneos pela última unidade → 1 sucesso, 4 CK010; expiração devolve uma vez; integração 47/47; arquivos de integração em série (`fileParallelism: false`) |
 | T23 | ✅ | lint, typecheck, 103 unit, build |
 | T24 | ✅ | 375 px: cardápio → carrinho (preços do banco, Loja 1 marca Cheesecake "Acabou") → checkout (CPF inválido e privacidade barram, dados mantidos) → C67-000003 com mensagem certa, sem CPF na página; `/pedido` sem token → 404; encomenda com calculadora (15 pessoas → 2 kg), R$ 227,80, slots a partir de segunda 10h30 (Loja 2, 48 h), entrega → C67-000004 com mensagem completa. Dados de teste expirados/apagados e bolo de volta a "preço a definir". Capturas de tela do painel saíram distorcidas (emulação com `innerWidth` 527); layout conferido pelas medidas do DOM |
-| T25 | ⏳ | |
+| T25 | ✅ | PR https://github.com/leo123-pixel/cake67/pull/4 (base `feat/03-stock`); preview `cake67-nkq251t1v-…` Ready: cardápio Loja 2 com 17 "Adicionar" e 3 esgotados; `/encomendas` no estado vazio (bolos com preço a definir); `/checkout` ok; `/pedido` com token inválido → HTTP 404; `/privacidade` com selo provisório |
 
 Branch: `feat/04-orders`, a partir de `feat/03-stock` (PRs #1–#3 sem merge). Um commit por fase.
 

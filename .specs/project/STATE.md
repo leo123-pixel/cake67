@@ -1,11 +1,18 @@
 # State
 
 **Last Updated:** 2026-09-26
-**Current Work:** 04 concluída (PR #4, base `feat/03-stock`). PRs #1 → #2 → #3 → #4 aguardando merge, nessa ordem. Próximo: 05 · Operação — Specify.
+**Current Work:** 05 · Operação concluída (localhost e preview). Próxima: 06 · Relatório e acabamento (spec, quando o Leonardo pedir). PRs #1 → #2 → #3 → #4 → #5 aguardando merge, nessa ordem.
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-010: Operação de pedidos (2026-09-26)
+
+**Decision:** Pedido `expirado` pode ser **reativado e confirmado** pela equipe se ainda houver estoque (tudo ou nada; encomendas sem checar antecedência). Filtro "Hoje" da lista usa a **data em que o pedido foi feito**; o início também mostra "Saem hoje" (encomendas agendadas para hoje).
+**Reason:** Escolhas do Leonardo: cliente que manda o WhatsApp depois de 2 h não precisa refazer o pedido.
+**Trade-off:** "Saem hoje" complementa o filtro por data de criação para não esquecer encomendas antigas.
+**Impact:** Função de reativação no banco com a mesma reserva atômica do `create_order`.
 
 ### AD-009: Regras do pedido público (2026-09-26)
 
@@ -181,6 +188,21 @@ Leonardo desligou "Allow new users to sign up" no painel.
 
 **Problem:** mensagem de commit começou com BOM invisível.
 **Solution:** escrever mensagens de commit com a ferramenta Write (UTF-8 sem BOM) e `git commit -F`.
+
+### L-014: Realtime confirma a inscrição antes de transmitir
+
+**Problem:** o teste de Realtime não recebia o INSERT feito logo após `SUBSCRIBED`, embora `orders` estivesse na publicação.
+**Solution:** `realtime.setAuth(token)` antes de assinar (senão o RLS avalia como anon) e, em teste, esperar ~2 s depois de `SUBSCRIBED`. O painel fica conectado o tempo todo e não precisa disso.
+
+### L-015: `router.refresh()` reescreve o título da aba
+
+**Problem:** o contador "(n) Pedidos novos" sumia no refresh seguinte ao alerta.
+**Solution:** `MutationObserver` no `<head>` reaplica o título enquanto a aba está oculta com pedidos não vistos.
+
+### L-016: Trigger que usa `auth.uid()` herda quem disparou a função
+
+**Problem:** `expire_orders` roda também quando alguém abre o painel, e a expiração saía no histórico com o nome dessa pessoa.
+**Solution:** status `expirado` sempre registra "Sistema", independente da sessão.
 
 ### L-003: Commit no PowerShell 5.1
 

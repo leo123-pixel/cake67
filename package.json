@@ -13,7 +13,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run --project unit",
     "test:integration": "vitest run --project integration",
-    "seed": "tsx --env-file=.env.local scripts/seed.ts"
+    "seed": "tsx --env-file=.env.local scripts/seed.ts",
+    "admin:link": "tsx --env-file=.env.local scripts/admin-link.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

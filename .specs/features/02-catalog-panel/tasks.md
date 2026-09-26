@@ -1,7 +1,7 @@
 # 02 · Painel de catálogo — Tasks
 
 **Design**: `.specs/features/02-catalog-panel/design.md`
-**Status**: Done (2026-09-27) — aceite verificado em localhost; preview pendente de deploy
+**Status**: Done (2026-09-26) — aceite verificado em localhost e preview; PR #2 aguardando merge
 
 ## Progress
 
@@ -14,7 +14,7 @@
 | T26 | ✅ | migration aplicada no projeto |
 | T27 | ✅ | `roles.test.ts`: 11 casos; total integração 35/35; usuários de teste removidos |
 | T28 | ✅ | 360 px: link de convite → definir senha → sair → login (erro e sucesso) → criar "Bebidas" + reordenar → produto com erro de validação preservando tudo → criar com `6,5` → foto 2400 px vira WebP 1600 px/6 KB → aparece no `/cardapio` como Esgotado; atendente barrado; desativado perde acesso; Usuários gera link. Correções: `useAdminForm` (reset do React 19 perdia select/checkbox), e-mail preservado no login, `DndContext id` (hidratação). Dados de QA removidos |
-| T29 | ⏳ | commit, push, PR, preview |
+| T29 | ✅ | PR https://github.com/leo123-pixel/cake67/pull/2 (base `feat/01-base`); preview `cake67-2vp4ovqaw-…` Ready: `/admin/*` sem sessão → login; `/cardapio?loja=afonso-pena` 20 produtos, 3 esgotados, bolo com preço a definir oculto |
 
 Branch: `feat/02-catalog-panel`, criada a partir de `feat/01-base` (PR #1 ainda sem merge). Um commit por fase.
 

@@ -1,7 +1,7 @@
 # State
 
 **Last Updated:** 2026-09-26
-**Current Work:** 02 · Painel de catálogo concluída em localhost (T1–T28); T29 PR/preview. 01: PR #1 aguardando merge.
+**Current Work:** 02 concluída (PR #2, base `feat/01-base`). 01: PR #1 aguardando merge. Próximo: 03 · Estoque — Specify.
 
 ---
 
@@ -74,6 +74,11 @@ Projeto `zwzngzjhjyfndxigyinq` (sa-east-1, Leo Org, Free). Chaves e `SUPABASE_DB
 ### B-004: ~~Cadastro público no Supabase Auth~~ — resolvido 2026-09-26
 
 Leonardo desligou "Allow new users to sign up" no painel.
+
+### B-006: Primeiro acesso do Leonardo ao painel
+
+**Impact:** a conta `comercial.servicoaki@gmail.com` ainda não tem senha (convite do seed nunca foi aceito).
+**Resolution:** `SITE_URL=<url do preview ou produção> npm run admin:link -- comercial.servicoaki@gmail.com`, abrir o link e definir a senha.
 
 ### B-005: Conector Vercel (MCP) só com leitura
 

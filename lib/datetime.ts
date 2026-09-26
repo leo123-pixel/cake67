@@ -24,6 +24,11 @@ export function isoToLocalInput(iso: string): string {
 
 const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
 
+// Today's date ("YYYY-MM-DD") in Campo Grande.
+export function todayInCampoGrande(now: Date = new Date()): string {
+  return isoToLocalInput(now.toISOString()).slice(0, 10);
+}
+
 // "2026-09-26" -> start of that day in Campo Grande, as ISO. null if invalid.
 export function dayStartIso(date: string | undefined): string | null {
   if (!date || !DATE_ONLY.test(date)) return null;

@@ -6,8 +6,10 @@ import { publicEnv } from "@/lib/env";
 // Anon-key client for Server Components, Server Actions and Route Handlers.
 // Every query runs under RLS as the visitor (or the signed-in staff member).
 export async function createClient() {
-  const { supabaseUrl, supabaseAnonKey } = publicEnv();
+  // Read cookies first: it opts the route into dynamic rendering, so pages
+  // never freeze catalog data at build time.
   const cookieStore = await cookies();
+  const { supabaseUrl, supabaseAnonKey } = publicEnv();
 
   return createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
     cookies: {

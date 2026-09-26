@@ -1,7 +1,18 @@
 # 01 · Base — Tasks
 
 **Design**: `.specs/features/01-base/design.md`
-**Status**: Draft
+**Status**: In Progress — T1–T19 done (2026-09-26); T20–T24 blocked by B-001
+
+## Progress
+
+| Tarefa | Status | Notas |
+|---|---|---|
+| T1–T3 | ✅ | commit `b2795e6`; `.gitattributes` com LF |
+| T4–T14 | ✅ | commit `022900e`; migrations + seed validados em PGlite (Postgres 17) com stubs de auth/storage: 34/34 checagens reais de RLS e idempotência |
+| T15–T19 | ✅ | `error.tsx` ficou em `app/(site)/` (cobre home e cardápio); `Logo` e placeholder SVG extras; teste unitário de `catalog` |
+| T20–T24 | 🔒 | aguardam projeto Supabase |
+
+Desvio relevante: `createClient()` lê `cookies()` antes do env para forçar renderização dinâmica (o build estava pré-renderizando a home).
 
 Branch: `feat/01-base`. Um commit por fase. Tarefas marcadas 🔒 dependem do projeto Supabase (B-001).
 

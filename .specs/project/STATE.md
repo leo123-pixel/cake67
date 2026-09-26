@@ -1,7 +1,7 @@
 # State
 
 **Last Updated:** 2026-09-26
-**Current Work:** 01 · Base - Tasks (aguardando aprovação; spec e design aprovados em 2026-09-26)
+**Current Work:** 01 · Base - Implement: T1–T19 feitos na branch `feat/01-base`; T20 bloqueado por B-001
 
 ---
 
@@ -64,7 +64,23 @@
 
 ## Lessons Learned
 
-_(nenhuma ainda)_
+### L-001: Página com dados do banco precisa ser dinâmica
+
+**Context:** `next build` tentou pré-renderizar a home.
+**Problem:** `createClient()` validava o env antes de `cookies()`; sem `cookies()` o Next trata a rota como estática e congelaria o catálogo no deploy.
+**Solution:** chamar `cookies()` primeiro em `lib/supabase/server.ts`.
+**Prevents:** catálogo desatualizado em produção. Conferir no output do build que rotas com dados aparecem como `ƒ`.
+
+### L-002: Validar SQL sem Docker
+
+**Context:** sem Docker local para `supabase start`.
+**Solution:** PGlite (Postgres 17 em WASM) com stubs de `auth.users`, `auth.uid()`, `storage`, papéis `anon`/`authenticated` e `set role` + `request.jwt.claim.sub` testa migrations, seed e RLS em segundos.
+**Prevents:** descobrir erro de SQL só no `db push` contra o projeto real.
+
+### L-003: Commit no PowerShell 5.1
+
+**Problem:** here-string via stdin não chega ao `git commit -F -`.
+**Solution:** escrever a mensagem num arquivo do scratchpad e usar `git commit -F <arquivo>`.
 
 ---
 

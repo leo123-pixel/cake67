@@ -8,15 +8,21 @@ type Client = SupabaseClient<Database>;
 type SluggedTable = "products" | "categories" | "stores";
 type SortedTable = "categories" | "addons" | "stores" | "highlights" | "products";
 
-const LAST_ADMIN = "CK001";
 const UNIQUE_VIOLATION = "23505";
+
+// Error codes raised by our SQL functions and triggers.
+const DB_MESSAGES: Record<string, string> = {
+  CK001: "É preciso manter pelo menos um administrador ativo.",
+  CK002: "O estoque não pode ficar negativo.",
+  CK003: "Quantidade acima de 9999. Confira o número.",
+  CK004: "Este produto não é de vitrine.",
+  "42501": "Você não tem permissão para esta ação.",
+};
 
 export function dbFailure(context: string, error: { message: string; code?: string }): ActionState {
   console.error(`${context}: ${error.message}`);
-  if (error.code === LAST_ADMIN) {
-    return { ok: false, message: "É preciso manter pelo menos um administrador ativo." };
-  }
-  return { ok: false, message: "Não foi possível salvar. Tente de novo." };
+  const known = error.code ? DB_MESSAGES[error.code] : undefined;
+  return { ok: false, message: known ?? "Não foi possível salvar. Tente de novo." };
 }
 
 export function isUniqueViolation(error: { code?: string } | null): boolean {

@@ -1,7 +1,7 @@
 # State
 
 **Last Updated:** 2026-09-26
-**Current Work:** 05 · Operação — implementada e verificada em localhost; PR e preview em andamento. PRs #1 → #2 → #3 → #4 aguardando merge, nessa ordem.
+**Current Work:** 05 · Operação concluída (localhost e preview). Próxima: 06 · Relatório e acabamento (spec, quando o Leonardo pedir). PRs #1 → #2 → #3 → #4 → #5 aguardando merge, nessa ordem.
 
 ---
 

@@ -1,7 +1,7 @@
 # 05 · Operação — Tasks
 
 **Design**: `.specs/features/05-operations/design.md`
-**Status**: Em andamento — T1–T15 feitas; falta T16 (PR e preview)
+**Status**: Done (2026-09-26) — aceite verificado em localhost e preview; PR #5 aguardando merge
 
 ## Progress
 
@@ -13,6 +13,7 @@
 | T13 | ✅ | `operations.test.ts`; Realtime confirma o `SUBSCRIBED` um pouco antes de transmitir, o teste espera 2 s; integração 53/53 |
 | T14 | ✅ | lint, typecheck, 118 unit, 53 integração, build |
 | T15 | ✅ | atendente QA da Loja 2: início com 3 blocos; C67-000017 (Loja 2) apareceu sozinho e C67-000018 (Loja 1) não; título "(1) Pedidos novos · Cake 67" com a aba oculta; confirmar → pronto → entregue com "QA Atendente" no histórico; cancelar exige descrição em "Outro" e devolveu o estoque (8 → 9); expirado reativado → Confirmado com `venda`; comanda sem CPF. Pedidos, usuários e estoque de teste limpos (crunch 10/10, soma dos movimentos = estoque) |
+| T16 | ✅ `9388894` | PR https://github.com/leo123-pixel/cake67/pull/5 (base `feat/04-orders`); preview `cake67-kmqyaig2a-…` Ready: cardápio ok; `/admin/pedidos` e comanda sem sessão redirecionam (sem corpo); rota inexistente → 404 |
 
 Branch: `feat/05-operations`, a partir de `feat/04-orders` (PRs #1–#4 sem merge). Um commit por fase.
 

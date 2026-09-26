@@ -1,11 +1,18 @@
 # State
 
 **Last Updated:** 2026-09-26
-**Current Work:** 05 · Operação concluída (localhost e preview). Próxima: 06 · Relatório e acabamento (spec, quando o Leonardo pedir). PRs #1 → #2 → #3 → #4 → #5 aguardando merge, nessa ordem.
+**Current Work:** 06 · Relatório e acabamento — Tasks (aguardando aprovação; spec e design aprovados 2026-09-26). Branch `feat/06-report-finish` a partir de `feat/05-operations`. PRs #1 → #2 → #3 → #4 → #5 aguardando merge, nessa ordem.
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-011: Relatório e configurações (2026-09-26)
+
+**Decision:** Faturamento = subtotal dos pedidos que chegaram a ser confirmados (`confirmado`, `em_producao`, `pronto`, `entregue`), pela **data em que o pedido foi feito**; cancelados, expirados e novos aparecem à parte. CSV de pedidos **inclui CPF/CNPJ** (só admin). Rascunho da política de privacidade redigido a partir do que o sistema coleta, marcado provisório até a cliente marcar "revisado". Modelo da mensagem do WhatsApp é texto livre com variáveis e prévia; exige `{codigo}` e `{itens}` e recusa variável desconhecida.
+**Reason:** Escolhas do Leonardo: mesma regra de data do filtro "Hoje"; contabilidade emite notas a partir da planilha.
+**Trade-off:** CSV com CPF sai do sistema; restrito ao admin e neutralizado contra injeção de fórmula; a política cita o compartilhamento com a contabilidade.
+**Impact:** Agregação no banco (função só para admin), coluna de "privacidade revisada" em `settings`.
 
 ### AD-010: Operação de pedidos (2026-09-26)
 

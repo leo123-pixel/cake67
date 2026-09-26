@@ -7,6 +7,11 @@ export type ActionState = {
   ok: boolean;
   message?: string;
   fieldErrors?: FieldErrors;
+  // Submitted values, echoed back so forms keep what was typed after React
+  // resets them at the end of the action.
+  values?: Record<string, unknown>;
+  // One-time auth link to hand over (AD-007).
+  link?: string;
 };
 
 export const requiredText = (message: string) => z.string().trim().min(1, message);
@@ -58,6 +63,6 @@ export function toFieldErrors(error: z.ZodError): FieldErrors {
   return errors;
 }
 
-export function invalid(error: z.ZodError): ActionState {
-  return { ok: false, message: "Confira os campos destacados.", fieldErrors: toFieldErrors(error) };
+export function invalid(error: z.ZodError, values?: Record<string, unknown>): ActionState {
+  return { ok: false, message: "Confira os campos destacados.", fieldErrors: toFieldErrors(error), values };
 }

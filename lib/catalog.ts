@@ -1,9 +1,6 @@
 import type { Tables } from "@/lib/database.types";
-import { publicEnv } from "@/lib/env";
+import { productImageUrl } from "@/lib/images";
 import { createClient } from "@/lib/supabase/server";
-
-const PRODUCT_BUCKET = "produtos";
-const PLACEHOLDER_IMAGE = "/placeholder-product.svg";
 
 export type Store = Pick<Tables<"stores">, "id" | "slug" | "name" | "address">;
 
@@ -24,12 +21,6 @@ export type MenuCategory = {
   name: string;
   products: MenuProduct[];
 };
-
-export function productImageUrl(path: string | null): string {
-  if (!path) return PLACEHOLDER_IMAGE;
-  const { supabaseUrl } = publicEnv();
-  return `${supabaseUrl}/storage/v1/object/public/${PRODUCT_BUCKET}/${path}`;
-}
 
 export function isSoldInStore(storeIds: string[], storeId: string): boolean {
   return storeIds.length === 0 || storeIds.includes(storeId);

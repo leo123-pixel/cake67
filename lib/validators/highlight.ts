@@ -13,6 +13,8 @@ const optionalDateTime = z
   .optional()
   .transform((value) => (value ? localInputToIso(value) : null));
 
+export const HIGHLIGHT_IMAGE_PATH = /^highlights\/[0-9a-f-]{36}\.webp$/;
+
 export function isAllowedHref(href: string): boolean {
   return /^\/(?!\/)/.test(href) || /^https:\/\/[^\s]+$/.test(href);
 }
@@ -31,6 +33,9 @@ export const highlightSchema = z
     active: checkbox,
   })
   .superRefine((h, ctx) => {
+    if (h.image_path && !HIGHLIGHT_IMAGE_PATH.test(h.image_path)) {
+      ctx.addIssue({ code: "custom", path: ["image_path"], message: "Imagem inválida, envie de novo" });
+    }
     if (h.cta_href && !isAllowedHref(h.cta_href)) {
       ctx.addIssue({ code: "custom", path: ["cta_href"], message: "Use um caminho do site (/cardapio) ou um link https://" });
     }

@@ -45,6 +45,29 @@ $$;
 revoke execute on function public.reorder(text, uuid[]) from public, anon;
 grant execute on function public.reorder(text, uuid[]) to authenticated;
 
+-- Replaces the addons a cake accepts in one statement pair (atomic).
+-- SECURITY INVOKER: RLS on product_addons limits it to admins.
+create function public.set_product_addons(p_product_id uuid, p_addon_ids uuid[])
+returns void
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+begin
+  delete from public.product_addons
+  where product_id = p_product_id
+    and addon_id <> all (p_addon_ids);
+
+  insert into public.product_addons (product_id, addon_id)
+  select p_product_id, addon_id
+  from unnest(p_addon_ids) as addon_id
+  on conflict do nothing;
+end;
+$$;
+
+revoke execute on function public.set_product_addons(uuid, uuid[]) from public, anon;
+grant execute on function public.set_product_addons(uuid, uuid[]) to authenticated;
+
 -- The team must always keep one active admin, whatever path writes staff.
 -- SECURITY DEFINER so the check sees every staff row, not only the caller's.
 create function public.ensure_active_admin()

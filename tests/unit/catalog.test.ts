@@ -2,7 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/supabase/server", () => ({ createClient: vi.fn() }));
 
-const { isSoldInStore, productImageUrl } = await import("@/lib/catalog");
+const { isSoldInStore } = await import("@/lib/catalog");
+const { productImageUrl } = await import("@/lib/images");
 
 beforeEach(() => {
   vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://abc.supabase.co");

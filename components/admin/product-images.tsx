@@ -2,11 +2,12 @@
 
 import imageCompression from "browser-image-compression";
 import Image from "next/image";
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { addProductImage, removeProductImage, updateImageAlt } from "@/app/admin/(panel)/produtos/actions";
 import { reorderItems } from "@/app/admin/(panel)/reorder-action";
 import { SortableList } from "@/components/admin/sortable-list";
 import { SubmitButton } from "@/components/admin/submit-button";
+import { useAdminForm } from "@/components/admin/use-admin-form";
 import { PRODUCT_BUCKET, productImageUrl } from "@/lib/images";
 import { createClient } from "@/lib/supabase/browser";
 
@@ -25,9 +26,9 @@ async function toWebp(file: File): Promise<Blob> {
 }
 
 function AltForm({ image, productName }: { image: ProductImage; productName: string }) {
-  const [state, action] = useActionState(updateImageAlt.bind(null, image.id), { ok: false });
+  const [state, action, round] = useAdminForm(updateImageAlt.bind(null, image.id), { ok: false });
   return (
-    <form action={action} className="flex flex-wrap items-end gap-2">
+    <form key={round} action={action} className="flex flex-wrap items-end gap-2">
       <label className="min-w-0 flex-1 space-y-1 text-xs text-cocoa-soft">
         Descrição da foto (acessibilidade)
         <input name="alt" defaultValue={image.alt} placeholder={productName} className="field-input" />

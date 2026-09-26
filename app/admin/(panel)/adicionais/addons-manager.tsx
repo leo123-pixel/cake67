@@ -1,7 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
 import { Field, FormMessage } from "@/components/admin/field";
+import { useAdminForm } from "@/components/admin/use-admin-form";
 import { MoneyInput } from "@/components/admin/money-input";
 import { SortableList } from "@/components/admin/sortable-list";
 import { StatusBadge } from "@/components/admin/status-badge";
@@ -11,9 +11,9 @@ import { reorderItems } from "../reorder-action";
 import { createAddon, updateAddon } from "./actions";
 
 function NewAddonForm() {
-  const [state, action] = useActionState(createAddon, { ok: false });
+  const [state, action, round] = useAdminForm(createAddon, { ok: false });
   return (
-    <form action={action} className="space-y-4 rounded-2xl border border-cocoa/10 bg-white p-4">
+    <form key={round} action={action} className="space-y-4 rounded-2xl border border-cocoa/10 bg-white p-4">
       <h2 className="text-xl text-olive">Novo adicional</h2>
       <FormMessage state={state} />
       <div className="grid gap-4 sm:grid-cols-[1fr_180px]">
@@ -30,11 +30,11 @@ function NewAddonForm() {
 }
 
 function AddonRow({ addon }: { addon: AdminAddon }) {
-  const [state, action] = useActionState(updateAddon.bind(null, addon.id), { ok: false });
+  const [state, action, round] = useAdminForm(updateAddon.bind(null, addon.id), { ok: false });
   const prefix = `addon-${addon.id}`;
 
   return (
-    <form action={action} className="space-y-3">
+    <form key={round} action={action} className="space-y-3">
       <StatusBadge tone={addon.active ? "green" : "gray"}>{addon.active ? "Oferecido" : "Desativado"}</StatusBadge>
       <div className="grid gap-3 sm:grid-cols-[1fr_180px]">
         <Field label="Nome" name={`${prefix}-name`} errors={state.fieldErrors?.name}>

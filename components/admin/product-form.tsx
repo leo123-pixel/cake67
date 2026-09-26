@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { saveProduct } from "@/app/admin/(panel)/produtos/actions";
 import { Field, FormMessage } from "@/components/admin/field";
+import { useAdminForm } from "@/components/admin/use-admin-form";
 import { MoneyInput } from "@/components/admin/money-input";
 import { SubmitButton } from "@/components/admin/submit-button";
 import type { Enums, Tables } from "@/lib/database.types";
@@ -35,7 +36,7 @@ type Props = {
 };
 
 export function ProductForm({ product, addonIds = [], options }: Props) {
-  const [state, action] = useActionState(saveProduct.bind(null, product?.id ?? null), { ok: false });
+  const [state, action, round] = useAdminForm(saveProduct.bind(null, product?.id ?? null), { ok: false });
 
   // Echoed values after a failed submit win over the saved product.
   const echoed = state.values;
@@ -58,7 +59,7 @@ export function ProductForm({ product, addonIds = [], options }: Props) {
   const visibleAddons = options.addons.filter((addon) => addon.active || chosenAddons.includes(addon.id));
 
   return (
-    <form action={action} className="space-y-8">
+    <form key={round} action={action} className="space-y-8">
       <FormMessage state={state} />
 
       <fieldset className="space-y-4">

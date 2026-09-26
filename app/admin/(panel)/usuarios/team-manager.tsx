@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { CopyLink } from "@/components/admin/copy-link";
 import { Field, FormMessage } from "@/components/admin/field";
+import { useAdminForm } from "@/components/admin/use-admin-form";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { SubmitButton } from "@/components/admin/submit-button";
 import type { TeamMember } from "@/lib/admin/staff";
@@ -45,14 +46,14 @@ function RoleAndStore({ prefix, role, storeId, stores, errors }: {
 }
 
 function InviteForm({ stores }: { stores: StoreOption[] }) {
-  const [state, action] = useActionState(inviteMember, { ok: false });
+  const [state, action, round] = useAdminForm(inviteMember, { ok: false });
   const echoed = state.values;
   const errors = state.fieldErrors ?? {};
 
   return (
     <div className="space-y-4 rounded-2xl border border-cocoa/10 bg-white p-4">
       <h2 className="text-xl text-olive">Convidar pessoa</h2>
-      <form action={action} className="space-y-4">
+      <form key={round} action={action} className="space-y-4">
         <FormMessage state={state} />
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label="Nome" name="invite-name" errors={errors.name}>
@@ -77,7 +78,7 @@ function InviteForm({ stores }: { stores: StoreOption[] }) {
 }
 
 function MemberRow({ member, stores, isSelf }: { member: TeamMember; stores: StoreOption[]; isSelf: boolean }) {
-  const [state, action] = useActionState(updateMember.bind(null, member.user_id), { ok: false });
+  const [state, action, round] = useAdminForm(updateMember.bind(null, member.user_id), { ok: false });
   const [link, setLink] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -104,7 +105,7 @@ function MemberRow({ member, stores, isSelf }: { member: TeamMember; stores: Sto
         {member.active && member.invitePending && <StatusBadge tone="amber">Convite pendente</StatusBadge>}
       </div>
 
-      <form action={action} className="space-y-3">
+      <form key={round} action={action} className="space-y-3">
         <FormMessage state={state} />
         <Field label="Nome" name={`${prefix}-name`} errors={state.fieldErrors?.name}>
           <input id={`${prefix}-name`} name="name" defaultValue={member.name} required className="field-input" />

@@ -1,7 +1,7 @@
 # State
 
 **Last Updated:** 2026-09-26
-**Current Work:** 02 · Painel de catálogo — Tasks (aguardando aprovação; spec e design aprovados 2026-09-26). 01 concluída, PR #1 aguardando merge.
+**Current Work:** 02 · Painel de catálogo concluída em localhost (T1–T28); T29 PR/preview. 01: PR #1 aguardando merge.
 
 ---
 
@@ -111,6 +111,27 @@ Leonardo desligou "Allow new users to sign up" no painel.
 **Problem:** o projeto não aplica default privileges às tabelas novas do `public`.
 **Solution:** migration `20260926000500_grants.sql` com grants explícitos (anon só `select` no catálogo). O check local em PGlite passou a simular o mesmo (sem default privileges).
 **Prevents:** tabela nova invisível para a Data API. Regra 8 do `CLAUDE.md`.
+
+### L-005: Site público nunca usa a sessão do usuário
+
+**Problem:** com login existindo, `createClient()` (cookies) fazia um admin navegando no site ver produtos inativos e com preço a definir (política "admin manages").
+**Solution:** `lib/supabase/public.ts` (`createPublicClient`, anon sem sessão + `connection()`). Todo código do site público usa esse client.
+**Prevents:** vazamento de itens ocultos e divergência entre o que admin e cliente veem.
+
+### L-006: React 19 reseta formulário após action
+
+**Problem:** `<form action>` é resetado ao fim da action; `<select>`/checkbox não voltam ao `defaultValue` novo (categoria sumia após erro; valores antigos após salvar).
+**Solution:** `useAdminForm` (components/admin/use-admin-form.ts) numera respostas; `<form key={round}>` remonta com os padrões atuais; actions devolvem `values` no erro.
+**Prevents:** perda de dados digitados e tela mostrando valor desatualizado.
+
+### L-007: Funções SQL com RLS do chamador podem falhar ou silenciar
+
+**Context:** `set_product_addons` (security invoker) para atendente: `delete` filtrado em silêncio, `insert` gera 42501.
+**Prevents:** testes que assumem "sem efeito = sem erro". Testar com entrada que force a escrita.
+
+### L-008: `@dnd-kit` precisa de `id` estável
+
+**Solution:** `<DndContext id={useId()}>`; sem isso há erro de hidratação (`DndDescribedBy-N`).
 
 ### L-003: Commit no PowerShell 5.1
 

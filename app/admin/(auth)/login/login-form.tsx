@@ -13,7 +13,15 @@ export function LoginForm({ notice }: { notice?: string }) {
     <form action={action} className="space-y-5">
       <FormMessage state={state} />
       <Field label="E-mail" name="email">
-        <input id="email" name="email" type="email" autoComplete="username" required className="field-input" />
+        <input
+          id="email"
+          name="email"
+          type="email"
+          autoComplete="username"
+          required
+          defaultValue={String(state.values?.email ?? "")}
+          className="field-input"
+        />
       </Field>
       <Field label="Senha" name="password">
         <input

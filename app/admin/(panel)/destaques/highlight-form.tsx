@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useTransition } from "react";
+import { useTransition } from "react";
 import { Field, FormMessage } from "@/components/admin/field";
+import { useAdminForm } from "@/components/admin/use-admin-form";
 import { ImageField } from "@/components/admin/image-field";
 import { SubmitButton } from "@/components/admin/submit-button";
 import { isoToLocalInput } from "@/lib/datetime";
@@ -17,7 +18,7 @@ type Props = {
 };
 
 export function HighlightForm({ highlight, products }: Props) {
-  const [state, action] = useActionState(saveHighlight.bind(null, highlight?.id ?? null), { ok: false });
+  const [state, action, round] = useAdminForm(saveHighlight.bind(null, highlight?.id ?? null), { ok: false });
   const [deleting, startDelete] = useTransition();
   const echoed = state.values;
   const text = (key: string, saved: string | null | undefined) => (echoed ? String(echoed[key] ?? "") : (saved ?? ""));
@@ -32,7 +33,7 @@ export function HighlightForm({ highlight, products }: Props) {
   }
 
   return (
-    <form action={action} className="space-y-6">
+    <form key={round} action={action} className="space-y-6">
       <FormMessage state={state} />
 
       <div className="grid gap-4 sm:grid-cols-2">

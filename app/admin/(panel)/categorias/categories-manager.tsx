@@ -1,7 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
 import { Field, FormMessage } from "@/components/admin/field";
+import { useAdminForm } from "@/components/admin/use-admin-form";
 import { SortableList } from "@/components/admin/sortable-list";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { SubmitButton } from "@/components/admin/submit-button";
@@ -21,9 +21,9 @@ function KindSelect({ id, defaultValue }: { id: string; defaultValue?: string })
 }
 
 function NewCategoryForm() {
-  const [state, action] = useActionState(createCategory, { ok: false });
+  const [state, action, round] = useAdminForm(createCategory, { ok: false });
   return (
-    <form action={action} className="space-y-4 rounded-2xl border border-cocoa/10 bg-white p-4">
+    <form key={round} action={action} className="space-y-4 rounded-2xl border border-cocoa/10 bg-white p-4">
       <h2 className="text-xl text-olive">Nova categoria</h2>
       <FormMessage state={state} />
       <div className="grid gap-4 sm:grid-cols-2">
@@ -40,11 +40,11 @@ function NewCategoryForm() {
 }
 
 function CategoryRow({ category }: { category: AdminCategory }) {
-  const [state, action] = useActionState(updateCategory.bind(null, category.id), { ok: false });
+  const [state, action, round] = useAdminForm(updateCategory.bind(null, category.id), { ok: false });
   const prefix = `cat-${category.id}`;
 
   return (
-    <form action={action} className="space-y-3">
+    <form key={round} action={action} className="space-y-3">
       <div className="flex flex-wrap items-center gap-2 text-sm">
         <StatusBadge tone={category.active ? "green" : "gray"}>{category.active ? "Ativa" : "Inativa"}</StatusBadge>
         <span className="text-cocoa-soft">

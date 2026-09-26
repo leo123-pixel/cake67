@@ -1,7 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
 import { Field, FormMessage } from "@/components/admin/field";
+import { useAdminForm } from "@/components/admin/use-admin-form";
 import { HoursEditor } from "@/components/admin/hours-editor";
 import { SubmitButton } from "@/components/admin/submit-button";
 import type { AdminStore } from "@/lib/admin/catalog";
@@ -10,13 +10,13 @@ import { parseStoredHours } from "@/lib/validators/store";
 import { saveStore } from "./actions";
 
 export function StoreForm({ store }: { store?: AdminStore }) {
-  const [state, action] = useActionState(saveStore.bind(null, store?.id ?? null), { ok: false });
+  const [state, action, round] = useAdminForm(saveStore.bind(null, store?.id ?? null), { ok: false });
   const echoed = state.values;
   const text = (key: string, saved: string) => (echoed ? String(echoed[key] ?? "") : saved);
   const errors = state.fieldErrors ?? {};
 
   return (
-    <form action={action} className="space-y-8">
+    <form key={round} action={action} className="space-y-8">
       <FormMessage state={state} />
       <fieldset className="space-y-4">
         <legend className="mb-2 text-xl text-olive">Dados</legend>

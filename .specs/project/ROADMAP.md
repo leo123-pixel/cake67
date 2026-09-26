@@ -22,7 +22,7 @@ Cada feature = uma etapa do SPEC (seção 11). Uma por vez, com commit e deploy 
 - Seed: lojas, categorias, produtos da vitrine, imagens, admin
 - Aceite: site lista produtos do banco; anon não acessa pedidos
 
-**02 · Painel de catálogo** - PLANNED
+**02 · Painel de catálogo** - IN PROGRESS (aceite ok em localhost 2026-09-27; aguardando preview)
 
 - Login (e-mail/senha, sem cadastro público)
 - Produtos com fotos (compressão WebP, ordenar), categorias, lojas e horários, destaques

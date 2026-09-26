@@ -18,7 +18,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useId, useState, useTransition } from "react";
 import type { ActionState } from "@/lib/validators/common";
 
 type Props<T extends { id: string }> = {
@@ -33,6 +33,8 @@ export function SortableList<T extends { id: string }>({ items, label, renderIte
   const [order, setOrder] = useState(items);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  // Stable id: dnd-kit's default counter differs between server and client.
+  const dndId = useId();
 
   useEffect(() => setOrder(items), [items]);
 
@@ -75,7 +77,7 @@ export function SortableList<T extends { id: string }>({ items, label, renderIte
           {error}
         </p>
       )}
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+      <DndContext id={dndId} sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
         <SortableContext items={order.map((item) => item.id)} strategy={verticalListSortingStrategy}>
           <ul className={`space-y-2 ${pending ? "opacity-70" : ""}`}>
             {order.map((item, index) => (

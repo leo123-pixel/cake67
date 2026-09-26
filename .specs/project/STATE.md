@@ -1,11 +1,18 @@
 # State
 
 **Last Updated:** 2026-09-26
-**Current Work:** 02 concluída (PR #2, base `feat/01-base`). 01: PR #1 aguardando merge. Próximo: 03 · Estoque — Specify.
+**Current Work:** 03 · Estoque — Tasks (aguardando aprovação; spec e design aprovados 2026-09-26). 02 concluída (PR #2). 01: PR #1 aguardando merge.
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-008: Estoque para todo item de vitrine + contagem da manhã (2026-09-26)
+
+**Decision:** Todo produto de vitrine tem contagem, inclusive os feitos na hora (croissants). A etapa 03 inclui um modo "Contagem" que salva a vitrine inteira de uma vez; durante o dia usa +/−/Definir/Esgotar. Sem zerar automático no fim do dia.
+**Reason:** Rotina real do balcão (Leonardo).
+**Trade-off:** Croissant precisa ser contado como os demais.
+**Impact:** Função de contagem em lote, atômica, com um movimento por item alterado.
 
 ### AD-007: Convite e nova senha por link, sem e-mail (2026-09-26)
 

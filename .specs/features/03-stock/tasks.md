@@ -1,0 +1,93 @@
+# 03 · Estoque — Tasks
+
+**Design**: `.specs/features/03-stock/design.md`
+**Status**: Draft
+
+Branch: `feat/03-stock`, a partir de `feat/02-catalog-panel` (PRs #1 e #2 ainda sem merge). Um commit por fase.
+
+---
+
+## Execution Plan
+
+```
+Fase 1 · Banco         T1 → T2 → T3
+Fase 2 · Servidor      T3 → T4 [P], T5 [P] → T6
+Fase 3 · Telas         T6 → T7 → T8 ; T9 [P] ; T10 [P] ; T11
+Fase 4 · Integração    T3 → T12 → T13 → T14 → T15
+```
+
+---
+
+## Fase 1 · Banco
+
+### T1: Migration de estoque
+**Where**: `supabase/migrations/20260928000100_stock.sql`
+**What**: colunas `quantity_after`, `actor_name`; `can_manage_store`, `adjust_stock`, `set_stock`, `count_stock` (security definer, validações, códigos 42501/CK002/CK003/CK004); saldo inicial; grants.
+**Done when**:
+- [ ] Check PGlite: atendente ajusta a própria loja e não a outra (42501); negativo CK002; > 9999 CK003; produto de encomenda CK004; `set_stock` igual não grava; `count_stock` com item inválido não grava nada; saldo inicial faz soma = quantidade em todas as linhas; anon sem `execute`; atendente continua sem `update` direto em `stock`
+- [ ] Checks das etapas 01 e 02 continuam passando
+
+### T2: Tipos
+**Where**: `lib/database.types.ts` — colunas novas e 4 funções.
+
+### T3: Aplicar no projeto
+**What**: `supabase db push --db-url`.
+
+---
+
+## Fase 2 · Servidor
+
+### T4: Schema da contagem e montagem da grade [P]
+**Where**: `lib/validators/stock.ts`, `lib/stock-grid.ts` (puro) + testes
+**Done when**:
+- [ ] Quantidade: inteiro 0–9999, mensagens PT-BR; contagem lê `qty_<productId>` do form
+- [ ] Grade: sem linha = 0; agrupado por categoria na ordem; `visible` por ativo/preço/loja
+
+### T5: `getStaffContext()` e erros novos [P]
+**Where**: `lib/auth.ts`, `lib/admin/common.ts`
+**Done when**: staff ativo de qualquer perfil; `dbFailure` traduz 42501, CK002, CK003, CK004.
+
+### T6: Consultas e actions
+**Where**: `lib/admin/stock.ts`, `app/admin/(panel)/estoque/actions.ts`
+**Done when**: `getStockGrid`, `listMovements` (filtros, `limit + 1`); `adjustStock`, `setStock`, `countStock` devolvem a quantidade do banco; erros do Supabase nunca engolidos.
+
+---
+
+## Fase 3 · Telas
+
+### T7: `StockRow`
+**Where**: `components/admin/stock/stock-row.tsx`
+**Done when**: +/−/Definir/Esgotar; delta pendente somado na tela; valor final vem do banco; erro volta ao confirmado com mensagem; alvos ≥ 44 px.
+
+### T8: Página da grade
+**Where**: `app/admin/(panel)/estoque/page.tsx`
+**Done when**: atendente fixo na própria loja; admin com seletor e "Todas as lojas" (tabela só leitura); busca no cliente; grupo "Fora do site" recolhido (admin).
+
+### T9: Contagem [P]
+**Where**: `app/admin/(panel)/estoque/contagem/page.tsx`, `components/admin/stock/count-form.tsx`
+**Done when**: campos pré-preenchidos; eco em erro; resumo "N itens atualizados"; Cancelar volta sem gravar.
+
+### T10: Histórico [P]
+**Where**: `app/admin/(panel)/estoque/historico/page.tsx`
+**Done when**: filtros produto/loja/período; data em Campo Grande; +N/−N, "ficou com", motivo, quem; "Carregar mais".
+
+### T11: Menu e início do atendente
+**Where**: `app/admin/(panel)/layout.tsx`, `app/admin/(panel)/page.tsx`
+**Done when**: "Estoque" nos dois menus; início do atendente com atalho para o estoque da loja.
+
+---
+
+## Fase 4 · Integração
+
+### T12: Testes de integração de estoque
+**Where**: `tests/integration/stock.test.ts`
+**Done when**: 20 incrementos paralelos = +20; soma dos movimentos = quantidade em todas as linhas; atendente da Loja 2 não ajusta nem lê a Loja 1; `set_stock(0)` → `available = false` na view; `count_stock` atômico; valores originais restaurados no fim (com movimentos de volta, sem apagar histórico).
+
+### T13: Validação completa
+**What**: lint, typecheck, test, test:integration, build.
+
+### T14: Navegador (360 px)
+**What**: esgotar Fatia Karen na Loja 1 → "Esgotado" no `/cardapio?loja=estiva`; contagem de 3 itens → 3 movimentos no histórico; atendente só vê a própria loja; restaurar valores e remover usuários de QA.
+
+### T15: Commit, PR, preview
+**What**: PR da `feat/03-stock` (base `feat/02-catalog-panel`); aceite no preview; ROADMAP/STATE.

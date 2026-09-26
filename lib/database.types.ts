@@ -304,6 +304,8 @@ export type Database = {
           reason: Database["public"]["Enums"]["stock_reason"];
           order_id: string | null;
           user_id: string | null;
+          quantity_after: number | null;
+          actor_name: string | null;
           created_at: string;
         };
         Insert: {
@@ -314,6 +316,8 @@ export type Database = {
           reason: Database["public"]["Enums"]["stock_reason"];
           order_id?: string | null;
           user_id?: string | null;
+          quantity_after?: number | null;
+          actor_name?: string | null;
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["stock_movements"]["Insert"]>;
@@ -441,6 +445,9 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean };
       reorder: { Args: { p_table: string; p_ids: string[] }; Returns: undefined };
       set_product_addons: { Args: { p_product_id: string; p_addon_ids: string[] }; Returns: undefined };
+      adjust_stock: { Args: { p_product_id: string; p_store_id: string; p_delta: number }; Returns: number };
+      set_stock: { Args: { p_product_id: string; p_store_id: string; p_quantity: number }; Returns: number };
+      count_stock: { Args: { p_store_id: string; p_items: Json }; Returns: number };
       staff_store: { Args: never; Returns: string };
     };
     Enums: {

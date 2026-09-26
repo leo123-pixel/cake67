@@ -33,6 +33,7 @@ Cada feature = uma etapa do SPEC (seção 11). Uma por vez, com commit e deploy 
 **03 · Estoque** - PLANNED
 
 - Grade produto × loja, ajuste +/−/definir, "esgotar", histórico de movimentos
+- Contagem da manhã (vitrine inteira de uma vez) — AD-008
 - Aceite: zerar item mostra "Esgotado" no site em até 1 min
 
 **04 · Pedido** - PLANNED

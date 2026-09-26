@@ -43,7 +43,7 @@ Cada feature = uma etapa do SPEC (seção 11). Uma por vez, com commit e deploy 
 - Limites anti-abuso, CPF/CNPJ opcional para nota, `/privacidade` provisória (AD-009)
 - Aceite: disputa pela última unidade, só um vence; pedido não confirmado devolve estoque
 
-**05 · Operação** - PLANNED
+**05 · Operação** - IN PROGRESS (verificado em localhost em 2026-09-26; falta aceite no preview)
 
 - Lista/detalhe de pedidos, status, cancelar com motivo, WhatsApp do cliente, comanda
 - Dashboard com alerta sonoro (Realtime)

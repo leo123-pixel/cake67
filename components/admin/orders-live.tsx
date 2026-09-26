@@ -56,11 +56,13 @@ export function OrdersLive() {
       refreshTimer.current = window.setTimeout(() => router.refresh(), REFRESH_DELAY_MS);
     };
 
+    const unseenTitle = () => `(${unseen.current}) Pedidos novos · Cake 67`;
+
     const onNewOrder = () => {
       if (document.hidden) {
         if (unseen.current === 0) baseTitle.current = document.title;
         unseen.current += 1;
-        document.title = `(${unseen.current}) Pedidos novos · Cake 67`;
+        document.title = unseenTitle();
       }
       const now = Date.now();
       if (audio.current && readSoundPreference() && now - lastSound.current > SOUND_GAP_MS) {
@@ -101,9 +103,20 @@ export function OrdersLive() {
     };
     document.addEventListener("visibilitychange", onVisible);
 
+    // router.refresh() re-renders metadata and resets the title; keep the
+    // unseen count while the tab is in the background.
+    const titleObserver = new MutationObserver(() => {
+      if (document.hidden && unseen.current > 0 && document.title !== unseenTitle()) {
+        baseTitle.current = document.title;
+        document.title = unseenTitle();
+      }
+    });
+    titleObserver.observe(document.head, { subtree: true, childList: true, characterData: true });
+
     return () => {
       cancelled = true;
       window.clearTimeout(refreshTimer.current);
+      titleObserver.disconnect();
       document.removeEventListener("visibilitychange", onVisible);
       if (channel) void supabase.removeChannel(channel);
     };

@@ -1,7 +1,7 @@
 # State
 
 **Last Updated:** 2026-09-26
-**Current Work:** 05 · Operação — Tasks (aguardando aprovação; spec e design aprovados 2026-09-26). PRs #1 → #2 → #3 → #4 aguardando merge, nessa ordem.
+**Current Work:** 05 · Operação — implementada e verificada em localhost; PR e preview em andamento. PRs #1 → #2 → #3 → #4 aguardando merge, nessa ordem.
 
 ---
 
@@ -188,6 +188,21 @@ Leonardo desligou "Allow new users to sign up" no painel.
 
 **Problem:** mensagem de commit começou com BOM invisível.
 **Solution:** escrever mensagens de commit com a ferramenta Write (UTF-8 sem BOM) e `git commit -F`.
+
+### L-014: Realtime confirma a inscrição antes de transmitir
+
+**Problem:** o teste de Realtime não recebia o INSERT feito logo após `SUBSCRIBED`, embora `orders` estivesse na publicação.
+**Solution:** `realtime.setAuth(token)` antes de assinar (senão o RLS avalia como anon) e, em teste, esperar ~2 s depois de `SUBSCRIBED`. O painel fica conectado o tempo todo e não precisa disso.
+
+### L-015: `router.refresh()` reescreve o título da aba
+
+**Problem:** o contador "(n) Pedidos novos" sumia no refresh seguinte ao alerta.
+**Solution:** `MutationObserver` no `<head>` reaplica o título enquanto a aba está oculta com pedidos não vistos.
+
+### L-016: Trigger que usa `auth.uid()` herda quem disparou a função
+
+**Problem:** `expire_orders` roda também quando alguém abre o painel, e a expiração saía no histórico com o nome dessa pessoa.
+**Solution:** status `expirado` sempre registra "Sistema", independente da sessão.
 
 ### L-003: Commit no PowerShell 5.1
 

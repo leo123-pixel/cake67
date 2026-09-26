@@ -26,6 +26,8 @@ Cada feature = uma etapa do SPEC (seção 11). Uma por vez, com commit e deploy 
 
 - Login (e-mail/senha, sem cadastro público)
 - Produtos com fotos (compressão WebP, ordenar), categorias, lojas e horários, destaques
+- Usuários da equipe e adicionais de bolo (AD-006)
+- Produto com preço a definir fica fora do site
 - Aceite: produto criado no painel aparece no site sem deploy
 
 **03 · Estoque** - PLANNED

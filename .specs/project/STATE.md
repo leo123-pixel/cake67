@@ -1,11 +1,25 @@
 # State
 
 **Last Updated:** 2026-09-26
-**Current Work:** 01 · Base concluída (PR #1 aguardando merge do Leonardo). Próximo: 02 · Painel de catálogo — Specify
+**Current Work:** 02 · Painel de catálogo — Tasks (aguardando aprovação; spec e design aprovados 2026-09-26). 01 concluída, PR #1 aguardando merge.
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-007: Convite e nova senha por link, sem e-mail (2026-09-26)
+
+**Decision:** `auth.admin.generateLink` gera link de uso único para `/auth/confirm?token_hash=…`; o painel mostra Copiar / Enviar pelo WhatsApp. "Esqueci minha senha" orienta a pedir link ao admin. Primeiro link do Leonardo via `npm run admin:link`.
+**Reason:** SMTP do Supabase Free só entrega para a equipe da org e 2/h.
+**Trade-off:** Sem autoatendimento de senha até ter SMTP próprio.
+**Impact:** Antes do lançamento (M2), avaliar Resend/SMTP próprio; `/auth/confirm` já serve para links por e-mail.
+
+### AD-006: Escopo extra da etapa 02 (2026-09-26)
+
+**Decision:** Etapa 02 inclui tela de Usuários (convite/perfil/loja/desativar) e tela de Adicionais de bolo. Produto com `price_pending = true` não aparece no site.
+**Reason:** Usuários e adicionais estão no SPEC §8/§4 sem etapa definida; login já usa convite e etapa 05 precisa de atendente real. Esconder preço pendente evita pedido com valor ilustrativo.
+**Trade-off:** Etapa 02 maior.
+**Impact:** Regra de `price_pending` aplicada no RLS público e na view de disponibilidade, não só na UI.
 
 ### AD-005: Bebidas e preços pendentes entram pelo painel (2026-09-26)
 

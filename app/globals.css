@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+/* Tokens do protótipo aprovado (prototipo/index.html). */
+@theme {
+  --color-olive: #5f6340;
+  --color-olive-dark: #474b2f;
+  --color-olive-deep: #383b24;
+  --color-moss: #7a8238;
+  --color-peach: #f1c8a8;
+  --color-peach-light: #f8e3d2;
+  --color-linen: #fbf6ef;
+  --color-cocoa: #3e2b20;
+  --color-cocoa-soft: #6e5646;
+  --color-raspberry: #b4465a;
+
+  --font-display: var(--font-marcellus), "Optima", "Candara", Georgia, serif;
+  --font-sans: var(--font-montserrat), system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+
+  body {
+    @apply bg-olive text-linen font-sans antialiased;
+    font-size: 15.5px;
+    line-height: 1.6;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display font-normal;
+    line-height: 1.05;
+    text-wrap: balance;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-peach);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+}

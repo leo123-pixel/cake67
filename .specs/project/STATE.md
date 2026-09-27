@@ -1,7 +1,7 @@
 # State
 
-**Last Updated:** 2026-09-26
-**Current Work:** 06 · Relatório e acabamento — Tasks (aguardando aprovação; spec e design aprovados 2026-09-26). Branch `feat/06-report-finish` a partir de `feat/05-operations`. PRs #1 → #2 → #3 → #4 → #5 aguardando merge, nessa ordem.
+**Last Updated:** 2026-09-27
+**Current Work:** M1 · MVP concluído (etapas 01–06 verificadas em localhost e preview). PRs #1 → #2 → #3 → #4 → #5 → #6 aguardando merge, nessa ordem. Próximo: M2 · Lançamento (pendências da cliente, hospedagem e domínio), quando o Leonardo pedir.
 
 ---
 
@@ -123,7 +123,7 @@ Leonardo desligou "Allow new users to sign up" no painel.
 **Discovered:** 2026-09-25
 **Impact:** Seed usa valores provisórios (WhatsApp da Loja 2, preços por kg, kits, cento, antecedência).
 **Workaround:** Marcar como provisório no seed e no painel.
-**Resolution:** Leonardo confirma com a cliente antes do M2.
+**Resolution:** Leonardo confirma com a cliente antes do M2. Inclui revisar e marcar a política de privacidade (rascunho da etapa 06) e decidir se o pêssego sobre oliva do protótipo (contraste 4,05:1, abaixo de 4,5 para texto pequeno) fica ou ganha um tom mais claro.
 
 ---
 
@@ -210,6 +210,26 @@ Leonardo desligou "Allow new users to sign up" no painel.
 
 **Problem:** `expire_orders` roda também quando alguém abre o painel, e a expiração saía no histórico com o nome dessa pessoa.
 **Solution:** status `expirado` sempre registra "Sistema", independente da sessão.
+
+### L-017: `fieldset` não encolhe sozinho
+
+**Problem:** a contagem de estoque estourava 360 px mesmo com `truncate` no nome.
+**Solution:** `fieldset { min-width: 0 }` na base do CSS (o navegador dá `min-inline-size: min-content` ao fieldset).
+
+### L-018: Textarea envia quebras de linha como CRLF
+
+**Problem:** o modelo da mensagem salvo pelo painel ia com `\r\n` para o banco e para o link do WhatsApp.
+**Solution:** normalizar para `\n` no schema Zod de todo campo multilinha.
+
+### L-019: `next build` e `next dev` dividem a pasta `.next`
+
+**Problem:** rodar o build de produção com o dev aberto quebrou o dev (ENOENT em manifestos).
+**Solution:** parar o dev antes de `build`/`start`, apagar `.next` e reiniciar. Medir Lighthouse no build local (o preview exige login da Vercel); `robots.ts` é gerado no build, então usar `VERCEL_ENV=production` só para essa medição.
+
+### L-020: Emulação de viewport do painel não reduz `innerWidth`
+
+**Problem:** o viewport de 360 px do Browser pane relatava 527 px.
+**Solution:** medir em 360 px com um `<iframe>` de 360 px da mesma origem (rolagem horizontal e alvos < 44 px por script).
 
 ### L-003: Commit no PowerShell 5.1
 

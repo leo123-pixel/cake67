@@ -1,7 +1,21 @@
 # 06 · Relatório e acabamento — Tasks
 
 **Design**: `.specs/features/06-report-finish/design.md`
-**Status**: Draft
+**Status**: Done (2026-09-27) — aceite verificado em localhost e preview; PR #6 aguardando merge
+
+## Progress
+
+| Tarefas | Status | Notas |
+|---|---|---|
+| T1–T3 | ✅ `f29b171` | PGlite: 147 checagens (relatório com 23h30 local no dia certo, bolo kg conta 1 e soma kg, produto apagado pelo nome guardado, 42501/CK011; checks de `settings`). Rascunho da política como `default` da coluna (um lugar só; seed herda) |
+| T4–T8 | ✅ `7050907` | 42 testes; validadores ficaram em `lib/validators/settings.ts` (pasta existente) |
+| T9–T14 | ✅ `060a70f` | "Confirmado por" vem do histórico (`order_events`); CSV com período exato na URL |
+| T15–T19 | ✅ `e24b15d` | 360 px: menu do site em linha própria no celular (carrinho ficava fora da tela); `fieldset { min-width: 0 }` (contagem estourava 386 px); alvos de 44 px (Adicionar, loja, categorias, voltar, contadores, setas, alerta sonoro). Títulos de produto no cardápio seguem menores (a foto também leva ao produto) |
+| T20 | ✅ `ac3aa89` | `report.test.ts`: totais, por loja e mais vendidos batem com a conta; atendente 42501 e sem `update` em `settings`; integração 56/56 |
+| T21 | ✅ | lint, typecheck, 161 unit, 56 integração, build |
+| T22 | ✅ | Lighthouse mobile no build local de produção (desempenho/acessibilidade/boas práticas/SEO): home 92/95/100/100, cardápio 93/96/100/100, encomendas 97/100/100/100, produto 97/96/100/100. Contraste corrigido (esgotado esmaece só a foto; descrições mais opacas). Resta o pêssego sobre oliva do protótipo (4,05:1) — decisão do Leonardo |
+| T23 | ✅ | Relatório (hoje, por loja, vazio, período inválido); CSVs com BOM, acentos, CPF e "Confirmado por"; configurações: erro ao vivo, servidor recusa sem `{itens}` mantendo o texto, modelo novo na página do pedido, "revisado" tira selo e aviso; quebras de linha do textarea vinham como CRLF → normalizadas; atendente sem menu, "Sem permissão" e CSV 403; 404. Dados restaurados (modelo e política idênticos aos originais, estoque 10/10, 0 pedidos, sem usuários QA) |
+| T24 | ✅ | PR https://github.com/leo123-pixel/cake67/pull/6 (base `feat/05-operations`); preview `cake67-ecjyot3lu-…` Ready: home com JSON-LD, `robots.txt` bloqueando (preview), `sitemap.xml` com 24 URLs, 404 da marca, privacidade com selo, relatório/CSV sem sessão redirecionam |
 
 Branch: `feat/06-report-finish`, a partir de `feat/05-operations` (PRs #1–#5 sem merge). Um commit por fase.
 

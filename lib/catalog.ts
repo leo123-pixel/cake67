@@ -2,7 +2,7 @@ import type { Tables } from "@/lib/database.types";
 import { productImageUrl } from "@/lib/images";
 import { createPublicClient } from "@/lib/supabase/public";
 
-export type Store = Pick<Tables<"stores">, "id" | "slug" | "name" | "address" | "phone" | "hours">;
+export type Store = Pick<Tables<"stores">, "id" | "slug" | "name" | "address" | "phone" | "whatsapp" | "hours">;
 
 export type MenuProduct = {
   id: string;
@@ -31,6 +31,7 @@ export type HomeHighlight = {
   imageUrl: string | null;
   ctaLabel: string | null;
   ctaHref: string | null;
+  productId: string | null;
 };
 
 type HighlightRow = Pick<
@@ -56,6 +57,7 @@ export function toHomeHighlights(rows: HighlightRow[]): HomeHighlight[] {
         imageUrl: path ? productImageUrl(path) : null,
         ctaLabel: row.cta_label,
         ctaHref: row.cta_href,
+        productId: row.product_id,
       };
     });
 }
@@ -80,7 +82,7 @@ export async function listStores(): Promise<Store[]> {
   const supabase = await createPublicClient();
   const { data, error } = await supabase
     .from("stores")
-    .select("id, slug, name, address, phone, hours")
+    .select("id, slug, name, address, phone, whatsapp, hours")
     .order("sort");
 
   if (error) throw new Error(`Could not load stores: ${error.message}`);

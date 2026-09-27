@@ -64,6 +64,7 @@ export function useCart() {
     remove: useCallback((key: string) => write(removeLine(read(), key)), []),
     setStore: useCallback((storeSlug: string) => write({ ...read(), storeSlug }), []),
     setPreferred: useCallback((preferred: CartPreference) => write({ ...read(), preferred }), []),
-    clear: useCallback(() => write({ ...read(), lines: [] }), []),
+    // After an order: keep the store, forget lines and the cake-builder preference.
+    clear: useCallback(() => write({ storeSlug: read().storeSlug, lines: [] }), []),
   };
 }

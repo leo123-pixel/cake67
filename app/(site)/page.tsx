@@ -1,60 +1,80 @@
-import Link from "next/link";
 import { HomeHighlights } from "@/components/site/home-highlights";
+import { Assistant } from "@/components/site/home/assistant";
+import { CakesShowcase } from "@/components/site/home/cakes-showcase";
+import { Hero, Intro, Marquee } from "@/components/site/home/hero";
+import { HomeBuilder } from "@/components/site/home/home-builder";
+import { HomeVitrine } from "@/components/site/home/home-vitrine";
+import { Cakelovers, StoresSection } from "@/components/site/home/stores-section";
 import { JsonLd } from "@/components/site/json-ld";
-import { listHomeHighlights, listStores } from "@/lib/catalog";
+import type { AssistantData } from "@/lib/assistant";
+import { listHomeHighlights, listStores, listVitrineMenu } from "@/lib/catalog";
+import { todayInCampoGrande } from "@/lib/datetime";
 import { siteUrl } from "@/lib/env";
+import { describeHours } from "@/lib/store-hours";
+import { listCakeShowcase, listMadeToOrder } from "@/lib/storefront";
 import { bakeryJsonLd } from "@/lib/structured-data";
 
+// The approved prototype home (prototipo/index.html) on real data (AD-012).
 export default async function HomePage() {
-  const [stores, highlights] = await Promise.all([listStores(), listHomeHighlights()]);
+  const [stores, highlights, showcase, madeToOrder] = await Promise.all([
+    listStores(),
+    listHomeHighlights(),
+    listCakeShowcase(),
+    listMadeToOrder(),
+  ]);
+  const menus = Object.fromEntries(
+    await Promise.all(stores.map(async (store) => [store.slug, await listVitrineMenu(store.id)] as const)),
+  );
+
+  const cakes = showcase.filter((cake) => cake.weightsKg.length > 0 && cake.formats.length > 0);
+  // The cake of the month shows up as a tag on the cakes; other highlights keep their cards.
+  const otherHighlights = highlights.filter((h) => !(h.slot === "bolo_do_mes" && h.productId));
+  const firstWhatsapp = stores[0]?.whatsapp ?? null;
+
+  const assistantData: AssistantData = {
+    stores: stores.map((store) => ({ name: store.name, address: store.address, hours: describeHours(store.hours) })),
+    vitrine: stores.map((store) => ({
+      storeName: store.name,
+      items: (menus[store.slug] ?? []).flatMap((category) =>
+        category.products.map((product) => ({
+          name: product.name,
+          category: category.name,
+          priceCents: product.priceCents,
+          available: product.available && product.availableQty > 0,
+        })),
+      ),
+    })),
+    cakes: cakes.map((cake) => ({
+      name: cake.name,
+      priceCents: cake.priceCents,
+      leadTimeHours: cake.leadTimeHours,
+      weightsKg: cake.weightsKg,
+      formats: cake.formats,
+    })),
+  };
 
   return (
     <>
-      <section className="mx-auto max-w-[1320px] px-4 py-20 sm:px-8 sm:py-28">
-        <p className="text-xs font-medium tracking-[0.32em] text-peach uppercase">
-          Doceria · Campo Grande · MS
-        </p>
-        <h1 className="mt-6 max-w-[16ch] text-5xl text-peach-light sm:text-7xl">
-          Bolos, fatias e docinhos <em className="text-peach">feitos pra celebrar.</em>
-        </h1>
-        <p className="mt-6 max-w-[52ch] text-linen/85">
-          Veja o que tem na vitrine de cada loja hoje e faça seu pedido.
-        </p>
-        <Link
-          href="/cardapio"
-          className="mt-10 inline-flex rounded-full bg-peach px-7 py-3.5 text-xs font-semibold tracking-[0.14em] text-cocoa uppercase transition hover:-translate-y-0.5"
-        >
-          Ver a vitrine de hoje
-        </Link>
-      </section>
-
       {stores.map((store) => (
         <JsonLd key={store.id} data={bakeryJsonLd(store, siteUrl())} />
       ))}
-      <HomeHighlights highlights={highlights} />
-
-      <section id="lojas" className="bg-linen text-cocoa">
-        <div className="mx-auto max-w-[1320px] px-4 py-20 sm:px-8">
-          <p className="text-xs font-medium tracking-[0.32em] text-raspberry uppercase">
-            Nossas lojas
-          </p>
-          <h2 className="mt-4 text-4xl text-olive sm:text-5xl">Passa pra um café.</h2>
-          <ul className="mt-10 grid gap-4 sm:grid-cols-2">
-            {stores.map((store) => (
-              <li key={store.id} className="rounded-2xl border border-cocoa/15 p-6">
-                <h3 className="text-2xl text-olive">{store.name}</h3>
-                <p className="mt-1 text-cocoa-soft">{store.address} · Campo Grande/MS</p>
-                <Link
-                  href={`/cardapio?loja=${store.slug}`}
-                  className="mt-5 inline-flex min-h-11 items-center rounded-full bg-olive px-6 text-xs font-semibold tracking-[0.14em] text-linen uppercase"
-                >
-                  Ver a vitrine
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
+      <Intro />
+      <Hero stores={stores} cakesHref={cakes.length > 0 ? "#encomendas" : "/encomendas"} />
+      <Marquee />
+      <HomeHighlights highlights={otherHighlights} />
+      <CakesShowcase cakes={cakes} />
+      {cakes.length > 0 && (
+        <HomeBuilder
+          cakes={cakes}
+          stores={stores.map(({ id, slug, name, address, whatsapp }) => ({ id, slug, name, address, whatsapp }))}
+          today={todayInCampoGrande()}
+          hasBulk={madeToOrder.some((product) => product.type !== "bolo_kg")}
+        />
+      )}
+      <HomeVitrine stores={stores.map(({ slug, address }) => ({ slug, address }))} menus={menus} />
+      <StoresSection stores={stores} />
+      <Cakelovers whatsapp={firstWhatsapp} />
+      <Assistant data={assistantData} whatsapp={firstWhatsapp} />
     </>
   );
 }

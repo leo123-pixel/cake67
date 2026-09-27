@@ -44,6 +44,64 @@ export type MadeToOrderProduct = {
   addons: Addon[];
 };
 
+export type ShowcaseCake = {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  // null while the price is pending: shown without price, ordered via WhatsApp (AD-012).
+  priceCents: number | null;
+  weightsKg: number[];
+  formats: string[];
+  leadTimeHours: number;
+  storeIds: string[];
+  featured: boolean;
+  cakeOfMonth: boolean;
+  imageUrl: string;
+  // Seed photos are AI-generated/watercolors from the prototype.
+  illustrativePhoto: boolean;
+  addons: Addon[];
+};
+
+type ShowcaseRow = {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  price_cents: number | null;
+  weights_kg: (number | string)[];
+  formats: string[];
+  lead_time_hours: number;
+  store_ids: string[];
+  featured: boolean;
+  cake_of_month: boolean;
+  image_path: string | null;
+  addons: { id: string; name: string; price_cents: number }[];
+};
+
+// Every active cake for the home, including pending prices (list_cake_showcase).
+export async function listCakeShowcase(): Promise<ShowcaseCake[]> {
+  const supabase = await createPublicClient();
+  const { data, error } = await supabase.rpc("list_cake_showcase");
+  if (error) throw new Error(`Could not load cakes: ${error.message}`);
+  return (data as unknown as ShowcaseRow[]).map((cake) => ({
+    id: cake.id,
+    slug: cake.slug,
+    name: cake.name,
+    description: cake.description,
+    priceCents: cake.price_cents,
+    weightsKg: cake.weights_kg.map(Number),
+    formats: cake.formats,
+    leadTimeHours: cake.lead_time_hours,
+    storeIds: cake.store_ids,
+    featured: cake.featured,
+    cakeOfMonth: cake.cake_of_month,
+    imageUrl: productImageUrl(cake.image_path),
+    illustrativePhoto: cake.image_path?.startsWith("seed/") ?? false,
+    addons: cake.addons.map((addon) => ({ id: addon.id, name: addon.name, priceCents: addon.price_cents })),
+  }));
+}
+
 // Cakes, cento and kits on sale (RLS hides inactive and pending-price ones).
 export async function listMadeToOrder(): Promise<MadeToOrderProduct[]> {
   const supabase = await createPublicClient();

@@ -29,8 +29,11 @@ export function CheckoutForm({ stores }: { stores: CheckoutStore[] }) {
   const { cart, clear } = useCart();
   const store = resolveStore(stores, cart.storeSlug);
   const { quote, loading } = useQuote(store?.id ?? null, cart);
-  const [fulfillment, setFulfillment] = useState<"retirada" | "entrega">("retirada");
-  const [day, setDay] = useState("");
+  // Until the customer changes them, start from what the home cake builder picked.
+  const [chosenFulfillment, setFulfillment] = useState<"retirada" | "entrega" | null>(null);
+  const [chosenDay, setDay] = useState("");
+  const fulfillment = chosenFulfillment ?? cart.preferred?.fulfillment ?? "retirada";
+  const day = chosenDay || cart.preferred?.day || "";
   const [slot, setSlot] = useState("");
   const [errors, setErrors] = useState<FieldErrors>({});
   const [message, setMessage] = useState<string | null>(null);

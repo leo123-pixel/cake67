@@ -1,11 +1,18 @@
 # State
 
 **Last Updated:** 2026-09-27
-**Current Work:** M1 · MVP concluído (etapas 01–06 verificadas em localhost e preview). PRs #1 → #2 → #3 → #4 → #5 → #6 aguardando merge, nessa ordem. Próximo: M2 · Lançamento (pendências da cliente, hospedagem e domínio), quando o Leonardo pedir.
+**Current Work:** 07 · Home igual ao protótipo concluída em localhost; PR #7. Branch `feat/07-home-prototype` a partir de `feat/06-report-finish`. Etapas 01–06 concluídas. PRs #1 → #2 → #3 → #4 → #5 → #6 → #7 aguardando merge, nessa ordem. Próximo: M2 · Lançamento (pendências da cliente, hospedagem e domínio), quando o Leonardo pedir.
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-012: Home igual ao protótipo em produção (2026-09-27)
+
+**Decision:** A home reproduz o `prototipo/index.html` (o que está em `cake67.vercel.app`) com dados reais. Bolos com preço a definir **aparecem** na home e no configurador (exceção de exibição à AD-006), sem preço e com "Pedir pelo WhatsApp"; continuam fora do pedido pelo site. Cakelovers mantém o visual e "Quero participar" abre o WhatsApp (sem coletar e-mail). O assistente fica, com respostas por regras a partir do banco e saída para o WhatsApp. Texto do hero diz que o pagamento é combinado no WhatsApp; "15 anos de marca" e "89,7 mil no Instagram" ficam; sai "Protótipo Onbind".
+**Reason:** Pedido do Leonardo: a home do preview estava diferente da aprovada em produção.
+**Trade-off:** Mostrar bolo sem preço exige leitura pública sem expor `price_cents` (função no banco, não relaxar o RLS).
+**Impact:** Nova etapa 07; cabeçalho e rodapé do site passam a ser os do protótipo.
 
 ### AD-011: Relatório e configurações (2026-09-26)
 

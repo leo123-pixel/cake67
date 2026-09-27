@@ -9,6 +9,7 @@ import {
   setQty,
   type Cart,
   type CartLine,
+  type CartPreference,
 } from "@/lib/cart/cart";
 
 const STORAGE_KEY = "cake67.cart.v1";
@@ -62,6 +63,8 @@ export function useCart() {
     setQty: useCallback((key: string, qty: number) => write(setQty(read(), key, qty)), []),
     remove: useCallback((key: string) => write(removeLine(read(), key)), []),
     setStore: useCallback((storeSlug: string) => write({ ...read(), storeSlug }), []),
-    clear: useCallback(() => write({ ...read(), lines: [] }), []),
+    setPreferred: useCallback((preferred: CartPreference) => write({ ...read(), preferred }), []),
+    // After an order: keep the store, forget lines and the cake-builder preference.
+    clear: useCallback(() => write({ storeSlug: read().storeSlug, lines: [] }), []),
   };
 }

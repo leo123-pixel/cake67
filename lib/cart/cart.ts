@@ -25,7 +25,10 @@ export type CartLine = {
   stepQty?: number;
 };
 
-export type Cart = { storeSlug: string | null; lines: CartLine[] };
+// What the home cake builder picked; checkout starts from it and validates again.
+export type CartPreference = { fulfillment: "retirada" | "entrega"; day: string };
+
+export type Cart = { storeSlug: string | null; lines: CartLine[]; preferred?: CartPreference };
 
 export const EMPTY_CART: Cart = { storeSlug: null, lines: [] };
 export const MAX_VITRINE_QTY = 10;
@@ -84,6 +87,13 @@ export function toOrderItems(cart: Cart): OrderItemInput[] {
   return cart.lines.map((l) => ({ product_id: l.productId, qty: l.qty, ...l.options }));
 }
 
+export function parsePreference(value: unknown): CartPreference | undefined {
+  const pref = value as Partial<CartPreference> | undefined;
+  if (pref?.fulfillment !== "retirada" && pref?.fulfillment !== "entrega") return undefined;
+  if (typeof pref.day !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(pref.day)) return undefined;
+  return { fulfillment: pref.fulfillment, day: pref.day };
+}
+
 // Defensive parse of what was stored in localStorage.
 export function parseStoredCart(raw: string | null): Cart {
   if (!raw) return EMPTY_CART;
@@ -94,7 +104,12 @@ export function parseStoredCart(raw: string | null): Cart {
       (l): l is CartLine =>
         typeof l?.key === "string" && typeof l.productId === "string" && Number.isInteger(l.qty) && l.qty > 0,
     );
-    return { storeSlug: typeof value.storeSlug === "string" ? value.storeSlug : null, lines: lines.slice(0, MAX_LINES) };
+    const preferred = parsePreference(value.preferred);
+    return {
+      storeSlug: typeof value.storeSlug === "string" ? value.storeSlug : null,
+      lines: lines.slice(0, MAX_LINES),
+      ...(preferred ? { preferred } : {}),
+    };
   } catch {
     return EMPTY_CART;
   }

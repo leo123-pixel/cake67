@@ -504,6 +504,7 @@ export type Database = {
         Returns: undefined;
       };
       reactivate_order: { Args: { p_order_id: string }; Returns: undefined };
+      list_cake_showcase: { Args: never; Returns: Json };
       report_summary: { Args: { p_from: string; p_to: string; p_store_id?: string | null }; Returns: Json };
       staff_store: { Args: never; Returns: string };
     };

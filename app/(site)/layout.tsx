@@ -1,52 +1,76 @@
 import Link from "next/link";
 import { CartButton } from "@/components/site/cart-button";
-import { Logo } from "@/components/site/logo";
+import { Toast } from "@/components/site/toast";
+import { listStores } from "@/lib/catalog";
+import "./prototype.css";
 
-export default function SiteLayout({ children }: { children: React.ReactNode }) {
+// Header and footer of the approved prototype (AD-012). Section links point
+// at the home, so they work from every page.
+const SECTIONS = [
+  { href: "/#bolos", label: "Bolos" },
+  { href: "/#encomendas", label: "Encomendas" },
+  { href: "/#vitrine", label: "Vitrine" },
+  { href: "/#lojas", label: "Lojas" },
+  { href: "/#cakelovers", label: "Cakelovers" },
+];
+
+export default async function SiteLayout({ children }: { children: React.ReactNode }) {
+  const stores = await listStores();
+
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-peach/20 bg-olive/90 backdrop-blur">
-        {/* Phones: logo and cart on top, the menu on its own row (fits 360 px). */}
-        <div className="mx-auto flex max-w-[1320px] flex-wrap items-center gap-x-4 px-4 pt-3 sm:flex-nowrap sm:gap-6 sm:px-8 sm:py-3">
-          <Link href="/" aria-label="Cake 67, início" className="shrink-0 text-peach">
-            <Logo />
+      <header className="ck-nav">
+        <div className="ck-wrap">
+          <Link className="ck-brand" href="/" aria-label="Cake 67, início">
+            <span className="ck-mark" />
+            <span className="ck-word" />
           </Link>
-          <nav
-            aria-label="Principal"
-            className="order-last flex w-full items-center justify-between text-xs font-medium tracking-[0.16em] uppercase sm:order-none sm:ml-auto sm:w-auto sm:justify-start sm:gap-5"
-          >
-            <Link href="/cardapio" className="inline-flex min-h-11 items-center hover:text-peach">
-              Cardápio
-            </Link>
-            <Link href="/encomendas" className="inline-flex min-h-11 items-center hover:text-peach">
-              Encomendas
-            </Link>
-            <Link href="/#lojas" className="inline-flex min-h-11 items-center hover:text-peach">
-              Lojas
-            </Link>
+          <nav className="ck-links" aria-label="Seções">
+            {SECTIONS.map((section) => (
+              <a key={section.href} href={section.href}>
+                {section.label}
+              </a>
+            ))}
           </nav>
-          <div className="ml-auto sm:ml-0">
-            <CartButton />
-          </div>
+          <CartButton />
         </div>
       </header>
 
-      <main>{children}</main>
+      <main id="top">{children}</main>
 
-      <footer className="bg-olive-deep">
-        <div className="mx-auto flex max-w-[1320px] flex-col gap-4 px-4 py-12 text-sm sm:flex-row sm:items-end sm:justify-between sm:px-8">
-          <div className="space-y-3 text-peach">
-            <Logo />
-            <p className="text-linen/80">Doceria em Campo Grande/MS · Instagram @cake67cg</p>
+      <footer className="ck-footer">
+        <div className="ck-wrap">
+          <div className="ck-logo">
+            <span className="ck-mark" />
+            <span className="ck-word" />
+            <p style={{ fontSize: ".88rem", opacity: 0.85, maxWidth: "30ch" }}>Doceria em Campo Grande/MS. Instagram @cake67cg</p>
           </div>
-          <div className="space-y-1 text-linen/60 sm:text-right">
-            <Link href="/privacidade" className="underline hover:text-peach">
-              Privacidade
-            </Link>
-            <p>© {new Date().getFullYear()} Cake 67 Confeitaria e Doceria</p>
+          <div>
+            <h4>Navegue</h4>
+            <nav aria-label="Rodapé">
+              {SECTIONS.map((section) => (
+                <a key={section.href} href={section.href}>
+                  {section.label}
+                </a>
+              ))}
+            </nav>
+          </div>
+          <div>
+            <h4>Lojas</h4>
+            <nav aria-label="Endereços das lojas">
+              {stores.map((store) => (
+                <span key={store.id}>{store.address}</span>
+              ))}
+            </nav>
+          </div>
+          <div className="ck-legal">
+            <span>© {new Date().getFullYear()} Cake 67 Confeitaria e Doceria</span>
+            <Link href="/privacidade">Política de privacidade</Link>
           </div>
         </div>
       </footer>
+
+      <Toast />
     </>
   );
 }

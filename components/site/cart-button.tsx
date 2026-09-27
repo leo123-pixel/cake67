@@ -1,23 +1,37 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useRef } from "react";
 import { countItems } from "@/lib/cart/cart";
+import { CART_BUTTON_ID } from "@/lib/site-events";
 import { useCart } from "./use-cart";
 
 export function CartButton() {
   const { cart } = useCart();
   const count = countItems(cart);
+  const button = useRef<HTMLAnchorElement>(null);
+  const previous = useRef(count);
+
+  // Pulses when something is added, as in the prototype.
+  useEffect(() => {
+    const element = button.current;
+    if (element && count > previous.current) {
+      element.classList.remove("ck-bump");
+      void element.offsetWidth;
+      element.classList.add("ck-bump");
+    }
+    previous.current = count;
+  }, [count]);
 
   return (
     <Link
+      ref={button}
+      id={CART_BUTTON_ID}
       href="/carrinho"
-      aria-label={count ? `Carrinho, ${count} itens` : "Carrinho vazio"}
-      className="inline-flex min-h-11 items-center gap-2 rounded-full border border-peach/40 px-4 text-xs font-semibold tracking-[0.14em] uppercase hover:border-peach"
+      aria-label={count ? `Pedido, ${count} itens` : "Pedido vazio"}
+      className="ck-cart"
     >
-      Pedido
-      <span className="grid min-w-6 place-items-center rounded-full bg-peach px-1.5 py-0.5 text-cocoa tabular-nums">
-        {count}
-      </span>
+      Pedido <span className="ck-n">{count}</span>
     </Link>
   );
 }

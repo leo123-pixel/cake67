@@ -15,8 +15,10 @@ const optionalDateTime = z
 
 export const HIGHLIGHT_IMAGE_PATH = /^highlights\/[0-9a-f-]{36}\.webp$/;
 
+// A site path or an https link. "//x" and "/\x" are rejected: browsers treat
+// both as protocol-relative links to another site.
 export function isAllowedHref(href: string): boolean {
-  return /^\/(?!\/)/.test(href) || /^https:\/\/[^\s]+$/.test(href);
+  return /^\/(?![/\\])[^\s]*$/.test(href) || /^https:\/\/[^\s\\]+$/.test(href);
 }
 
 export const highlightSchema = z

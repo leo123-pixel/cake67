@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
 import { z } from "zod";
 import { dbFailure } from "@/lib/admin/common";
 import { findAuthUserByEmail } from "@/lib/admin/staff";
@@ -12,10 +11,12 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { invalid, readForm, type ActionState } from "@/lib/validators/common";
 import { staffInviteSchema, staffUpdateSchema } from "@/lib/validators/staff";
 
-// Links point at the deployment the admin is using (preview or production).
-// Next.js already rejects Server Actions whose Origin does not match the host.
-async function siteOrigin() {
-  return (await headers()).get("origin") ?? publicEnv().siteUrl;
+// Links point at the deployment the admin is using: the site URL in
+// production and locally, this deployment's own URL on a Vercel preview.
+// Only trusted environment values, never a request header.
+function siteOrigin() {
+  if (process.env.VERCEL_ENV === "preview" && process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return publicEnv().siteUrl;
 }
 
 export async function inviteMember(_prev: ActionState, formData: FormData): Promise<ActionState> {
@@ -42,7 +43,7 @@ export async function inviteMember(_prev: ActionState, formData: FormData): Prom
   let userId: string;
   let link: string;
   try {
-    ({ userId, link } = await createAuthLink(admin, email, existing ? "recovery" : "invite", await siteOrigin()));
+    ({ userId, link } = await createAuthLink(admin, email, existing ? "recovery" : "invite", siteOrigin()));
   } catch (error) {
     console.error(error);
     return { ok: false, message: "Não foi possível gerar o convite. Tente de novo.", values };
@@ -72,7 +73,7 @@ export async function generatePasswordLink(userId: string): Promise<ActionState>
   if (error || !data.user.email) return { ok: false, message: "Usuário não encontrado." };
 
   try {
-    const { link } = await createAuthLink(admin, data.user.email, "recovery", await siteOrigin());
+    const { link } = await createAuthLink(admin, data.user.email, "recovery", siteOrigin());
     return { ok: true, link };
   } catch (failure) {
     console.error(failure);

@@ -47,7 +47,7 @@ export default async function StockHistoryPage({ searchParams }: Props) {
   return (
     <section className="space-y-6">
       <header className="space-y-1">
-        <Link href={`/admin/estoque${store && !all ? `?loja=${store.slug}` : ""}`} className="text-sm text-olive underline">
+        <Link href={`/admin/estoque${store && !all ? `?loja=${store.slug}` : ""}`} className="inline-flex min-h-11 items-center text-sm text-olive underline">
           ← Estoque
         </Link>
         <h1 className="text-3xl text-olive">Histórico do estoque</h1>

@@ -2,11 +2,18 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BulkItemCard } from "@/components/site/bulk-item-card";
 import { CakeConfigurator } from "@/components/site/cake-configurator";
+import { OG_DEFAULTS } from "@/lib/seo";
 import { listMadeToOrder } from "@/lib/storefront";
 
 export const metadata: Metadata = {
   title: "Encomendas",
   description: "Monte seu bolo por kg, peça salgados e doces por cento ou kits festa da Cake 67.",
+  openGraph: {
+    ...OG_DEFAULTS,
+    title: "Encomendas · Cake 67",
+    description: "Monte seu bolo por kg, peça salgados e doces por cento ou kits festa da Cake 67.",
+    url: "/encomendas",
+  },
 };
 
 export default async function MadeToOrderPage() {

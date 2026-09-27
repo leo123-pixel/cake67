@@ -65,7 +65,7 @@ export function StockRow({ productId, storeId, name, note, quantity, historyHref
         <div className="min-w-0">
           <p className="truncate font-medium">{name}</p>
           {note && <p className="text-xs text-cocoa-soft">{note}</p>}
-          <Link href={historyHref} className="text-xs text-olive underline">
+          <Link href={historyHref} className="-my-3.5 inline-block py-3.5 text-xs text-olive underline">
             Histórico
           </Link>
         </div>

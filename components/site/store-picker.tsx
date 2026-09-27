@@ -13,7 +13,7 @@ export function StorePicker({ stores, current }: { stores: Store[]; current: str
         name="loja"
         defaultValue={current}
         onChange={(event) => event.currentTarget.form?.requestSubmit()}
-        className="rounded-full border border-peach/30 bg-olive-dark px-4 py-2 text-linen"
+        className="min-h-11 rounded-full border border-peach/30 bg-olive-dark px-4 py-2 text-linen"
       >
         {stores.map((store) => (
           <option key={store.id} value={store.slug}>

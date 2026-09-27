@@ -13,7 +13,7 @@ export default async function NewProductPage() {
   return (
     <section className="space-y-6">
       <header className="space-y-1">
-        <Link href="/admin/produtos" className="text-sm text-olive underline">
+        <Link href="/admin/produtos" className="inline-flex min-h-11 items-center text-sm text-olive underline">
           ← Produtos
         </Link>
         <h1 className="text-3xl text-olive">Novo produto</h1>

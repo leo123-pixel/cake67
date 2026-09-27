@@ -82,7 +82,11 @@ export default async function PanelHome({ searchParams }: Props) {
         <h2 className="text-xl text-olive">Feitos hoje</h2>
         <div className="flex flex-wrap gap-2">
           {COUNT_ORDER.map((status) => (
-            <Link key={status} href={`/admin/pedidos?status=${status}${store ? `&loja=${store.slug}` : ""}`}>
+            <Link
+              key={status}
+              href={`/admin/pedidos?status=${status}${store ? `&loja=${store.slug}` : ""}`}
+              className="inline-flex min-h-11 items-center"
+            >
               <StatusBadge tone={STATUS_TONES[status]}>
                 {STATUS_LABELS[status]}: {counts.get(status) ?? 0}
               </StatusBadge>

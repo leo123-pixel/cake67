@@ -3,14 +3,32 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddToCart } from "@/components/site/add-to-cart";
+import { JsonLd } from "@/components/site/json-ld";
+import { siteUrl } from "@/lib/env";
 import { formatBRL } from "@/lib/money";
+import { OG_DEFAULTS } from "@/lib/seo";
 import { getProductPage } from "@/lib/storefront";
+import { productJsonLd } from "@/lib/structured-data";
 
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const product = await getProductPage((await params).slug);
-  return product ? { title: product.name, description: product.description || undefined } : {};
+  if (!product) return {};
+  const description = product.description || `${product.name} da Cake 67, em Campo Grande (MS).`;
+  const cover = product.images[0];
+  return {
+    title: product.name,
+    description,
+    alternates: { canonical: `/produto/${product.slug}` },
+    openGraph: {
+      ...OG_DEFAULTS,
+      title: `${product.name} · Cake 67`,
+      description,
+      url: `/produto/${product.slug}`,
+      ...(cover ? { images: [{ url: cover.url, alt: cover.alt }] } : {}),
+    },
+  };
 }
 
 const UNIT = { vitrine: "", bolo_kg: " o kg", cento: " o cento", kit: "" } as const;
@@ -23,6 +41,7 @@ export default async function ProductPage({ params }: Props) {
 
   return (
     <div className="bg-linen text-cocoa">
+      <JsonLd data={productJsonLd(product, siteUrl())} />
       <section className="mx-auto grid max-w-[1100px] gap-8 px-4 py-12 sm:px-8 md:grid-cols-2">
         <div className="space-y-3">
           <div className="grid aspect-square place-items-center rounded-3xl bg-olive p-6">

@@ -158,7 +158,7 @@ export function OrdersLive() {
         type="button"
         onClick={toggleSound}
         aria-pressed={soundOn}
-        className="rounded-full border border-cocoa/20 bg-white px-4 py-2 text-sm shadow hover:border-olive aria-pressed:border-olive aria-pressed:bg-olive aria-pressed:text-linen"
+        className="min-h-11 rounded-full border border-cocoa/20 bg-white px-4 text-sm shadow hover:border-olive aria-pressed:border-olive aria-pressed:bg-olive aria-pressed:text-linen"
       >
         {soundOn ? "Alerta sonoro ativado" : "Ativar alerta sonoro"}
       </button>

@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { HomeHighlights } from "@/components/site/home-highlights";
+import { JsonLd } from "@/components/site/json-ld";
 import { listHomeHighlights, listStores } from "@/lib/catalog";
+import { siteUrl } from "@/lib/env";
+import { bakeryJsonLd } from "@/lib/structured-data";
 
 export default async function HomePage() {
   const [stores, highlights] = await Promise.all([listStores(), listHomeHighlights()]);
@@ -25,6 +28,9 @@ export default async function HomePage() {
         </Link>
       </section>
 
+      {stores.map((store) => (
+        <JsonLd key={store.id} data={bakeryJsonLd(store, siteUrl())} />
+      ))}
       <HomeHighlights highlights={highlights} />
 
       <section id="lojas" className="bg-linen text-cocoa">
@@ -40,7 +46,7 @@ export default async function HomePage() {
                 <p className="mt-1 text-cocoa-soft">{store.address} · Campo Grande/MS</p>
                 <Link
                   href={`/cardapio?loja=${store.slug}`}
-                  className="mt-5 inline-flex rounded-full bg-olive px-6 py-3 text-xs font-semibold tracking-[0.14em] text-linen uppercase"
+                  className="mt-5 inline-flex min-h-11 items-center rounded-full bg-olive px-6 text-xs font-semibold tracking-[0.14em] text-linen uppercase"
                 >
                   Ver a vitrine
                 </Link>

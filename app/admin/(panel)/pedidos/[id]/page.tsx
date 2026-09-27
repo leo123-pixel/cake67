@@ -33,7 +33,7 @@ export default async function OrderDetailPage({ params }: Props) {
   return (
     <section className="space-y-6">
       <header className="space-y-2">
-        <Link href="/admin/pedidos" className="text-sm text-olive underline">
+        <Link href="/admin/pedidos" className="inline-flex min-h-11 items-center text-sm text-olive underline">
           ← Pedidos
         </Link>
         <div className="flex flex-wrap items-center gap-3">

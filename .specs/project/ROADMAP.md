@@ -1,7 +1,7 @@
 # Roadmap
 
-**Current Milestone:** M1 · MVP
-**Status:** Complete (2026-09-27) — aguardando merge dos PRs #1–#6
+**Current Milestone:** M2 · Lançamento
+**Status:** In Progress — M1 (etapas 01–07) publicado em 2026-09-27
 
 Cada feature = uma etapa do SPEC (seção 11). Uma por vez, com commit e deploy de preview ao final.
 
@@ -70,7 +70,8 @@ Cada feature = uma etapa do SPEC (seção 11). Uma por vez, com commit e deploy 
 
 ### Features
 
-**Pendências da cliente resolvidas** - PLANNED (ver SPEC §12)
+**Publicação na `main`** - COMPLETE (2026-09-27: PRs #1–#7 mergeados; `cake67.vercel.app` com o sistema)
+**Pendências da cliente resolvidas** - PLANNED (ver SPEC §12 e B-002)
 **Hospedagem de produção (Vercel Pro ou conta da Cake 67) e domínio** - PLANNED
 
 ---

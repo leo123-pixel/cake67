@@ -1,7 +1,7 @@
 # State
 
 **Last Updated:** 2026-09-27
-**Current Work:** 07 · Home igual ao protótipo concluída em localhost; PR #7. Branch `feat/07-home-prototype` a partir de `feat/06-report-finish`. Etapas 01–06 concluídas. PRs #1 → #2 → #3 → #4 → #5 → #6 → #7 aguardando merge, nessa ordem. Próximo: M2 · Lançamento (pendências da cliente, hospedagem e domínio), quando o Leonardo pedir.
+**Current Work:** Sistema no ar em https://cake67.vercel.app desde 2026-09-27 (PRs #1–#7 mergeados na `main`; produção = `main`). Próximo: M2 · Lançamento (pendências da cliente, plano pago da Vercel e domínio).
 
 ---
 

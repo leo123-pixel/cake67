@@ -1,11 +1,22 @@
 # State
 
 **Last Updated:** 2026-09-26
-**Current Work:** 03 concluída (PR #3, base `feat/02-catalog-panel`). PRs #1, #2 e #3 aguardando merge, nessa ordem. Próximo: 04 · Pedido — Specify.
+**Current Work:** 04 concluída (PR #4, base `feat/03-stock`). PRs #1 → #2 → #3 → #4 aguardando merge, nessa ordem. Próximo: 05 · Operação — Specify.
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-009: Regras do pedido público (2026-09-26)
+
+**Decision:**
+- Anti-abuso só com limites no banco: máx. 10 un. por item de vitrine, 2 pedidos `novo` por WhatsApp, 30 linhas por pedido. Sem captcha.
+- Pedido só de vitrine não escolhe horário: "retire em até N horas" (tempo de reserva).
+- Checkout com aviso curto de privacidade e `/privacidade` provisória (texto de `settings`).
+- Campo **CPF ou CNPJ na nota**, opcional, validado (dígitos verificadores) no site e no banco; não vai para a tela pública nem para a mensagem do WhatsApp; visível no painel (etapa 05).
+**Reason:** Escolhas do Leonardo; CPF/CNPJ pedido para emissão de nota.
+**Trade-off:** Limites simples não param um ataque determinado; Turnstile fica como opção futura.
+**Impact:** Nova coluna `orders.customer_tax_id`; texto de privacidade precisa citar o documento.
 
 ### AD-008: Estoque para todo item de vitrine + contagem da manhã (2026-09-26)
 
@@ -160,6 +171,16 @@ Leonardo desligou "Allow new users to sign up" no painel.
 **Context:** preview da etapa 03 falhou com `next/font … Cannot read properties of null (reading '1')` sem mudança nas fontes; o mesmo commit compilou no redeploy.
 **Solution:** `vercel redeploy <url> --target preview`. Se repetir, considerar fontes locais (`next/font/local`) com os arquivos no repo.
 **Prevents:** investigar código por um erro de rede do build.
+
+### L-012: Testes de integração compartilham o banco real
+
+**Problem:** checagens de invariante (soma dos movimentos = estoque) podem ver outro arquivo de teste no meio de uma operação.
+**Solution:** `fileParallelism: false` no projeto `integration`; ajustes de estoque em teste sempre por `set_stock` (atômico), nunca `update` direto.
+
+### L-013: `Set-Content -Encoding utf8` grava BOM no PowerShell 5.1
+
+**Problem:** mensagem de commit começou com BOM invisível.
+**Solution:** escrever mensagens de commit com a ferramenta Write (UTF-8 sem BOM) e `git commit -F`.
 
 ### L-003: Commit no PowerShell 5.1
 

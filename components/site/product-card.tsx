@@ -6,12 +6,12 @@ import { AddToCart } from "./add-to-cart";
 
 export function ProductCard({ product, storeSlug }: { product: MenuProduct; storeSlug: string }) {
   return (
-    <article
-      className={`grid grid-cols-[88px_1fr] items-center gap-4 bg-olive p-5 sm:grid-cols-[110px_1fr] sm:p-6 ${
-        product.available ? "" : "opacity-50"
-      }`}
-    >
-      <Link href={`/produto/${product.slug}`} className="grid size-[88px] place-items-center sm:size-[110px]">
+    <article className="grid grid-cols-[88px_1fr] items-center gap-4 bg-olive p-5 sm:grid-cols-[110px_1fr] sm:p-6">
+      {/* Sold out dims only the photo; the text stays readable (contrast). */}
+      <Link
+        href={`/produto/${product.slug}`}
+        className={`grid size-[88px] place-items-center sm:size-[110px] ${product.available ? "" : "opacity-50"}`}
+      >
         <Image
           src={product.imageUrl}
           alt={product.imageAlt}
@@ -26,7 +26,7 @@ export function ProductCard({ product, storeSlug }: { product: MenuProduct; stor
           <Link href={`/produto/${product.slug}`}>{product.name}</Link>
         </h3>
         {product.description && (
-          <p className="mt-1 text-xs leading-snug text-linen/70">{product.description}</p>
+          <p className="mt-1 text-xs leading-snug text-linen/85">{product.description}</p>
         )}
         <div className="mt-2.5 flex items-center justify-between gap-2">
           <span className="font-medium tabular-nums text-peach">

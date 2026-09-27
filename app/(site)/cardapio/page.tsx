@@ -44,7 +44,7 @@ export default async function MenuPage({ searchParams }: Props) {
             <a
               key={category.id}
               href={`#${category.slug}`}
-              className="inline-flex min-h-11 items-center px-3 text-xs tracking-[0.2em] text-linen/80 uppercase hover:text-peach"
+              className="inline-flex min-h-11 items-center px-3 text-xs tracking-[0.2em] text-linen/90 uppercase hover:text-peach"
             >
               {category.name}
             </a>

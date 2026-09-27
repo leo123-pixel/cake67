@@ -11,22 +11,26 @@ export function describeTemplateProblems(template: string): string | null {
   return null;
 }
 
+// Browsers submit textarea line breaks as CRLF; store plain "\n".
+const multiline = z.string().transform((text) => text.replace(/\r\n?/g, "\n").trim());
+
 export const settingsSchema = z.object({
   reservation_minutes: z.coerce
     .number({ message: "Informe os minutos" })
     .int("Use minutos inteiros")
     .min(RESERVATION_RANGE.min, `Entre ${RESERVATION_RANGE.min} e ${RESERVATION_RANGE.max} minutos`)
     .max(RESERVATION_RANGE.max, `Entre ${RESERVATION_RANGE.min} e ${RESERVATION_RANGE.max} minutos`),
-  order_whatsapp_template: z
-    .string()
-    .trim()
-    .min(1, "Escreva a mensagem")
-    .max(2000, "Até 2000 caracteres")
-    .superRefine((template, ctx) => {
-      const problem = describeTemplateProblems(template);
-      if (problem) ctx.addIssue({ code: "custom", message: problem });
-    }),
-  privacy_text: z.string().trim().max(20000, "Até 20000 caracteres"),
+  order_whatsapp_template: multiline.pipe(
+    z
+      .string()
+      .min(1, "Escreva a mensagem")
+      .max(2000, "Até 2000 caracteres")
+      .superRefine((template, ctx) => {
+        const problem = describeTemplateProblems(template);
+        if (problem) ctx.addIssue({ code: "custom", message: problem });
+      }),
+  ),
+  privacy_text: multiline.pipe(z.string().max(20000, "Até 20000 caracteres")),
   privacy_reviewed: checkbox,
 });
 

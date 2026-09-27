@@ -135,6 +135,12 @@ describe("settingsSchema", () => {
     expect(result.error?.issues[0].path).toEqual([field]);
   });
 
+  it("stores textarea line breaks as \\n", () => {
+    const parsed = settingsSchema.parse({ ...valid, order_whatsapp_template: "{codigo}\r\n{itens}\r\n", privacy_text: "A\r\n\r\nB" });
+    expect(parsed.order_whatsapp_template).toBe("{codigo}\n{itens}");
+    expect(parsed.privacy_text).toBe("A\n\nB");
+  });
+
   it("unchecked review is false", () => {
     expect(settingsSchema.parse({ ...valid, privacy_reviewed: undefined }).privacy_reviewed).toBe(false);
   });

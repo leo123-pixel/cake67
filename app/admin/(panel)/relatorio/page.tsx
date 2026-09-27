@@ -83,7 +83,7 @@ function ByStore({ stores }: { stores: Report["by_store"] }) {
           <li key={store.store_id} className="rounded-2xl border border-cocoa/10 bg-white p-4 text-sm">
             <p className="font-medium text-olive">{store.name}</p>
             <p className="mt-1">
-              {store.orders} pedidos · {formatBRL(store.revenue_cents)} · ticket médio {formatBRL(store.avg_ticket_cents)}
+              {store.orders} {store.orders === 1 ? "pedido" : "pedidos"} · {formatBRL(store.revenue_cents)} · ticket médio {formatBRL(store.avg_ticket_cents)}
             </p>
           </li>
         ))}

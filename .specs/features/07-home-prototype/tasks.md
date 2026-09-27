@@ -1,7 +1,19 @@
 # 07 · Home igual ao protótipo — Tasks
 
 **Design**: `.specs/features/07-home-prototype/design.md`
-**Status**: In Progress
+**Status**: Done (2026-09-27) — verificado em localhost; PR #7 aguardando merge
+
+## Progress
+
+| Tarefas | Status | Notas |
+|---|---|---|
+| T1–T2 | ✅ `baf06ef` | `list_cake_showcase` aplicada no projeto: 5 bolos, preço nulo nos pendentes; PGlite passando |
+| T3–T5 | ✅ `baf06ef` | 14 testes (horários por extenso, assistente, data mínima, mensagem do WhatsApp, preferência no carrinho) |
+| T6–T13 | ✅ `9eaae8c` | CSS do protótipo com prefixo `ck-`; comparação lado a lado com `cake67.vercel.app` em 1280 e 375 px (capturas do Chrome headless): mesmas seções, cores, fontes e animações. Diferenças intencionais: texto do pagamento, "Preço em breve"/WhatsApp nos bolos, botões com 44 px, esgotado esmaece só a foto, "Quero participar" sem e-mail, sem "Protótipo Onbind" |
+| T14 | ✅ | `showcase.test.ts`: anon lista os bolos sem preço pendente e segue sem conseguir cotá-los |
+| T15 | ✅ | lint, typecheck, 175 unit, 58 integração, build |
+| T16 | ✅ | Vitrine → carrinho (voo + toast + pulso); "Montar este" seleciona o bolo; bolo sem preço → WhatsApp com o bolo na mensagem; bolo com preço (temporário, restaurado) → R$ 219,80 para 2 kg, checkout abre com entrega e o dia escolhidos, subtotal do banco; assistente nas 4 sugestões + pergunta fora das regras → WhatsApp; 360 px sem rolagem em todas as páginas; Lighthouse mobile da home 88/95/100/100 (título do hero aparece depois da abertura, como no protótipo; contraste restante é o pêssego da marca) |
+| T17 | ✅ | PR e preview |
 
 Branch: `feat/07-home-prototype`, a partir de `feat/06-report-finish`.
 

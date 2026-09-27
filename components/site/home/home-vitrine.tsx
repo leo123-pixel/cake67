@@ -41,7 +41,7 @@ function Item({ product, storeSlug }: { product: MenuProduct; storeSlug: string 
         />
       </div>
       <div>
-        <h4>{product.name}</h4>
+        <h3>{product.name}</h3>
         {product.description && <p>{product.description}</p>}
         <div className="ck-meta">
           <span className="ck-price">{out ? "Esgotado" : formatBRL(product.priceCents)}</span>

@@ -1,7 +1,7 @@
 # State
 
 **Last Updated:** 2026-09-27
-**Current Work:** 07 · Home igual ao protótipo — implementação (spec, design e tarefas aprovados 2026-09-27). Branch `feat/07-home-prototype` a partir de `feat/06-report-finish`. Etapas 01–06 concluídas. PRs #1 → #2 → #3 → #4 → #5 → #6 aguardando merge, nessa ordem. Próximo: M2 · Lançamento (pendências da cliente, hospedagem e domínio), quando o Leonardo pedir.
+**Current Work:** 07 · Home igual ao protótipo concluída em localhost; PR #7. Branch `feat/07-home-prototype` a partir de `feat/06-report-finish`. Etapas 01–06 concluídas. PRs #1 → #2 → #3 → #4 → #5 → #6 → #7 aguardando merge, nessa ordem. Próximo: M2 · Lançamento (pendências da cliente, hospedagem e domínio), quando o Leonardo pedir.
 
 ---
 

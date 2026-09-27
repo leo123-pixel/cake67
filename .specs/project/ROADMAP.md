@@ -56,7 +56,7 @@ Cada feature = uma etapa do SPEC (seção 11). Uma por vez, com commit e deploy 
 - Configurações (reserva, modelo da mensagem, privacidade)
 - SEO (metadados, sitemap, `Bakery`/`Product`), página de privacidade, revisão mobile
 
-**07 · Home igual ao protótipo** - IN PROGRESS (implementação)
+**07 · Home igual ao protótipo** - COMPLETE (verificado em localhost em 2026-09-27; PR #7)
 
 - Home do `prototipo/index.html` com dados reais: hero animado, bolos, calculadora e configurador, vitrine por abas, lojas, Cakelovers, assistente (AD-012)
 - Cabeçalho e rodapé do protótipo em todo o site

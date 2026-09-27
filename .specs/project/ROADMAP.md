@@ -56,6 +56,12 @@ Cada feature = uma etapa do SPEC (seção 11). Uma por vez, com commit e deploy 
 - Configurações (reserva, modelo da mensagem, privacidade)
 - SEO (metadados, sitemap, `Bakery`/`Product`), página de privacidade, revisão mobile
 
+**07 · Home igual ao protótipo** - IN PROGRESS (implementação)
+
+- Home do `prototipo/index.html` com dados reais: hero animado, bolos, calculadora e configurador, vitrine por abas, lojas, Cakelovers, assistente (AD-012)
+- Cabeçalho e rodapé do protótipo em todo o site
+- Aceite: lado a lado com `cake67.vercel.app` em 1280 e 375 px; pedido real pela home
+
 ---
 
 ## M2 · Lançamento

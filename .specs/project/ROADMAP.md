@@ -22,10 +22,12 @@ Cada feature = uma etapa do SPEC (seção 11). Uma por vez, com commit e deploy 
 - Seed: lojas, categorias, produtos da vitrine, imagens, admin
 - Aceite: site lista produtos do banco; anon não acessa pedidos
 
-**02 · Painel de catálogo** - PLANNED
+**02 · Painel de catálogo** - COMPLETE (verificado em localhost e preview em 2026-09-26; PR #2)
 
 - Login (e-mail/senha, sem cadastro público)
 - Produtos com fotos (compressão WebP, ordenar), categorias, lojas e horários, destaques
+- Usuários da equipe e adicionais de bolo (AD-006)
+- Produto com preço a definir fica fora do site
 - Aceite: produto criado no painel aparece no site sem deploy
 
 **03 · Estoque** - PLANNED

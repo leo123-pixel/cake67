@@ -17,6 +17,27 @@
   --font-sans: var(--font-montserrat), system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
+/* Admin panel building blocks. 16px inputs avoid zoom on iOS; 44px touch targets. */
+@utility field-input {
+  @apply w-full rounded-xl border border-cocoa/20 bg-white px-3.5 py-2.5 text-base text-cocoa outline-none placeholder:text-cocoa/40 focus:border-olive focus:ring-2 focus:ring-olive/25 aria-invalid:border-raspberry;
+}
+
+@utility btn {
+  @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+@utility btn-primary {
+  @apply bg-olive text-linen hover:bg-olive-dark;
+}
+
+@utility btn-secondary {
+  @apply border border-cocoa/20 bg-white text-cocoa hover:border-olive;
+}
+
+@utility btn-danger {
+  @apply border border-raspberry/40 bg-white text-raspberry hover:bg-raspberry hover:text-linen;
+}
+
 @layer base {
   html {
     color-scheme: light;

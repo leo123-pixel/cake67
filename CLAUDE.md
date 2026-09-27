@@ -19,6 +19,8 @@ Este arquivo substitui, para este repositório, qualquer `CLAUDE.md` de pasta-pa
 6. Dado provisório (pendência da cliente) fica marcado como tal no seed e no painel.
 7. Não rediscutir decisões da seção 1 do SPEC sem o Leonardo.
 8. **Tabela nova precisa de GRANT explícito** na própria migration. O projeto Supabase não concede privilégios automáticos no `public` (nem para `service_role`). Anon só recebe `select` em tabela de catálogo.
+9. **Site público lê com `createPublicClient()`** (anon, sem sessão). O client com cookies (`lib/supabase/server.ts`) é só do painel.
+10. **Formulário do painel usa `useAdminForm`** e `<form key={round}>`; actions devolvem `values` no erro (React 19 reseta o form).
 
 ## Idioma
 

@@ -349,6 +349,38 @@ export type Database = {
           },
         ];
       };
+      order_events: {
+        Row: {
+          id: number;
+          order_id: string;
+          from_status: Database["public"]["Enums"]["order_status"] | null;
+          to_status: Database["public"]["Enums"]["order_status"];
+          actor_id: string | null;
+          actor_name: string;
+          note: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: never;
+          order_id: string;
+          from_status?: Database["public"]["Enums"]["order_status"] | null;
+          to_status: Database["public"]["Enums"]["order_status"];
+          actor_id?: string | null;
+          actor_name: string;
+          note?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["order_events"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "order_events_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       staff: {
         Row: {
           user_id: string;
@@ -457,6 +489,19 @@ export type Database = {
       get_order_public: { Args: { p_code: string; p_token: string }; Returns: Json };
       get_public_settings: { Args: never; Returns: Json };
       expire_orders: { Args: never; Returns: number };
+      advance_order: {
+        Args: {
+          p_order_id: string;
+          p_from: Database["public"]["Enums"]["order_status"];
+          p_to: Database["public"]["Enums"]["order_status"];
+        };
+        Returns: Database["public"]["Enums"]["order_status"];
+      };
+      cancel_order: {
+        Args: { p_order_id: string; p_from: Database["public"]["Enums"]["order_status"]; p_reason: string };
+        Returns: undefined;
+      };
+      reactivate_order: { Args: { p_order_id: string }; Returns: undefined };
       staff_store: { Args: never; Returns: string };
     };
     Enums: {

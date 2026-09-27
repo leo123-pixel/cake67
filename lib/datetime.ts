@@ -24,6 +24,11 @@ export function isoToLocalInput(iso: string): string {
 
 const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
 
+// Today's date ("YYYY-MM-DD") in Campo Grande.
+export function todayInCampoGrande(now: Date = new Date()): string {
+  return isoToLocalInput(now.toISOString()).slice(0, 10);
+}
+
 // "2026-09-26" -> start of that day in Campo Grande, as ISO. null if invalid.
 export function dayStartIso(date: string | undefined): string | null {
   if (!date || !DATE_ONLY.test(date)) return null;
@@ -53,6 +58,15 @@ export function formatWeekdayDate(date: string): string {
     day: "2-digit",
     month: "2-digit",
   }).format(new Date(`${date}T12:00:00${CAMPO_GRANDE_OFFSET}`));
+}
+
+// "agora", "há 5 min", "há 3 h", else the date and time.
+export function formatSince(iso: string, now: Date = new Date()): string {
+  const minutes = Math.floor((now.getTime() - new Date(iso).getTime()) / 60000);
+  if (minutes < 1) return "agora";
+  if (minutes < 60) return `há ${minutes} min`;
+  if (minutes < 24 * 60) return `há ${Math.floor(minutes / 60)} h`;
+  return formatDateTime(iso);
 }
 
 export function formatDateTime(iso: string): string {

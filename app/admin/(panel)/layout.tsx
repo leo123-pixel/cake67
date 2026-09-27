@@ -1,8 +1,10 @@
 import { AdminShell, type NavItem } from "@/components/admin/admin-shell";
+import { OrdersLive } from "@/components/admin/orders-live";
 import { requireStaff } from "@/lib/auth";
 
 const ADMIN_ITEMS: NavItem[] = [
   { href: "/admin", label: "Início" },
+  { href: "/admin/pedidos", label: "Pedidos" },
   { href: "/admin/estoque", label: "Estoque" },
   { href: "/admin/produtos", label: "Produtos" },
   { href: "/admin/categorias", label: "Categorias" },
@@ -14,6 +16,7 @@ const ADMIN_ITEMS: NavItem[] = [
 
 const ATTENDANT_ITEMS: NavItem[] = [
   { href: "/admin", label: "Início" },
+  { href: "/admin/pedidos", label: "Pedidos" },
   { href: "/admin/estoque", label: "Estoque" },
 ];
 
@@ -33,6 +36,7 @@ export default async function PanelLayout({ children }: { children: React.ReactN
       subtitle={subtitle}
     >
       {children}
+      <OrdersLive />
     </AdminShell>
   );
 }

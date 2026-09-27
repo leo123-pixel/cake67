@@ -114,7 +114,7 @@ describe("highlightSchema", () => {
     expect(highlightSchema.safeParse({ ...base, cta_label: "Ver", cta_href: "https://instagram.com/cake67cg" }).success).toBe(true);
   });
 
-  it.each(["javascript:alert(1)", "//evil.com", "http://x.com"])("rejects %s", (href) => {
+  it.each(["javascript:alert(1)", "//evil.com", "/\\evil.com", "http://x.com", "https://evil.com\\@cake67.com.br"])("rejects %s", (href) => {
     expect(errorsOf(highlightSchema.safeParse({ ...base, cta_label: "Ver", cta_href: href }))).toHaveProperty("cta_href");
   });
 

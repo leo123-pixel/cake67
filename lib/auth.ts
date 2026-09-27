@@ -55,6 +55,14 @@ export async function requireAdmin() {
   return context;
 }
 
+// For Server Actions open to any active staff (stock). Store-level
+// authorization is enforced by the database functions.
+export async function getStaffContext() {
+  const session = await getSession();
+  if (!session?.staff?.active) return null;
+  return { supabase: session.supabase, staff: session.staff };
+}
+
 // For Server Actions: null instead of redirecting, so the action can answer.
 export async function getAdminContext() {
   const session = await getSession();

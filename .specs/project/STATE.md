@@ -1,11 +1,18 @@
 # State
 
 **Last Updated:** 2026-09-26
-**Current Work:** 02 concluída (PR #2, base `feat/01-base`). 01: PR #1 aguardando merge. Próximo: 03 · Estoque — Specify.
+**Current Work:** 03 concluída (PR #3, base `feat/02-catalog-panel`). PRs #1, #2 e #3 aguardando merge, nessa ordem. Próximo: 04 · Pedido — Specify.
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-008: Estoque para todo item de vitrine + contagem da manhã (2026-09-26)
+
+**Decision:** Todo produto de vitrine tem contagem, inclusive os feitos na hora (croissants). A etapa 03 inclui um modo "Contagem" que salva a vitrine inteira de uma vez; durante o dia usa +/−/Definir/Esgotar. Sem zerar automático no fim do dia.
+**Reason:** Rotina real do balcão (Leonardo).
+**Trade-off:** Croissant precisa ser contado como os demais.
+**Impact:** Função de contagem em lote, atômica, com um movimento por item alterado.
 
 ### AD-007: Convite e nova senha por link, sem e-mail (2026-09-26)
 
@@ -137,6 +144,22 @@ Leonardo desligou "Allow new users to sign up" no painel.
 ### L-008: `@dnd-kit` precisa de `id` estável
 
 **Solution:** `<DndContext id={useId()}>`; sem isso há erro de hidratação (`DndDescribedBy-N`).
+
+### L-009: Dado que migration cria precisa ir também para o seed
+
+**Context:** a migration de estoque grava "Saldo inicial" para linhas existentes, mas num banco novo o `seed.sql` roda depois das migrations.
+**Solution:** mesmo insert idempotente no fim do `seed.sql`.
+**Prevents:** ambiente novo com histórico que não fecha com o estoque.
+
+### L-010: `pattern` em input bloqueia a action com mensagem do navegador
+
+**Solution:** `noValidate` no form quando a validação e as mensagens vêm do servidor; manter `inputMode`/`pattern` só para o teclado numérico.
+
+### L-011: Build na Vercel pode falhar no download do Google Fonts
+
+**Context:** preview da etapa 03 falhou com `next/font … Cannot read properties of null (reading '1')` sem mudança nas fontes; o mesmo commit compilou no redeploy.
+**Solution:** `vercel redeploy <url> --target preview`. Se repetir, considerar fontes locais (`next/font/local`) com os arquivos no repo.
+**Prevents:** investigar código por um erro de rede do build.
 
 ### L-003: Commit no PowerShell 5.1
 

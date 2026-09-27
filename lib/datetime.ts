@@ -22,6 +22,21 @@ export function isoToLocalInput(iso: string): string {
   return `${get("year")}-${get("month")}-${get("day")}T${get("hour")}:${get("minute")}`;
 }
 
+const DATE_ONLY = /^\d{4}-\d{2}-\d{2}$/;
+
+// "2026-09-26" -> start of that day in Campo Grande, as ISO. null if invalid.
+export function dayStartIso(date: string | undefined): string | null {
+  if (!date || !DATE_ONLY.test(date)) return null;
+  const parsed = new Date(`${date}T00:00:00${CAMPO_GRANDE_OFFSET}`);
+  return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString();
+}
+
+// Exclusive upper bound that includes the whole given day.
+export function dayEndExclusiveIso(date: string | undefined): string | null {
+  const start = dayStartIso(date);
+  return start ? new Date(new Date(start).getTime() + 24 * 60 * 60 * 1000).toISOString() : null;
+}
+
 export function formatDateTime(iso: string): string {
   return new Intl.DateTimeFormat("pt-BR", {
     timeZone: TIME_ZONE,

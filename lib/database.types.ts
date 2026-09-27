@@ -453,6 +453,7 @@ export type Database = {
           reservation_minutes: number;
           order_whatsapp_template: string;
           privacy_text: string;
+          privacy_reviewed: boolean;
           updated_at: string;
         };
         Insert: {
@@ -460,6 +461,7 @@ export type Database = {
           reservation_minutes?: number;
           order_whatsapp_template: string;
           privacy_text?: string;
+          privacy_reviewed?: boolean;
           updated_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["settings"]["Insert"]>;
@@ -502,6 +504,7 @@ export type Database = {
         Returns: undefined;
       };
       reactivate_order: { Args: { p_order_id: string }; Returns: undefined };
+      report_summary: { Args: { p_from: string; p_to: string; p_store_id?: string | null }; Returns: Json };
       staff_store: { Args: never; Returns: string };
     };
     Enums: {

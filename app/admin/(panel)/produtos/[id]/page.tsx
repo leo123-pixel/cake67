@@ -28,7 +28,7 @@ export default async function EditProductPage({ params, searchParams }: Props) {
   return (
     <section className="space-y-8">
       <header className="space-y-1">
-        <Link href="/admin/produtos" className="text-sm text-olive underline">
+        <Link href="/admin/produtos" className="inline-flex min-h-11 items-center text-sm text-olive underline">
           ← Produtos
         </Link>
         <h1 className="text-3xl text-olive">{product.name}</h1>

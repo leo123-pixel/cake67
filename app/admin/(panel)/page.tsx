@@ -7,6 +7,7 @@ import { todayInCampoGrande } from "@/lib/datetime";
 import { STATUS_LABELS, STATUS_TONES, type OrderStatus } from "@/lib/order-status";
 
 const ADMIN_SHORTCUTS = [
+  { href: "/admin/relatorio", title: "Relatório", text: "Faturamento, ticket médio e mais vendidos" },
   { href: "/admin/estoque", title: "Estoque", text: "Quantidades da vitrine por loja e contagem" },
   { href: "/admin/produtos/novo", title: "Novo produto", text: "Cadastre bebidas e itens novos" },
   { href: "/admin/produtos", title: "Produtos", text: "Preços, fotos e disponibilidade no site" },
@@ -24,6 +25,13 @@ const COUNT_ORDER: OrderStatus[] = ["novo", "confirmado", "em_producao", "pronto
 
 type Props = { searchParams: Promise<{ loja?: string }> };
 
+// Provisional data stays flagged in the panel (project rule 6).
+async function isPrivacyPending(supabase: Awaited<ReturnType<typeof requireStaff>>["supabase"]) {
+  const { data, error } = await supabase.from("settings").select("privacy_reviewed").eq("id", 1).single();
+  if (error) throw new Error(`Could not load settings: ${error.message}`);
+  return !data.privacy_reviewed;
+}
+
 export default async function PanelHome({ searchParams }: Props) {
   const { supabase, staff } = await requireStaff();
   const isAdmin = staff.role === "admin";
@@ -33,9 +41,19 @@ export default async function PanelHome({ searchParams }: Props) {
   const store = isAdmin ? stores?.find((s) => s.slug === loja) : undefined;
   const { pending, counts, outToday } = await getDashboard(supabase, todayInCampoGrande(), store?.id);
   const shortcuts = isAdmin ? ADMIN_SHORTCUTS : ATTENDANT_SHORTCUTS;
+  const privacyPending = isAdmin && (await isPrivacyPending(supabase));
 
   return (
     <section className="space-y-8">
+      {privacyPending && (
+        <p role="status" className="rounded-xl bg-peach-light px-4 py-3 text-sm">
+          Política de privacidade provisória: revise o texto e marque como revisado em{" "}
+          <Link href="/admin/configuracoes" className="font-medium text-olive underline">
+            Configurações
+          </Link>
+          .
+        </p>
+      )}
       <header className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-3xl text-olive">Olá, {staff.name}</h1>
         {isAdmin && stores && (
@@ -64,7 +82,11 @@ export default async function PanelHome({ searchParams }: Props) {
         <h2 className="text-xl text-olive">Feitos hoje</h2>
         <div className="flex flex-wrap gap-2">
           {COUNT_ORDER.map((status) => (
-            <Link key={status} href={`/admin/pedidos?status=${status}${store ? `&loja=${store.slug}` : ""}`}>
+            <Link
+              key={status}
+              href={`/admin/pedidos?status=${status}${store ? `&loja=${store.slug}` : ""}`}
+              className="inline-flex min-h-11 items-center"
+            >
               <StatusBadge tone={STATUS_TONES[status]}>
                 {STATUS_LABELS[status]}: {counts.get(status) ?? 0}
               </StatusBadge>

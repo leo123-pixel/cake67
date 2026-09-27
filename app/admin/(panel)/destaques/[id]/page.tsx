@@ -26,7 +26,7 @@ export default async function HighlightPage({ params }: Props) {
   return (
     <section className="space-y-6">
       <header className="space-y-1">
-        <Link href="/admin/destaques" className="text-sm text-olive underline">
+        <Link href="/admin/destaques" className="inline-flex min-h-11 items-center text-sm text-olive underline">
           ← Destaques
         </Link>
         <h1 className="text-3xl text-olive">{highlight?.title ?? "Novo destaque"}</h1>

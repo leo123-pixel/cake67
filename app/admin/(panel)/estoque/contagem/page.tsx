@@ -22,7 +22,7 @@ export default async function CountPage({ searchParams }: Props) {
   return (
     <section className="space-y-6">
       <header className="space-y-3">
-        <Link href={`/admin/estoque?loja=${store.slug}`} className="text-sm text-olive underline">
+        <Link href={`/admin/estoque?loja=${store.slug}`} className="inline-flex min-h-11 items-center text-sm text-olive underline">
           ← Estoque
         </Link>
         <div className="flex flex-wrap items-center justify-between gap-3">

@@ -1,7 +1,7 @@
 # Roadmap
 
 **Current Milestone:** M1 · MVP
-**Status:** In Progress
+**Status:** Complete (2026-09-27) — aguardando merge dos PRs #1–#6
 
 Cada feature = uma etapa do SPEC (seção 11). Uma por vez, com commit e deploy de preview ao final.
 
@@ -50,7 +50,7 @@ Cada feature = uma etapa do SPEC (seção 11). Uma por vez, com commit e deploy 
 - Reativar pedido expirado se houver estoque; "Hoje" pela data do pedido + "Saem hoje" (AD-010)
 - Aceite: atendente da Loja 2 não vê pedidos da Loja 1
 
-**06 · Relatório e acabamento** - PLANNED
+**06 · Relatório e acabamento** - COMPLETE (verificado em localhost e preview em 2026-09-27; PR #6)
 
 - Relatório por período/loja, ticket médio, mais vendidos, CSV
 - Configurações (reserva, modelo da mensagem, privacidade)

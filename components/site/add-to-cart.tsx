@@ -26,7 +26,7 @@ export function AddToCart({ productId, name, imageUrl, availableQty, storeSlug, 
       type="button"
       disabled={full}
       onClick={() => add({ productId, type: "vitrine", name, imageUrl, qty: 1 }, storeSlug)}
-      className="min-h-9 rounded-full border border-peach px-3 text-[0.68rem] font-semibold tracking-[0.12em] text-peach uppercase transition hover:bg-peach hover:text-cocoa disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-transparent disabled:hover:text-peach"
+      className="min-h-11 rounded-full border border-peach px-4 text-[0.68rem] font-semibold tracking-[0.12em] text-peach uppercase transition hover:bg-peach hover:text-cocoa disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-transparent disabled:hover:text-peach"
     >
       {inCart > 0 ? (full ? `${inCart} no pedido` : `${label} (${inCart})`) : label}
     </button>

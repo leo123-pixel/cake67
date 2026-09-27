@@ -131,10 +131,10 @@ function SortableRow({ id, label, canUp, canDown, onUp, onDown, children }: RowP
         >
           ⠿
         </button>
-        <button type="button" onClick={onUp} disabled={!canUp} aria-label={`Subir ${label}`} className="size-9 rounded-lg text-cocoa-soft disabled:opacity-30">
+        <button type="button" onClick={onUp} disabled={!canUp} aria-label={`Subir ${label}`} className="size-11 rounded-lg text-cocoa-soft disabled:opacity-30">
           ↑
         </button>
-        <button type="button" onClick={onDown} disabled={!canDown} aria-label={`Descer ${label}`} className="size-9 rounded-lg text-cocoa-soft disabled:opacity-30">
+        <button type="button" onClick={onDown} disabled={!canDown} aria-label={`Descer ${label}`} className="size-11 rounded-lg text-cocoa-soft disabled:opacity-30">
           ↓
         </button>
       </div>

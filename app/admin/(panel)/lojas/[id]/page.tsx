@@ -25,7 +25,7 @@ export default async function StorePage({ params }: Props) {
   return (
     <section className="space-y-6">
       <header className="space-y-1">
-        <Link href="/admin/lojas" className="text-sm text-olive underline">
+        <Link href="/admin/lojas" className="inline-flex min-h-11 items-center text-sm text-olive underline">
           ← Lojas
         </Link>
         <h1 className="text-3xl text-olive">{store?.name ?? "Nova loja"}</h1>

@@ -43,6 +43,11 @@
     color-scheme: light;
   }
 
+  /* Browsers size fieldsets to their content; let them shrink on phones. */
+  fieldset {
+    min-width: 0;
+  }
+
   body {
     @apply bg-olive text-linen font-sans antialiased;
     font-size: 15.5px;

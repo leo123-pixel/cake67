@@ -43,6 +43,11 @@ export function publicEnv() {
   });
 }
 
+// Absolute base for SEO (metadataBase, sitemap, JSON-LD), without trailing slash.
+export function siteUrl() {
+  return publicEnv().siteUrl.replace(/\/+$/, "");
+}
+
 export function serverEnv() {
   return parseServerEnv({ SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY });
 }

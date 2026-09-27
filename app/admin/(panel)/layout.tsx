@@ -5,6 +5,7 @@ import { requireStaff } from "@/lib/auth";
 const ADMIN_ITEMS: NavItem[] = [
   { href: "/admin", label: "Início" },
   { href: "/admin/pedidos", label: "Pedidos" },
+  { href: "/admin/relatorio", label: "Relatório" },
   { href: "/admin/estoque", label: "Estoque" },
   { href: "/admin/produtos", label: "Produtos" },
   { href: "/admin/categorias", label: "Categorias" },
@@ -12,6 +13,7 @@ const ADMIN_ITEMS: NavItem[] = [
   { href: "/admin/lojas", label: "Lojas" },
   { href: "/admin/destaques", label: "Destaques" },
   { href: "/admin/usuarios", label: "Usuários" },
+  { href: "/admin/configuracoes", label: "Configurações" },
 ];
 
 const ATTENDANT_ITEMS: NavItem[] = [

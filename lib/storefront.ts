@@ -146,6 +146,7 @@ export type PublicSettings = {
   reservation_minutes: number;
   order_whatsapp_template: string;
   privacy_text: string;
+  privacy_reviewed: boolean;
 };
 
 export async function getPublicSettings(): Promise<PublicSettings> {

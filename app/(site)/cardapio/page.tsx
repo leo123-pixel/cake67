@@ -2,10 +2,17 @@ import type { Metadata } from "next";
 import { ProductCard } from "@/components/site/product-card";
 import { StorePicker } from "@/components/site/store-picker";
 import { listStores, listVitrineMenu } from "@/lib/catalog";
+import { OG_DEFAULTS } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Cardápio",
   description: "Fatias, potes, croissants e docinhos na vitrine das lojas Cake 67 hoje.",
+  openGraph: {
+    ...OG_DEFAULTS,
+    title: "Cardápio · Cake 67",
+    description: "Fatias, potes, croissants e docinhos na vitrine das lojas Cake 67 hoje.",
+    url: "/cardapio",
+  },
 };
 
 type Props = { searchParams: Promise<{ loja?: string | string[] }> };
@@ -37,7 +44,7 @@ export default async function MenuPage({ searchParams }: Props) {
             <a
               key={category.id}
               href={`#${category.slug}`}
-              className="px-3 py-2 text-xs tracking-[0.2em] text-linen/80 uppercase hover:text-peach"
+              className="inline-flex min-h-11 items-center px-3 text-xs tracking-[0.2em] text-linen/90 uppercase hover:text-peach"
             >
               {category.name}
             </a>

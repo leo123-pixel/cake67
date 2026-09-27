@@ -208,7 +208,7 @@ export function CakeConfigurator({ cakes }: { cakes: MadeToOrderProduct[] }) {
           </p>
         </div>
         <p className="text-3xl tabular-nums text-peach">{formatBRL(price)}</p>
-        <p className="text-xs text-linen/70">Encomende com pelo menos {cake.leadTimeHours} h de antecedência.</p>
+        <p className="text-xs text-linen/85">Encomende com pelo menos {cake.leadTimeHours} h de antecedência.</p>
         <button type="button" onClick={addToCart} className="btn w-full bg-peach text-cocoa hover:bg-peach-light">
           Adicionar ao pedido
         </button>

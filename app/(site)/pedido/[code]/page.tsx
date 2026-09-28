@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { OrderTimeline } from "@/components/site/order-timeline";
 import { formatBRL } from "@/lib/money";
 import { publicStatus } from "@/lib/order-status";
+import { buildTimeline } from "@/lib/order-timeline";
 import { getOrderPublic, getPublicSettings } from "@/lib/storefront";
 import {
   describeConfirmedFulfillment,
@@ -47,6 +49,8 @@ export default async function OrderPage({ params, searchParams }: Props) {
             Falar com a loja
           </a>
         )}
+
+        <OrderTimeline timeline={buildTimeline(order)} />
 
         <section className="space-y-3 rounded-3xl border border-cocoa/10 bg-white p-5">
           <p className="text-sm text-cocoa-soft">

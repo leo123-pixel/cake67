@@ -7,6 +7,13 @@
 
 ## Recent Decisions (Last 60 days)
 
+### AD-016: Linha do tempo pública do pedido (2026-09-28)
+
+**Decision:** A página `/pedido/[code]` mostra as etapas do pedido (vitrine: Recebido → Confirmado → Pronto → Retirado/Entregue; encomenda acrescenta Em produção), com o horário da última entrada em cada etapa. Etapa pulada aparece feita sem horário; cancelado e expirado encerram a linha sem mostrar o motivo; pedido reativado mostra o caminho atual, sem a expiração. `get_order_public` devolve `events: [{ status, at }]`, sem ator nem observação. Etapa 09.
+**Reason:** Pedido do Leonardo: o cliente não via o andamento do pedido.
+**Trade-off:** Não atualiza sozinha; o cliente recarrega.
+**Impact:** Nenhum dado novo gravado: usa o `order_events` da etapa 05.
+
 ### AD-015: WhatsApp por setor e aviso de confirmação (2026-09-28)
 
 **Decision:** Cada loja tem três WhatsApp: pronta entrega, encomenda e SAC. Pedido com qualquer item de encomenda vai para Encomenda; só vitrine vai para Pronta entrega (a escolha fica em `get_order_public`). Contato público (home, assistente, Cakelovers, pedido depois de `novo`) é só o SAC; "Pedir pelo WhatsApp" de bolo sem preço vai para Encomenda. Ao **Confirmar** (e **Reativar e confirmar**), o painel abre o WhatsApp do cliente com a mensagem de confirmação (modelo editável em Configurações, exige `{codigo}` e `{link}`, sem valores); a página `/pedido/[code]` mostra o status real. Etapa 08.

@@ -1,6 +1,7 @@
 // Public queries for ordering (anon, no session). Prices shown here are for
 // display; the database recomputes everything when quoting and ordering.
 import { productImageUrl } from "@/lib/images";
+import type { OrderEvent } from "@/lib/order-timeline";
 import { createPublicClient } from "@/lib/supabase/public";
 import { parseStoredHours, type StoreHours } from "@/lib/validators/store";
 import type { OrderSummary } from "@/lib/whatsapp";
@@ -189,6 +190,7 @@ export type PublicOrder = OrderSummary & {
   created_at: string;
   expires_at: string | null;
   has_made_to_order: boolean;
+  events: OrderEvent[];
 };
 
 export async function getOrderPublic(code: string, token: string): Promise<PublicOrder | null> {

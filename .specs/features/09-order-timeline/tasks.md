@@ -1,7 +1,7 @@
 # 09 · Linha do tempo na página do pedido — Tasks
 
 **Design**: `.specs/features/09-order-timeline/design.md`
-**Status**: In review (2026-09-28)
+**Status**: Done (2026-09-28)
 
 ## Progress
 
@@ -11,7 +11,7 @@
 | T3 | ✅ | 7 casos do design |
 | T4–T5 | ✅ | Leitor de tela: texto contrastado (`text-cocoa-soft`) nas próximas em vez de `cocoa/45` |
 | T6–T7 | ✅ | lint, typecheck, 204 unit, 66 integração, build. Localhost: C67-000076 (reativado) mostra Recebido → Confirmado 17h01 sem a expiração; pedidos de teste de vitrine com etapa pulada, encomenda, entrega, cancelado e expirado batem com a spec; 360 px sem rolagem. Achado e corrigido: pedido entregue anunciava a última etapa como "em andamento" (agora concluída, com `aria-current` na última). Pedidos de teste apagados |
-| T8 | 🟡 | PR aberto |
+| T8 | ✅ | PR #16 mergeado; produção mostra a linha do tempo no C67-000076 |
 
 Branch: `feat/09-order-timeline`, a partir da `main`.
 

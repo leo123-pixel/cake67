@@ -1,18 +1,25 @@
 # State
 
 **Last Updated:** 2026-09-28
-**Current Work:** Sistema no ar em https://cake67.vercel.app desde 2026-09-27 (PRs #1–#10 mergeados na `main`; produção = `main`). Próximo: M2 · Lançamento (pendências da cliente, plano pago da Vercel e domínio).
+**Current Work:** Sistema no ar em https://cake67.vercel.app desde 2026-09-27 (PRs #1–#12 mergeados na `main`; produção = `main`). Próximo: M2 · Lançamento (pendências da cliente, plano pago da Vercel e domínio).
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-014: Uma checagem de sessão no servidor por acesso (2026-09-28)
+
+**Decision:** O `middleware.ts` continua com `getUser()` (pergunta ao Supabase Auth); `getSession` em `lib/auth.ts` passa a usar `getClaims()`, que confere a assinatura do JWT localmente (ES256, JWKS em cache) (PR #12).
+**Reason:** Cada página e Server Action do painel ia duas vezes ao Auth; agora vai uma.
+**Trade-off:** Usuário apagado direto no Supabase Auth mantém um JWT válido até expirar (~1 h), mas só se o middleware for contornado. Para tirar alguém da equipe, desativar em `staff.active` continua valendo na hora (lido a cada acesso).
+**Impact:** Depende de o projeto assinar JWT com chave assimétrica; `tests/integration/auth.test.ts` falha se voltar para HS256 (aí `getClaims` cairia para uma chamada de rede e o ganho some).
 
 ### AD-013: Funções da Vercel em São Paulo (`gru1`) (2026-09-28)
 
 **Decision:** `vercel.json` fixa `regions: ["gru1"]`, ao lado do Supabase (`sa-east-1`). O painel ganhou `loading.tsx` (esqueleto na navegação) e consultas independentes em paralelo no Início e em Pedidos (PR #10).
 **Reason:** Painel "travando": as funções rodavam em `iad1` (EUA) e cada consulta cruzava EUA↔Brasil; as páginas do painel encadeiam 4–6 consultas. `/cardapio` caiu de 0,85–3,2 s para 0,4–0,6 s de TTFB.
 **Trade-off:** Nenhum relevante; o plano gratuito permite uma região. Se o Supabase mudar de região, mudar esta junto.
-**Impact:** Pendente: a sessão é conferida duas vezes por página (`middleware.ts` e `getSession`); cortar uma mexe na checagem de acesso e fica para outra etapa.
+**Impact:** A checagem de sessão duplicada foi resolvida na AD-014.
 
 ### AD-012: Home igual ao protótipo em produção (2026-09-27)
 

@@ -1,11 +1,18 @@
 # State
 
 **Last Updated:** 2026-09-28
-**Current Work:** Sistema no ar em https://cake67.vercel.app desde 2026-09-27 (produção = `main`). Etapa 08 (WhatsApp por setor e aviso de confirmação) no ar desde 2026-09-28 (PR #14); `stores.whatsapp` apagada em seguida. Próximo: M2 · Lançamento (pendências da cliente, plano pago da Vercel e domínio).
+**Current Work:** Sistema no ar em https://www.cake67.com.br (produção = `main`; `cake67.vercel.app` continua respondendo). Etapas 08 (WhatsApp por setor) e 09 (linha do tempo do pedido) no ar desde 2026-09-28. Próximo: M2 · Lançamento (pendências da cliente); hospedagem segue nos planos gratuitos por decisão do Leonardo (AD-017).
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-017: Domínio `www.cake67.com.br` nos planos gratuitos (2026-09-28)
+
+**Decision:** O endereço oficial passa a ser `https://www.cake67.com.br` (`cake67.com.br` redireciona para o `www`). O domínio já estava ligado ao projeto `cake67` na Vercel (DNS no Registro.br com registros A/CNAME para a Vercel, não com os nameservers da Vercel). `NEXT_PUBLIC_SITE_URL` de produção trocado para ele e produção reimplantada; o preview ficou como estava. Hospedagem continua em Vercel Hobby + Supabase Free por enquanto.
+**Reason:** Escolha do Leonardo: usar o domínio da Cake 67 sem contratar plano por ora.
+**Trade-off:** Vercel Hobby é para uso não comercial; Supabase Free pausa após 7 dias sem uso e não tem backup automático restaurável. Revisitar antes do lançamento comercial.
+**Impact:** Link de acompanhamento na mensagem de confirmação, links de convite/nova senha, sitemap, `robots.txt`, JSON-LD e imagem de compartilhamento saem com o domínio novo. Links antigos em `cake67.vercel.app` seguem abrindo. Pendente (painel da Vercel, com o Leonardo): redirecionar `cake67.vercel.app` para `www.cake67.com.br`.
 
 ### AD-016: Linha do tempo pública do pedido (2026-09-28)
 

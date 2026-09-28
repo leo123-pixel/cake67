@@ -83,7 +83,8 @@ Cada feature = uma etapa do SPEC (seção 11). Uma por vez, com commit e deploy 
 
 **Publicação na `main`** - COMPLETE (2026-09-27: PRs #1–#7 mergeados; `cake67.vercel.app` com o sistema)
 **Pendências da cliente resolvidas** - PLANNED (ver SPEC §12 e B-002)
-**Hospedagem de produção (Vercel Pro ou conta da Cake 67) e domínio** - PLANNED
+**Domínio `www.cake67.com.br`** - COMPLETE (2026-09-28, AD-017)
+**Hospedagem de produção (Vercel Pro ou conta da Cake 67)** - PLANNED (por ora nos planos gratuitos, AD-017)
 
 ---
 

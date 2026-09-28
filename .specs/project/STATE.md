@@ -1,11 +1,18 @@
 # State
 
 **Last Updated:** 2026-09-28
-**Current Work:** Sistema no ar em https://cake67.vercel.app desde 2026-09-27 (PRs #1–#12 mergeados na `main`; produção = `main`). Próximo: M2 · Lançamento (pendências da cliente, plano pago da Vercel e domínio).
+**Current Work:** Sistema no ar em https://cake67.vercel.app desde 2026-09-27 (produção = `main`). Etapa 08 (WhatsApp por setor e aviso de confirmação) em PR; migration já aplicada no projeto. Depois do merge: PR que apaga `stores.whatsapp`. Próximo: M2 · Lançamento (pendências da cliente, plano pago da Vercel e domínio).
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-015: WhatsApp por setor e aviso de confirmação (2026-09-28)
+
+**Decision:** Cada loja tem três WhatsApp: pronta entrega, encomenda e SAC. Pedido com qualquer item de encomenda vai para Encomenda; só vitrine vai para Pronta entrega (a escolha fica em `get_order_public`). Contato público (home, assistente, Cakelovers, pedido depois de `novo`) é só o SAC; "Pedir pelo WhatsApp" de bolo sem preço vai para Encomenda. Ao **Confirmar** (e **Reativar e confirmar**), o painel abre o WhatsApp do cliente com a mensagem de confirmação (modelo editável em Configurações, exige `{codigo}` e `{link}`, sem valores); a página `/pedido/[code]` mostra o status real. Etapa 08.
+**Reason:** Pedido do Leonardo: a operação real separa os setores e o cliente não sabia que o pedido foi confirmado.
+**Trade-off:** O aviso não é automático (o atendente envia). A API oficial do WhatsApp (Meta) ficou fora: exige conta verificada, modelo aprovado e custo por mensagem; o gatilho é o mesmo, então dá para trocar depois.
+**Impact:** `stores.whatsapp` fica anulável e fora dos tipos até um PR seguinte apagar a coluna (a migration foi aplicada antes do merge sem quebrar o site no ar). Resolve a pendência do WhatsApp da Loja 2.
 
 ### AD-014: Uma checagem de sessão no servidor por acesso (2026-09-28)
 
@@ -142,7 +149,7 @@ Leonardo desligou "Allow new users to sign up" no painel.
 ### B-002: Pendências da cliente (SPEC §12)
 
 **Discovered:** 2026-09-25
-**Impact:** Seed usa valores provisórios (WhatsApp da Loja 2, preços por kg, kits, cento, antecedência).
+**Impact:** Seed usa valores provisórios (preços por kg, kits, cento, antecedência). WhatsApp da Loja 2 resolvido em 2026-09-28 (AD-015).
 **Workaround:** Marcar como provisório no seed e no painel.
 **Resolution:** Leonardo confirma com a cliente antes do M2. Inclui revisar e marcar a política de privacidade (rascunho da etapa 06) e decidir se o pêssego sobre oliva do protótipo (contraste 4,05:1, abaixo de 4,5 para texto pequeno) fica ou ganha um tom mais claro.
 
@@ -251,6 +258,11 @@ Leonardo desligou "Allow new users to sign up" no painel.
 
 **Problem:** o viewport de 360 px do Browser pane relatava 527 px.
 **Solution:** medir em 360 px com um `<iframe>` de 360 px da mesma origem (rolagem horizontal e alvos < 44 px por script).
+
+### L-021: O projeto não usa Prettier
+
+**Problem:** `npx prettier --write` nos arquivos da etapa 08 reformatou arquivos inteiros (diff de ~1.950 linhas); o código segue o estilo próprio, com linhas longas.
+**Solution:** Não rodar formatador; seguir o estilo do arquivo. O `lint` (ESLint) é o único verificador de estilo.
 
 ### L-003: Commit no PowerShell 5.1
 

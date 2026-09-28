@@ -25,7 +25,8 @@ export type OrderSummary = {
   customer_whatsapp: string;
   notes: string | null;
   subtotal_cents: number;
-  store: { name: string; address: string; whatsapp: string };
+  // whatsapp is the sector that handles the order (spec 08, D1); support is the SAC.
+  store: { name: string; address: string; whatsapp: string; support_whatsapp: string };
   items: OrderItemSummary[];
 };
 
@@ -76,31 +77,75 @@ export function renderOrderMessage(template: string, order: OrderSummary, reserv
     whatsapp: formatWhatsapp(order.customer_whatsapp),
     observacoes: describeNotes(order),
   };
+  return fillTemplate(template, values);
+}
+
+function fillTemplate(template: string, values: Record<string, string>): string {
   return template
     .replace(/\{(\w+)\}/g, (match, key: string) => values[key] ?? match)
     .replace(/\n+$/, "");
 }
 
-// Variables of the editable template (AD-011); keys match renderOrderMessage.
-export const TEMPLATE_VARIABLES = {
-  codigo: "Número do pedido",
-  loja: "Endereço da loja",
-  entrega: "Retirada ou entrega, com data e hora",
-  itens: "Um item por linha, com opções e valor",
-  subtotal: "Subtotal do pedido",
-  nome: "Nome do cliente",
-  whatsapp: "WhatsApp do cliente",
-  observacoes: "Frase do bolo e observações",
-} as const;
+export type TemplateSpec = {
+  variables: Readonly<Record<string, string>>;
+  required: readonly string[];
+};
 
-export const REQUIRED_TEMPLATE_VARIABLES = ["codigo", "itens"] as const;
+// Variables of the editable order template (AD-011); keys match renderOrderMessage.
+export const ORDER_TEMPLATE = {
+  variables: {
+    codigo: "Número do pedido",
+    loja: "Endereço da loja",
+    entrega: "Retirada ou entrega, com data e hora",
+    itens: "Um item por linha, com opções e valor",
+    subtotal: "Subtotal do pedido",
+    nome: "Nome do cliente",
+    whatsapp: "WhatsApp do cliente",
+    observacoes: "Frase do bolo e observações",
+  },
+  required: ["codigo", "itens"],
+} as const satisfies TemplateSpec;
 
-export function templateProblems(template: string): { missing: string[]; unknown: string[] } {
+// Variables of the confirmation message (spec 08); keys match renderConfirmationMessage.
+// No amounts: the delivery fee is still agreed on WhatsApp.
+export const CONFIRMATION_TEMPLATE = {
+  variables: {
+    codigo: "Número do pedido",
+    nome: "Nome do cliente",
+    loja: "Nome e endereço da loja",
+    entrega: "Retirada ou entrega, com data e hora",
+    link: "Link para acompanhar o pedido",
+  },
+  required: ["codigo", "link"],
+} as const satisfies TemplateSpec;
+
+export function templateProblems(template: string, spec: TemplateSpec): { missing: string[]; unknown: string[] } {
   const used = [...template.matchAll(/\{(\w+)\}/g)].map((match) => match[1]);
   return {
-    missing: REQUIRED_TEMPLATE_VARIABLES.filter((name) => !used.includes(name)),
-    unknown: [...new Set(used.filter((name) => !(name in TEMPLATE_VARIABLES)))],
+    missing: spec.required.filter((name) => !used.includes(name)),
+    unknown: [...new Set(used.filter((name) => !(name in spec.variables)))],
   };
+}
+
+// After confirmation the reservation window no longer applies.
+export function describeConfirmedFulfillment(order: Pick<OrderSummary, "fulfillment" | "scheduled_for">): string {
+  const when = order.scheduled_for ? ` em ${formatPickup(order.scheduled_for)}` : "";
+  if (order.fulfillment === "entrega") return `Entrega${when}`;
+  return when ? `Retirada${when}` : "Retirada na loja";
+}
+
+export type ConfirmationOrder = Pick<OrderSummary, "code" | "customer_name" | "fulfillment" | "scheduled_for"> & {
+  store: { name: string; address: string };
+};
+
+export function renderConfirmationMessage(template: string, order: ConfirmationOrder, link: string): string {
+  return fillTemplate(template, {
+    codigo: order.code,
+    nome: order.customer_name,
+    loja: `${order.store.name} · ${order.store.address}`,
+    entrega: describeConfirmedFulfillment(order),
+    link,
+  });
 }
 
 // Example order for the template preview in the panel.
@@ -113,7 +158,7 @@ export const SAMPLE_ORDER: OrderSummary = {
   customer_whatsapp: "5567999990000",
   notes: "Sem cobertura de coco",
   subtotal_cents: 4880,
-  store: { name: "Loja 1", address: "Rua Estiva, 200", whatsapp: "5567981519796" },
+  store: { name: "Loja 1", address: "Rua Estiva, 200", whatsapp: "5567998272300", support_whatsapp: "5567993285925" },
   items: [
     { name: "Fatia Karen", type: "vitrine", qty: 2, total_cents: 4400, options: null },
     { name: "Coxinha de Morango", type: "vitrine", qty: 1, total_cents: 480, options: null },

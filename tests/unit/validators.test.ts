@@ -83,15 +83,24 @@ describe("category and addon", () => {
 
 describe("storeSchema", () => {
   const form = (overrides: Record<string, string> = {}) => {
-    const data: Record<string, string> = { name: "Loja 1", address: "Rua Estiva, 200", whatsapp: "(67) 98151-9796", active: "on" };
+    const data: Record<string, string> = { name: "Loja 1", address: "Rua Estiva, 200", active: "on" };
+    Object.assign(data, {
+      whatsapp_ready: "(67) 99827-2300",
+      whatsapp_made_to_order: "(67) 98151-9796",
+      whatsapp_support: "67 99328-5925",
+    });
     for (const day of WEEK_DAYS) Object.assign(data, { [`${day}_open`]: "10:00", [`${day}_close`]: "19:00" });
     Object.assign(data, overrides);
     return { ...data, hours: readHours(data) };
   };
 
-  it("normalizes WhatsApp and reads hours", () => {
+  it("normalizes the three WhatsApp numbers and reads hours", () => {
     const store = storeSchema.parse(form({ sun_closed: "on" }));
-    expect(store.whatsapp).toBe("5567981519796");
+    expect(store).toMatchObject({
+      whatsapp_ready: "5567998272300",
+      whatsapp_made_to_order: "5567981519796",
+      whatsapp_support: "5567993285925",
+    });
     expect(store.hours.sun).toBeNull();
     expect(store.hours.mon).toEqual({ open: "10:00", close: "19:00" });
   });
@@ -101,8 +110,8 @@ describe("storeSchema", () => {
     expect(errors).toHaveProperty("hours.sat.close");
   });
 
-  it("rejects an invalid WhatsApp", () => {
-    expect(errorsOf(storeSchema.safeParse(form({ whatsapp: "123" })))).toHaveProperty("whatsapp");
+  it.each(["whatsapp_ready", "whatsapp_made_to_order", "whatsapp_support"])("rejects an invalid %s", (field) => {
+    expect(errorsOf(storeSchema.safeParse(form({ [field]: "123" })))).toHaveProperty(field);
   });
 });
 

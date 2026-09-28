@@ -4,14 +4,15 @@ import { notFound } from "next/navigation";
 import { z } from "zod";
 import { OrderActions } from "@/components/admin/orders/order-actions";
 import { StatusBadge } from "@/components/admin/status-badge";
-import { getOrder } from "@/lib/admin/orders";
+import { getConfirmationTemplate, getOrder } from "@/lib/admin/orders";
 import { requireStaff } from "@/lib/auth";
 import { formatDateTime, formatPickup } from "@/lib/datetime";
+import { siteUrl } from "@/lib/env";
 import { formatBRL } from "@/lib/money";
 import { minutesLeft, STATUS_LABELS, STATUS_TONES } from "@/lib/order-status";
 import { formatWhatsapp } from "@/lib/phone";
 import { formatTaxId } from "@/lib/tax-id";
-import { describeItem, whatsappLink } from "@/lib/whatsapp";
+import { describeItem, renderConfirmationMessage, whatsappLink } from "@/lib/whatsapp";
 
 export const metadata: Metadata = { title: "Pedido" };
 
@@ -23,12 +24,17 @@ export default async function OrderDetailPage({ params }: Props) {
   if (!z.uuid().safeParse(id).success) notFound();
 
   // RLS hides orders from other stores: they come back as not found.
-  const detail = await getOrder(supabase, id);
+  const [detail, confirmationTemplate] = await Promise.all([getOrder(supabase, id), getConfirmationTemplate(supabase)]);
   if (!detail) notFound();
   const { order, items, events } = detail;
 
   const left = order.status === "novo" ? minutesLeft(order.expires_at) : null;
   const greeting = `Olá, ${order.customer_name}! Sobre o pedido ${order.code} da Cake 67…`;
+  // The customer's own link: the token only goes to the customer's WhatsApp.
+  const trackingUrl = `${siteUrl()}/pedido/${encodeURIComponent(order.code)}?t=${order.public_token}`;
+  const notifyHref = order.store
+    ? whatsappLink(order.customer_whatsapp, renderConfirmationMessage(confirmationTemplate, { ...order, store: order.store }, trackingUrl))
+    : null;
 
   return (
     <section className="space-y-6">
@@ -46,7 +52,7 @@ export default async function OrderDetailPage({ params }: Props) {
         </p>
       </header>
 
-      <OrderActions orderId={order.id} status={order.status} hasMadeToOrder={order.has_made_to_order} />
+      <OrderActions orderId={order.id} status={order.status} hasMadeToOrder={order.has_made_to_order} notifyHref={notifyHref} />
 
       <section className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2 rounded-2xl border border-cocoa/10 bg-white p-4">

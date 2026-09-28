@@ -8,7 +8,7 @@ export default async function SettingsPage() {
   const { supabase } = await requireAdmin();
   const { data, error } = await supabase
     .from("settings")
-    .select("reservation_minutes, order_whatsapp_template, privacy_text, privacy_reviewed")
+    .select("reservation_minutes, order_whatsapp_template, confirmation_whatsapp_template, privacy_text, privacy_reviewed")
     .eq("id", 1)
     .single();
   if (error) throw new Error(`Could not load settings: ${error.message}`);

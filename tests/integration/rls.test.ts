@@ -35,7 +35,7 @@ const id = randomUUID();
 
 // Rows that would be valid if RLS allowed them.
 const INSERTS: { [T in TableName]: Database["public"]["Tables"][T]["Insert"] } = {
-  stores: { slug: `t-${id}`, name: "x", address: "x", whatsapp: "5567999999999" },
+  stores: { slug: `t-${id}`, name: "x", address: "x", whatsapp_ready: "5567999999999", whatsapp_made_to_order: "5567999999999", whatsapp_support: "5567999999999" },
   categories: { slug: `t-${id}`, name: "x", kind: "vitrine" },
   products: { slug: `t-${id}`, name: "x", category_id: id, type: "vitrine", price_cents: 1 },
   product_images: { product_id: id, path: "x.webp" },

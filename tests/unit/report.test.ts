@@ -3,7 +3,7 @@ import { csvCell, csvCents, csvDateTime, toCsv } from "@/lib/csv";
 import { fillDays, resolvePeriod } from "@/lib/report";
 import { bakeryJsonLd, jsonLdScript, productJsonLd } from "@/lib/structured-data";
 import { settingsSchema } from "@/lib/validators/settings";
-import { renderOrderMessage, SAMPLE_ORDER, templateProblems } from "@/lib/whatsapp";
+import { ORDER_TEMPLATE, renderOrderMessage, SAMPLE_ORDER, templateProblems } from "@/lib/whatsapp";
 
 const SEED_TEMPLATE =
   "Olá, Cake 67! Pedido *{codigo}*\nLoja: {loja}\n{entrega}\n\n{itens}\n\nSubtotal: {subtotal}\nNome: {nome} · WhatsApp: {whatsapp}\n{observacoes}";
@@ -100,11 +100,11 @@ describe("csv", () => {
 
 describe("template", () => {
   it("seed template has no problems", () => {
-    expect(templateProblems(SEED_TEMPLATE)).toEqual({ missing: [], unknown: [] });
+    expect(templateProblems(SEED_TEMPLATE, ORDER_TEMPLATE)).toEqual({ missing: [], unknown: [] });
   });
 
   it("finds missing required and unknown variables", () => {
-    expect(templateProblems("Pedido {cliente} {codigo} {cliente}")).toEqual({ missing: ["itens"], unknown: ["cliente"] });
+    expect(templateProblems("Pedido {cliente} {codigo} {cliente}", ORDER_TEMPLATE)).toEqual({ missing: ["itens"], unknown: ["cliente"] });
   });
 
   it("renders the sample order", () => {
@@ -116,7 +116,13 @@ describe("template", () => {
 });
 
 describe("settingsSchema", () => {
-  const valid = { reservation_minutes: "120", order_whatsapp_template: SEED_TEMPLATE, privacy_text: "Texto", privacy_reviewed: "on" };
+  const valid = {
+    reservation_minutes: "120",
+    order_whatsapp_template: SEED_TEMPLATE,
+    confirmation_whatsapp_template: "Pedido {codigo} confirmado. {link}",
+    privacy_text: "Texto",
+    privacy_reviewed: "on",
+  };
 
   it("accepts valid settings", () => {
     expect(settingsSchema.parse(valid)).toMatchObject({ reservation_minutes: 120, privacy_reviewed: true });
@@ -128,6 +134,8 @@ describe("settingsSchema", () => {
     [{ reservation_minutes: "90.5" }, "reservation_minutes"],
     [{ order_whatsapp_template: "Pedido {codigo}" }, "order_whatsapp_template"],
     [{ order_whatsapp_template: "{codigo} {itens} {preco}" }, "order_whatsapp_template"],
+    [{ confirmation_whatsapp_template: "Pedido {codigo} confirmado" }, "confirmation_whatsapp_template"],
+    [{ confirmation_whatsapp_template: "{codigo} {link} {itens}" }, "confirmation_whatsapp_template"],
     [{ privacy_text: "x".repeat(20001) }, "privacy_text"],
   ])("rejects %j", (override, field) => {
     const result = settingsSchema.safeParse({ ...valid, ...override });

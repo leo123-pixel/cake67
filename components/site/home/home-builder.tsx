@@ -10,6 +10,7 @@ import type { ShowcaseCake } from "@/lib/storefront";
 import { whatsappLink } from "@/lib/whatsapp";
 import { useCart } from "../use-cart";
 
+// whatsapp: the made-to-order number, for cakes still without a price (spec 08, D3).
 export type BuilderStore = { id: string; slug: string; name: string; address: string; whatsapp: string };
 
 const DELIVERY = "entrega";

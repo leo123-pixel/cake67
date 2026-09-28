@@ -48,7 +48,7 @@ Na Vercel, voltar o **Root Directory** para a raiz (vazio) e o Framework para **
 
 Valores em centavos (`integer`). Datas em `timestamptz`, fuso de exibição `America/Campo_Grande`.
 
-**stores**: `id`, `slug`, `name`, `address`, `phone`, `whatsapp` (só dígitos, com 55), `hours` (jsonb: dia → abre/fecha), `active`, `sort`.
+**stores**: `id`, `slug`, `name`, `address`, `phone`, `whatsapp_ready`, `whatsapp_made_to_order`, `whatsapp_support` (um WhatsApp por setor: pronta entrega, encomenda e SAC; só dígitos, com 55; etapa 08), `hours` (jsonb: dia → abre/fecha), `active`, `sort`.
 
 **categories**: `id`, `name`, `slug`, `kind` (`vitrine` | `encomenda`), `sort`, `active`.
 
@@ -162,7 +162,7 @@ O painel deve funcionar bem no celular, porque a equipe opera no balcão.
 
 ## 9. Dados iniciais (seed)
 
-- Lojas: **Loja 1**, Rua Estiva, 200, seg a sáb 10h às 19h, dom 9h às 12h, tel. (67) 3026-8816, WhatsApp 5567981519796. **Loja 2**, Av. Afonso Pena, 2716, seg a sex 10h30 às 18h, sáb 10h às 17h30, tel. (67) 3029-3039, WhatsApp provisório (ver seção 12).
+- Lojas: **Loja 1**, Rua Estiva, 200, seg a sáb 10h às 19h, dom 9h às 12h, tel. (67) 3026-8816, WhatsApp pronta entrega (67) 99827-2300, encomenda (67) 98151-9796, SAC (67) 99328-5925. **Loja 2**, Av. Afonso Pena, 2716, seg a sex 10h30 às 18h, sáb 10h às 17h30, tel. (67) 3029-3039, WhatsApp pronta entrega (67) 99987-3946, encomenda (67) 99625-8783, SAC (67) 99619-7916.
 - Categorias e produtos da vitrine com os preços do cardápio (já usados no protótipo): fatias, potes, croissants, coxinhas de morango, morango do amor, bebidas.
 - Imagens do protótipo (`prototipo/img`) como fotos iniciais.
 - Bolos por kg com preços provisórios marcados como "a definir" no painel.
@@ -188,7 +188,7 @@ O painel deve funcionar bem no celular, porque a equipe opera no balcão.
 
 ## 12. Pendências com a cliente
 
-- WhatsApp correto da Loja 2 (no cardápio está "(67) 9625-8783", com um dígito a menos).
+- ~~WhatsApp correto da Loja 2~~ — resolvido em 2026-09-28 (etapa 08: três números por loja).
 - Preços por kg, pesos e formatos reais dos bolos; itens e preços dos kits e do cento.
 - Antecedência mínima real por tipo de encomenda.
 - Fotos reais dos produtos (as do protótipo são aquarelas do cardápio e fotos geradas por IA).

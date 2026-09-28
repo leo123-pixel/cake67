@@ -64,3 +64,33 @@ export function minutesLeft(expiresAt: string | null, now: Date = new Date()): n
   if (!expiresAt) return null;
   return Math.max(0, Math.ceil((new Date(expiresAt).getTime() - now.getTime()) / 60000));
 }
+
+// Statuses after the store confirmed: the panel can (re)send the notice.
+export const NOTIFY_STATUSES: readonly OrderStatus[] = ["confirmado", "em_producao", "pronto", "entregue"];
+
+export type PublicStatus = { title: string; text: string };
+
+// What the customer sees on their order link (spec 08).
+export function publicStatus(status: OrderStatus, fulfillment: "retirada" | "entrega"): PublicStatus {
+  switch (status) {
+    case "novo":
+      return { title: "Pedido recebido", text: "Falta um passo: envie o pedido para a loja pelo WhatsApp. O pagamento é combinado por lá." };
+    case "confirmado":
+      return { title: "Pedido confirmado", text: "A loja confirmou seu pedido. Qualquer dúvida, fale com ela pelo WhatsApp." };
+    case "em_producao":
+      return { title: "Em produção", text: "Seu pedido está sendo preparado." };
+    case "pronto":
+      return fulfillment === "entrega"
+        ? { title: "Pronto para entrega", text: "A loja vai combinar a entrega com você pelo WhatsApp." }
+        : { title: "Pronto para retirar", text: "Pode passar na loja para retirar." };
+    case "entregue":
+      return { title: "Pedido entregue", text: "Obrigado por pedir na Cake 67!" };
+    case "cancelado":
+      return { title: "Pedido cancelado", text: "Este pedido foi cancelado pela loja. Fale com ela pelo WhatsApp se tiver dúvidas." };
+    case "expirado":
+      return {
+        title: "Reserva expirada",
+        text: "O tempo para confirmar este pedido acabou e os itens voltaram para a vitrine. Fale com a loja para refazer.",
+      };
+  }
+}

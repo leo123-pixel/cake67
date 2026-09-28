@@ -112,7 +112,7 @@ describe("renderOrderMessage", () => {
     customer_whatsapp: "5567999998888",
     notes: null,
     subtotal_cents: 27180,
-    store: { name: "Loja 1", address: "Rua Estiva, 200", whatsapp: "5567981519796" },
+    store: { name: "Loja 1", address: "Rua Estiva, 200", whatsapp: "5567981519796", support_whatsapp: "5567993285925" },
     items: [
       { name: "Fatia Karen", type: "vitrine", qty: 2, total_cents: 4400, options: {} },
       {

@@ -9,6 +9,13 @@ import { formatWhatsapp } from "@/lib/phone";
 import { parseStoredHours } from "@/lib/validators/store";
 import { saveStore } from "./actions";
 
+// Each sector has its own number (spec 08).
+const WHATSAPP_FIELDS = [
+  { name: "whatsapp_ready", label: "WhatsApp · Pronta entrega", hint: "Recebe pedidos só da vitrine" },
+  { name: "whatsapp_made_to_order", label: "WhatsApp · Encomenda", hint: "Recebe pedidos com bolo, cento ou kit" },
+  { name: "whatsapp_support", label: "WhatsApp · SAC", hint: "Único número mostrado no site" },
+] as const;
+
 export function StoreForm({ store }: { store?: AdminStore }) {
   const [state, action, round] = useAdminForm(saveStore.bind(null, store?.id ?? null), { ok: false });
   const echoed = state.values;
@@ -26,22 +33,24 @@ export function StoreForm({ store }: { store?: AdminStore }) {
         <Field label="Endereço" name="address" errors={errors.address}>
           <input id="address" name="address" required defaultValue={text("address", store?.address ?? "")} className="field-input" />
         </Field>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Telefone" name="phone" errors={errors.phone}>
-            <input id="phone" name="phone" type="tel" defaultValue={text("phone", store?.phone ?? "")} className="field-input" />
-          </Field>
-          <Field label="WhatsApp" name="whatsapp" errors={errors.whatsapp} hint="Com DDD, ex. (67) 98151-9796">
-            <input
-              id="whatsapp"
-              name="whatsapp"
-              type="tel"
-              inputMode="tel"
-              required
-              defaultValue={text("whatsapp", store ? formatWhatsapp(store.whatsapp) : "")}
-              aria-invalid={Boolean(errors.whatsapp)}
-              className="field-input"
-            />
-          </Field>
+        <Field label="Telefone" name="phone" errors={errors.phone}>
+          <input id="phone" name="phone" type="tel" defaultValue={text("phone", store?.phone ?? "")} className="field-input" />
+        </Field>
+        <div className="grid gap-4 sm:grid-cols-3">
+          {WHATSAPP_FIELDS.map(({ name, label, hint }) => (
+            <Field key={name} label={label} name={name} errors={errors[name]} hint={hint}>
+              <input
+                id={name}
+                name={name}
+                type="tel"
+                inputMode="tel"
+                required
+                defaultValue={text(name, store ? formatWhatsapp(store[name]) : "")}
+                aria-invalid={Boolean(errors[name])}
+                className="field-input"
+              />
+            </Field>
+          ))}
         </div>
         <label className="flex min-h-11 items-center gap-3 text-sm">
           <input

@@ -2,10 +2,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { formatBRL } from "@/lib/money";
+import { publicStatus } from "@/lib/order-status";
 import { getOrderPublic, getPublicSettings } from "@/lib/storefront";
-import { describeFulfillment, describeItem, renderOrderMessage, whatsappLink } from "@/lib/whatsapp";
+import {
+  describeConfirmedFulfillment,
+  describeFulfillment,
+  describeItem,
+  renderOrderMessage,
+  whatsappLink,
+} from "@/lib/whatsapp";
 
-export const metadata: Metadata = { title: "Pedido recebido", robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Seu pedido", robots: { index: false, follow: false } };
 
 type Props = { params: Promise<{ code: string }>; searchParams: Promise<{ t?: string }> };
 
@@ -15,31 +22,29 @@ export default async function OrderPage({ params, searchParams }: Props) {
   if (!order) notFound();
 
   const settings = await getPublicSettings();
-  const text = renderOrderMessage(settings.order_whatsapp_template, order, settings.reservation_minutes);
-  const link = whatsappLink(order.store.whatsapp, text);
-  const expired = order.status === "expirado";
-  const cancelled = order.status === "cancelado";
+  const status = publicStatus(order.status, order.fulfillment);
+  // A new order goes to the sector that handles it; afterwards, questions go to the SAC.
+  const isNew = order.status === "novo";
+  const link = isNew
+    ? whatsappLink(order.store.whatsapp, renderOrderMessage(settings.order_whatsapp_template, order, settings.reservation_minutes))
+    : whatsappLink(order.store.support_whatsapp, `Olá, Cake 67! Sobre o pedido ${order.code}…`);
 
   return (
     <div className="bg-linen text-cocoa">
       <section className="mx-auto max-w-2xl space-y-6 px-4 py-12 sm:px-8">
         <header className="space-y-2">
-          <p className="text-xs font-medium tracking-[0.32em] text-raspberry uppercase">
-            {expired ? "Reserva expirada" : cancelled ? "Pedido cancelado" : "Pedido recebido"}
-          </p>
+          <p className="text-xs font-medium tracking-[0.32em] text-raspberry uppercase">{status.title}</p>
           <h1 className="text-4xl text-olive tabular-nums">{order.code}</h1>
-          {expired ? (
-            <p>O tempo para confirmar este pedido acabou e os itens voltaram para a vitrine. Fale com a loja para refazer.</p>
-          ) : cancelled ? (
-            <p>Este pedido foi cancelado pela loja. Fale com ela pelo WhatsApp se tiver dúvidas.</p>
-          ) : (
-            <p>Falta um passo: envie o pedido para a loja pelo WhatsApp. O pagamento é combinado por lá.</p>
-          )}
+          <p>{status.text}</p>
         </header>
 
-        {!expired && !cancelled && (
+        {isNew ? (
           <a href={link} target="_blank" rel="noopener noreferrer" className="btn w-full bg-olive text-lg text-linen hover:bg-olive-dark">
             Finalizar no WhatsApp
+          </a>
+        ) : (
+          <a href={link} target="_blank" rel="noopener noreferrer" className="btn btn-secondary w-full">
+            Falar com a loja
           </a>
         )}
 
@@ -47,7 +52,9 @@ export default async function OrderPage({ params, searchParams }: Props) {
           <p className="text-sm text-cocoa-soft">
             {order.store.name} · {order.store.address}
           </p>
-          <p className="font-medium">{describeFulfillment(order, settings.reservation_minutes)}</p>
+          <p className="font-medium">
+            {isNew ? describeFulfillment(order, settings.reservation_minutes) : describeConfirmedFulfillment(order)}
+          </p>
           <ul className="space-y-1 border-t border-cocoa/10 pt-3 text-sm">
             {order.items.map((item, index) => (
               <li key={index} className="flex justify-between gap-3">

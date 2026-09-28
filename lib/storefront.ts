@@ -10,7 +10,6 @@ export type CheckoutStore = {
   slug: string;
   name: string;
   address: string;
-  whatsapp: string;
   hours: StoreHours;
 };
 
@@ -18,7 +17,7 @@ export async function listCheckoutStores(): Promise<CheckoutStore[]> {
   const supabase = await createPublicClient();
   const { data, error } = await supabase
     .from("stores")
-    .select("id, slug, name, address, whatsapp, hours")
+    .select("id, slug, name, address, hours")
     .order("sort");
   if (error) throw new Error(`Could not load stores: ${error.message}`);
   return data.map((store) => ({ ...store, hours: parseStoredHours(store.hours) }));

@@ -20,7 +20,10 @@ export function StoresList({ stores }: { stores: AdminStore[] }) {
             {!store.active && <StatusBadge tone="gray">Inativa</StatusBadge>}
           </span>
           <span className="block text-sm text-cocoa-soft">{store.address}</span>
-          <span className="block text-sm text-cocoa-soft">WhatsApp {formatWhatsapp(store.whatsapp)}</span>
+          <span className="block text-sm text-cocoa-soft">
+            Pronta entrega {formatWhatsapp(store.whatsapp_ready)} · Encomenda {formatWhatsapp(store.whatsapp_made_to_order)} · SAC{" "}
+            {formatWhatsapp(store.whatsapp_support)}
+          </span>
         </Link>
       )}
     />

@@ -68,6 +68,11 @@ Cada feature = uma etapa do SPEC (seção 11). Uma por vez, com commit e deploy 
 - Confirmar no painel abre o WhatsApp do cliente com mensagem e link; página do pedido com status real
 - Aceite: pedido só vitrine da Loja 2 → (67) 99987-3946; com encomenda → (67) 99625-8783
 
+**09 · Linha do tempo na página do pedido** - IN REVIEW (verificado em localhost em 2026-09-28)
+
+- Etapas do pedido com data e hora, por tipo (vitrine/encomenda) e retirada/entrega; cancelado e expirado encerram a linha (AD-016)
+- `get_order_public` devolve só status e horário de cada mudança
+
 ---
 
 ## M2 · Lançamento

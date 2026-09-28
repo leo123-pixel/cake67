@@ -37,11 +37,13 @@ export default async function PanelHome({ searchParams }: Props) {
   const isAdmin = staff.role === "admin";
   const { loja } = await searchParams;
 
-  const { data: stores } = await supabase.from("stores").select("id, slug, name").order("sort");
+  const [{ data: stores }, privacyPending] = await Promise.all([
+    supabase.from("stores").select("id, slug, name").order("sort"),
+    isAdmin && isPrivacyPending(supabase),
+  ]);
   const store = isAdmin ? stores?.find((s) => s.slug === loja) : undefined;
   const { pending, counts, outToday } = await getDashboard(supabase, todayInCampoGrande(), store?.id);
   const shortcuts = isAdmin ? ADMIN_SHORTCUTS : ATTENDANT_SHORTCUTS;
-  const privacyPending = isAdmin && (await isPrivacyPending(supabase));
 
   return (
     <section className="space-y-8">

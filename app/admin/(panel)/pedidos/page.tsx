@@ -17,11 +17,16 @@ export default async function OrdersPage({ searchParams }: Props) {
   const status = params.status && params.status in STATUS_LABELS ? (params.status as OrderStatus) : undefined;
   const date = dayStartIso(params.data) ? params.data! : todayInCampoGrande();
 
-  const { data: stores, error } = await supabase.from("stores").select("id, slug, name").order("sort");
+  // Orders wait for the store list only when filtering by a store.
+  const filtersByStore = isAdmin && Boolean(params.loja);
+  const [{ data: stores, error }, unfilteredOrders] = await Promise.all([
+    supabase.from("stores").select("id, slug, name").order("sort"),
+    filtersByStore ? null : listOrders(supabase, { status, date }),
+  ]);
   if (error) throw new Error(`Could not load stores: ${error.message}`);
-  const store = isAdmin ? stores.find((s) => s.slug === params.loja) : undefined;
+  const store = filtersByStore ? stores.find((s) => s.slug === params.loja) : undefined;
 
-  const orders = await listOrders(supabase, { status, date, storeId: store?.id });
+  const orders = unfilteredOrders ?? (await listOrders(supabase, { status, date, storeId: store?.id }));
 
   return (
     <section className="space-y-6">

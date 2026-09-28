@@ -1,11 +1,18 @@
 # State
 
-**Last Updated:** 2026-09-27
-**Current Work:** Sistema no ar em https://cake67.vercel.app desde 2026-09-27 (PRs #1–#7 mergeados na `main`; produção = `main`). Próximo: M2 · Lançamento (pendências da cliente, plano pago da Vercel e domínio).
+**Last Updated:** 2026-09-28
+**Current Work:** Sistema no ar em https://cake67.vercel.app desde 2026-09-27 (PRs #1–#10 mergeados na `main`; produção = `main`). Próximo: M2 · Lançamento (pendências da cliente, plano pago da Vercel e domínio).
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-013: Funções da Vercel em São Paulo (`gru1`) (2026-09-28)
+
+**Decision:** `vercel.json` fixa `regions: ["gru1"]`, ao lado do Supabase (`sa-east-1`). O painel ganhou `loading.tsx` (esqueleto na navegação) e consultas independentes em paralelo no Início e em Pedidos (PR #10).
+**Reason:** Painel "travando": as funções rodavam em `iad1` (EUA) e cada consulta cruzava EUA↔Brasil; as páginas do painel encadeiam 4–6 consultas. `/cardapio` caiu de 0,85–3,2 s para 0,4–0,6 s de TTFB.
+**Trade-off:** Nenhum relevante; o plano gratuito permite uma região. Se o Supabase mudar de região, mudar esta junto.
+**Impact:** Pendente: a sessão é conferida duas vezes por página (`middleware.ts` e `getSession`); cortar uma mexe na checagem de acesso e fica para outra etapa.
 
 ### AD-012: Home igual ao protótipo em produção (2026-09-27)
 

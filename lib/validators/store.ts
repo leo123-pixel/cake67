@@ -26,18 +26,22 @@ const openDay = z
 
 export type StoreHours = Record<WeekDay, z.infer<typeof openDay> | null>;
 
+const whatsappField = z.string().transform((text, ctx) => {
+  const digits = normalizeWhatsapp(text);
+  if (!digits) {
+    ctx.addIssue({ code: "custom", message: "WhatsApp inválido, ex. (67) 98151-9796" });
+    return z.NEVER;
+  }
+  return digits;
+});
+
 export const storeSchema = z.object({
   name: requiredText("Informe o nome"),
   address: requiredText("Informe o endereço"),
   phone: optionalText,
-  whatsapp: z.string().transform((text, ctx) => {
-    const digits = normalizeWhatsapp(text);
-    if (!digits) {
-      ctx.addIssue({ code: "custom", message: "WhatsApp inválido, ex. (67) 98151-9796" });
-      return z.NEVER;
-    }
-    return digits;
-  }),
+  whatsapp_ready: whatsappField,
+  whatsapp_made_to_order: whatsappField,
+  whatsapp_support: whatsappField,
   active: checkbox,
   hours: z.object(
     Object.fromEntries(WEEK_DAYS.map((day) => [day, openDay.nullable()])) as Record<

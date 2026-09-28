@@ -13,13 +13,15 @@ import {
   CANCEL_REASONS,
   canCancel,
   nextStatuses,
+  NOTIFY_STATUSES,
   OTHER_REASON,
   type OrderStatus,
 } from "@/lib/order-status";
 
-type Props = { orderId: string; status: OrderStatus; hasMadeToOrder: boolean };
+// notifyHref: wa.me link to the customer with the confirmation message (spec 08).
+type Props = { orderId: string; status: OrderStatus; hasMadeToOrder: boolean; notifyHref: string | null };
 
-export function OrderActions({ orderId, status, hasMadeToOrder }: Props) {
+export function OrderActions({ orderId, status, hasMadeToOrder, notifyHref }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -27,18 +29,28 @@ export function OrderActions({ orderId, status, hasMadeToOrder }: Props) {
   const [reason, setReason] = useState<string>(CANCEL_REASONS[0]);
   const [note, setNote] = useState("");
 
-  function run(task: () => Promise<OrderActionResult>) {
+  // notify: after a confirmation, send the customer to WhatsApp. The tab is
+  // opened within the click, since window.open after an await is blocked as
+  // a pop-up; it only goes to WhatsApp if the action succeeded.
+  function run(task: () => Promise<OrderActionResult>, notify = false) {
     setError(null);
+    const tab = notify && notifyHref ? window.open("", "_blank") : null;
     startTransition(async () => {
       try {
         const result = await task();
         if (!result.ok) {
+          tab?.close();
           setError(result.message ?? "Não foi possível concluir.");
           router.refresh();
           return;
         }
+        if (tab && notifyHref) {
+          tab.opener = null;
+          tab.location.href = notifyHref;
+        }
         setCancelling(false);
       } catch {
+        tab?.close();
         setError("Sem conexão. Tente de novo.");
       }
     });
@@ -54,16 +66,21 @@ export function OrderActions({ orderId, status, hasMadeToOrder }: Props) {
             key={to}
             type="button"
             disabled={pending}
-            onClick={() => run(() => advanceOrder(orderId, status, to))}
+            onClick={() => run(() => advanceOrder(orderId, status, to), to === "confirmado")}
             className={index === 0 ? "btn btn-primary" : "btn btn-secondary"}
           >
             {ACTION_LABELS[to]}
           </button>
         ))}
         {status === "expirado" && (
-          <button type="button" disabled={pending} onClick={() => run(() => reactivateOrder(orderId))} className="btn btn-primary">
+          <button type="button" disabled={pending} onClick={() => run(() => reactivateOrder(orderId), true)} className="btn btn-primary">
             Reativar e confirmar
           </button>
+        )}
+        {notifyHref && NOTIFY_STATUSES.includes(status) && (
+          <a href={notifyHref} target="_blank" rel="noopener noreferrer" className="btn btn-secondary">
+            Avisar cliente no WhatsApp
+          </a>
         )}
         {canCancel(status) && !cancelling && (
           <button type="button" disabled={pending} onClick={() => setCancelling(true)} className="btn btn-danger">
@@ -71,6 +88,10 @@ export function OrderActions({ orderId, status, hasMadeToOrder }: Props) {
           </button>
         )}
       </div>
+
+      {status === "novo" && notifyHref && (
+        <p className="text-sm text-cocoa-soft">Ao confirmar, o WhatsApp do cliente abre com o aviso pronto. É só enviar.</p>
+      )}
 
       {status === "expirado" && (
         <p className="text-sm text-cocoa-soft">Reativar separa os itens da vitrine de novo, se ainda houver.</p>

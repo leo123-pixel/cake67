@@ -32,7 +32,7 @@ export type AdminAddon = Awaited<ReturnType<typeof listAdminAddons>>[number];
 export async function listAdminStores(supabase: Client) {
   const { data, error } = await supabase
     .from("stores")
-    .select("id, slug, name, address, phone, whatsapp, hours, active, sort")
+    .select("id, slug, name, address, phone, whatsapp_ready, whatsapp_made_to_order, whatsapp_support, hours, active, sort")
     .order("sort");
   if (error) throw new Error(`Could not load stores: ${error.message}`);
   return data;

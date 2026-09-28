@@ -4,9 +4,10 @@
 
 -- stores ---------------------------------------------------------------
 
-insert into public.stores (slug, name, address, phone, whatsapp, hours, sort) values
+-- WhatsApp by sector: ready-made, made-to-order, support (spec 08).
+insert into public.stores (slug, name, address, phone, whatsapp_ready, whatsapp_made_to_order, whatsapp_support, hours, sort) values
   (
-    'estiva', 'Loja 1', 'Rua Estiva, 200', '(67) 3026-8816', '5567981519796',
+    'estiva', 'Loja 1', 'Rua Estiva, 200', '(67) 3026-8816', '5567998272300', '5567981519796', '5567993285925',
     '{
       "mon": {"open": "10:00", "close": "19:00"},
       "tue": {"open": "10:00", "close": "19:00"},
@@ -19,8 +20,7 @@ insert into public.stores (slug, name, address, phone, whatsapp, hours, sort) va
     1
   ),
   (
-    -- PROVISIONAL WhatsApp: menu shows (67) 9625-8783, one digit short (SPEC §12).
-    'afonso-pena', 'Loja 2', 'Av. Afonso Pena, 2716', '(67) 3029-3039', '556796258783',
+    'afonso-pena', 'Loja 2', 'Av. Afonso Pena, 2716', '(67) 3029-3039', '5567999873946', '5567996258783', '5567996197916',
     '{
       "mon": {"open": "10:30", "close": "18:00"},
       "tue": {"open": "10:30", "close": "18:00"},

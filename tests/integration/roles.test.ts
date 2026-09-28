@@ -71,7 +71,7 @@ describe.skipIf(!configured)("attendant cannot change the catalog", () => {
       attendant.from("products").insert({ slug: `qa-${run}`, name: "x", category_id: category!.id, type: "vitrine", price_cents: 1 }),
       attendant.from("categories").insert({ slug: `qa-${run}`, name: "x", kind: "vitrine" }),
       attendant.from("addons").insert({ name: `qa-${run}`, price_cents: 1 }),
-      attendant.from("stores").insert({ slug: `qa-${run}`, name: "x", address: "x", whatsapp: "5567999999999" }),
+      attendant.from("stores").insert({ slug: `qa-${run}`, name: "x", address: "x", whatsapp_ready: "5567999999999", whatsapp_made_to_order: "5567999999999", whatsapp_support: "5567999999999" }),
       attendant.from("highlights").insert({ slot: "banner", title: "x" }),
     ]);
     for (const { error } of attempts) expect(error?.code).toBe("42501");

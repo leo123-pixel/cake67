@@ -23,7 +23,10 @@ export type Database = {
           name: string;
           address: string;
           phone: string | null;
-          whatsapp: string;
+          // stores.whatsapp is deprecated (spec 08) and left out on purpose.
+          whatsapp_ready: string;
+          whatsapp_made_to_order: string;
+          whatsapp_support: string;
           hours: Json;
           active: boolean;
           sort: number;
@@ -34,7 +37,9 @@ export type Database = {
           name: string;
           address: string;
           phone?: string | null;
-          whatsapp: string;
+          whatsapp_ready: string;
+          whatsapp_made_to_order: string;
+          whatsapp_support: string;
           hours?: Json;
           active?: boolean;
           sort?: number;
@@ -452,6 +457,7 @@ export type Database = {
           id: number;
           reservation_minutes: number;
           order_whatsapp_template: string;
+          confirmation_whatsapp_template: string;
           privacy_text: string;
           privacy_reviewed: boolean;
           updated_at: string;
@@ -460,6 +466,7 @@ export type Database = {
           id?: number;
           reservation_minutes?: number;
           order_whatsapp_template: string;
+          confirmation_whatsapp_template?: string;
           privacy_text?: string;
           privacy_reviewed?: boolean;
           updated_at?: string;

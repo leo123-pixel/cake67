@@ -29,7 +29,8 @@ export default async function HomePage() {
   const cakes = showcase.filter((cake) => cake.weightsKg.length > 0 && cake.formats.length > 0);
   // The cake of the month shows up as a tag on the cakes; other highlights keep their cards.
   const otherHighlights = highlights.filter((h) => !(h.slot === "bolo_do_mes" && h.productId));
-  const firstWhatsapp = stores[0]?.whatsapp ?? null;
+  // Public contact is the SAC (spec 08, D2).
+  const supportWhatsapp = stores[0]?.whatsapp_support ?? null;
 
   const assistantData: AssistantData = {
     stores: stores.map((store) => ({ name: store.name, address: store.address, hours: describeHours(store.hours) })),
@@ -66,15 +67,21 @@ export default async function HomePage() {
       {cakes.length > 0 && (
         <HomeBuilder
           cakes={cakes}
-          stores={stores.map(({ id, slug, name, address, whatsapp }) => ({ id, slug, name, address, whatsapp }))}
+          stores={stores.map(({ id, slug, name, address, whatsapp_made_to_order }) => ({
+            id,
+            slug,
+            name,
+            address,
+            whatsapp: whatsapp_made_to_order,
+          }))}
           today={todayInCampoGrande()}
           hasBulk={madeToOrder.some((product) => product.type !== "bolo_kg")}
         />
       )}
       <HomeVitrine stores={stores.map(({ slug, address }) => ({ slug, address }))} menus={menus} />
       <StoresSection stores={stores} />
-      <Cakelovers whatsapp={firstWhatsapp} />
-      <Assistant data={assistantData} whatsapp={firstWhatsapp} />
+      <Cakelovers whatsapp={supportWhatsapp} />
+      <Assistant data={assistantData} whatsapp={supportWhatsapp} />
     </>
   );
 }

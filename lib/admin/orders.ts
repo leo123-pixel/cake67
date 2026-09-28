@@ -51,7 +51,7 @@ export type OrderListItem = Awaited<ReturnType<typeof listOrders>>[number];
 export async function getOrder(supabase: Client, id: string) {
   const { data, error } = await supabase
     .from("orders")
-    .select("*, store:stores(name, address, whatsapp), order_items(*), order_events(*)")
+    .select("*, store:stores(name, address), order_items(*), order_events(*)")
     .eq("id", id)
     .maybeSingle();
   if (error) throw new Error(`Could not load order: ${error.message}`);
@@ -95,4 +95,10 @@ export async function getDashboard(supabase: Client, date: string, storeId?: str
   for (const row of today.data!) counts.set(row.status, (counts.get(row.status) ?? 0) + 1);
 
   return { pending: pending.data!, counts, outToday: outToday.data! };
+}
+
+export async function getConfirmationTemplate(supabase: Client): Promise<string> {
+  const { data, error } = await supabase.from("settings").select("confirmation_whatsapp_template").eq("id", 1).single();
+  if (error) throw new Error(`Could not load confirmation template: ${error.message}`);
+  return data.confirmation_whatsapp_template;
 }

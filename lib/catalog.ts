@@ -2,7 +2,8 @@ import type { Tables } from "@/lib/database.types";
 import { productImageUrl } from "@/lib/images";
 import { createPublicClient } from "@/lib/supabase/public";
 
-export type Store = Pick<Tables<"stores">, "id" | "slug" | "name" | "address" | "phone" | "whatsapp" | "hours">;
+export type Store = Pick<Tables<"stores">, "id" | "slug" | "name" | "address" | "phone" | "whatsapp_made_to_order" | "whatsapp_support" | "hours"
+>;
 
 export type MenuProduct = {
   id: string;
@@ -82,7 +83,7 @@ export async function listStores(): Promise<Store[]> {
   const supabase = await createPublicClient();
   const { data, error } = await supabase
     .from("stores")
-    .select("id, slug, name, address, phone, whatsapp, hours")
+    .select("id, slug, name, address, phone, whatsapp_made_to_order, whatsapp_support, hours")
     .order("sort");
 
   if (error) throw new Error(`Could not load stores: ${error.message}`);

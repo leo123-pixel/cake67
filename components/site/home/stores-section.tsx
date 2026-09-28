@@ -41,10 +41,10 @@ export function StoresSection({ stores }: { stores: Store[] }) {
                       <dd>{store.phone}</dd>
                     </>
                   )}
-                  <dt>WhatsApp</dt>
-                  <dd>{formatWhatsapp(store.whatsapp)}</dd>
+                  <dt>WhatsApp (SAC)</dt>
+                  <dd>{formatWhatsapp(store.whatsapp_support)}</dd>
                 </dl>
-                <a className="ck-btn ck-btn-olive" href={`https://wa.me/${store.whatsapp}`} target="_blank" rel="noopener noreferrer">
+                <a className="ck-btn ck-btn-olive" href={`https://wa.me/${store.whatsapp_support}`} target="_blank" rel="noopener noreferrer">
                   WhatsApp
                 </a>
               </article>

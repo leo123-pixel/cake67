@@ -6,15 +6,25 @@ import { SubmitButton } from "@/components/admin/submit-button";
 import { useAdminForm } from "@/components/admin/use-admin-form";
 import type { FieldErrors } from "@/lib/validators/common";
 import { describeTemplateProblems, RESERVATION_RANGE } from "@/lib/validators/settings";
-import { renderOrderMessage, SAMPLE_ORDER, TEMPLATE_VARIABLES } from "@/lib/whatsapp";
+import {
+  CONFIRMATION_TEMPLATE,
+  ORDER_TEMPLATE,
+  renderConfirmationMessage,
+  renderOrderMessage,
+  SAMPLE_ORDER,
+  type TemplateSpec,
+} from "@/lib/whatsapp";
 import { saveSettings } from "./actions";
 
 export type SettingsValues = {
   reservation_minutes: number;
   order_whatsapp_template: string;
+  confirmation_whatsapp_template: string;
   privacy_text: string;
   privacy_reviewed: boolean;
 };
+
+const SAMPLE_LINK = "https://cake67.vercel.app/pedido/C67-000123?t=…";
 
 export function SettingsForm({ settings }: { settings: SettingsValues }) {
   const [state, action, round] = useAdminForm(saveSettings);
@@ -23,6 +33,7 @@ export function SettingsForm({ settings }: { settings: SettingsValues }) {
     ? {
         reservation_minutes: Number(echoed.reservation_minutes) || settings.reservation_minutes,
         order_whatsapp_template: String(echoed.order_whatsapp_template ?? ""),
+        confirmation_whatsapp_template: String(echoed.confirmation_whatsapp_template ?? ""),
         privacy_text: String(echoed.privacy_text ?? ""),
         privacy_reviewed: echoed.privacy_reviewed === "on",
       }
@@ -40,24 +51,8 @@ export function SettingsForm({ settings }: { settings: SettingsValues }) {
 
 function SettingsFields({ initial, errors }: { initial: SettingsValues; errors: FieldErrors }) {
   const [reservation, setReservation] = useState(String(initial.reservation_minutes));
-  const [template, setTemplate] = useState(initial.order_whatsapp_template);
   const [reviewed, setReviewed] = useState(initial.privacy_reviewed);
-  const templateRef = useRef<HTMLTextAreaElement>(null);
-
-  const problem = describeTemplateProblems(template);
   const minutes = Number(reservation) >= RESERVATION_RANGE.min ? Number(reservation) : 120;
-
-  function insertVariable(name: string) {
-    const field = templateRef.current;
-    const token = `{${name}}`;
-    const start = field?.selectionStart ?? template.length;
-    const end = field?.selectionEnd ?? template.length;
-    setTemplate(template.slice(0, start) + token + template.slice(end));
-    requestAnimationFrame(() => {
-      field?.focus();
-      field?.setSelectionRange(start + token.length, start + token.length);
-    });
-  }
 
   return (
     <>
@@ -85,61 +80,25 @@ function SettingsFields({ initial, errors }: { initial: SettingsValues; errors: 
         </Field>
       </fieldset>
 
-      <fieldset className="space-y-4">
-        <legend className="mb-2 text-xl text-olive">Mensagem do WhatsApp</legend>
-        <p className="text-sm text-cocoa-soft">
-          Texto que o cliente envia para a loja ao concluir o pedido. Toque numa variável para inserir onde está o cursor.
-        </p>
-        <ul className="flex flex-wrap gap-2">
-          {Object.entries(TEMPLATE_VARIABLES).map(([name, description]) => (
-            <li key={name}>
-              <button
-                type="button"
-                onClick={() => insertVariable(name)}
-                title={description}
-                className="min-h-11 rounded-full border border-cocoa/15 bg-white px-3 text-sm hover:border-olive"
-              >
-                {`{${name}}`}
-                <span className="sr-only">: {description}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Field
-            label="Modelo"
-            name="order_whatsapp_template"
-            errors={errors.order_whatsapp_template ?? (problem ? [problem] : undefined)}
-            hint="Obrigatórias: {codigo} e {itens}."
-          >
-            <textarea
-              id="order_whatsapp_template"
-              ref={templateRef}
-              name="order_whatsapp_template"
-              rows={10}
-              maxLength={2000}
-              required
-              value={template}
-              onChange={(event) => setTemplate(event.target.value)}
-              aria-invalid={Boolean(problem || errors.order_whatsapp_template)}
-              className="field-input font-mono text-sm"
-            />
-          </Field>
-          <div className="space-y-1.5">
-            <p className="text-sm font-medium">Prévia com um pedido de exemplo</p>
-            <p className="rounded-2xl bg-[#dcf8c6] p-4 text-sm whitespace-pre-line text-cocoa" aria-live="polite">
-              {renderOrderMessage(template, SAMPLE_ORDER, minutes)}
-            </p>
-          </div>
-        </div>
-        <dl className="grid gap-x-4 gap-y-1 text-xs text-cocoa-soft sm:grid-cols-2">
-          {Object.entries(TEMPLATE_VARIABLES).map(([name, description]) => (
-            <div key={name}>
-              <dt className="inline font-mono">{`{${name}}`}</dt> <dd className="inline">{description}</dd>
-            </div>
-          ))}
-        </dl>
-      </fieldset>
+      <TemplateEditor
+        legend="Mensagem do pedido"
+        intro="Texto que o cliente envia para a loja ao concluir o pedido."
+        name="order_whatsapp_template"
+        spec={ORDER_TEMPLATE}
+        initial={initial.order_whatsapp_template}
+        errors={errors.order_whatsapp_template}
+        preview={(template) => renderOrderMessage(template, SAMPLE_ORDER, minutes)}
+      />
+
+      <TemplateEditor
+        legend="Mensagem de confirmação"
+        intro="Texto que o atendente envia ao cliente quando confirma o pedido. Não mostra valores."
+        name="confirmation_whatsapp_template"
+        spec={CONFIRMATION_TEMPLATE}
+        initial={initial.confirmation_whatsapp_template}
+        errors={errors.confirmation_whatsapp_template}
+        preview={(template) => renderConfirmationMessage(template, SAMPLE_ORDER, SAMPLE_LINK)}
+      />
 
       <fieldset className="space-y-4">
         <legend className="mb-2 flex items-center gap-3 text-xl text-olive">
@@ -173,5 +132,90 @@ function SettingsFields({ initial, errors }: { initial: SettingsValues; errors: 
         </label>
       </fieldset>
     </>
+  );
+}
+
+type TemplateEditorProps = {
+  legend: string;
+  intro: string;
+  name: string;
+  spec: TemplateSpec;
+  initial: string;
+  errors: string[] | undefined;
+  preview: (template: string) => string;
+};
+
+function TemplateEditor({ legend, intro, name, spec, initial, errors, preview }: TemplateEditorProps) {
+  const [template, setTemplate] = useState(initial);
+  const templateRef = useRef<HTMLTextAreaElement>(null);
+  const problem = describeTemplateProblems(template, spec);
+  const variables = Object.entries(spec.variables);
+
+  function insertVariable(variable: string) {
+    const field = templateRef.current;
+    const token = `{${variable}}`;
+    const start = field?.selectionStart ?? template.length;
+    const end = field?.selectionEnd ?? template.length;
+    setTemplate(template.slice(0, start) + token + template.slice(end));
+    requestAnimationFrame(() => {
+      field?.focus();
+      field?.setSelectionRange(start + token.length, start + token.length);
+    });
+  }
+
+  return (
+    <fieldset className="space-y-4">
+      <legend className="mb-2 text-xl text-olive">{legend}</legend>
+      <p className="text-sm text-cocoa-soft">{intro} Toque numa variável para inserir onde está o cursor.</p>
+      <ul className="flex flex-wrap gap-2">
+        {variables.map(([variable, description]) => (
+          <li key={variable}>
+            <button
+              type="button"
+              onClick={() => insertVariable(variable)}
+              title={description}
+              className="min-h-11 rounded-full border border-cocoa/15 bg-white px-3 text-sm hover:border-olive"
+            >
+              {`{${variable}}`}
+              <span className="sr-only">: {description}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Field
+          label="Modelo"
+          name={name}
+          errors={errors ?? (problem ? [problem] : undefined)}
+          hint={`Obrigatórias: ${spec.required.map((variable) => `{${variable}}`).join(" e ")}.`}
+        >
+          <textarea
+            id={name}
+            ref={templateRef}
+            name={name}
+            rows={10}
+            maxLength={2000}
+            required
+            value={template}
+            onChange={(event) => setTemplate(event.target.value)}
+            aria-invalid={Boolean(problem || errors)}
+            className="field-input font-mono text-sm"
+          />
+        </Field>
+        <div className="space-y-1.5">
+          <p className="text-sm font-medium">Prévia com um pedido de exemplo</p>
+          <p className="rounded-2xl bg-[#dcf8c6] p-4 text-sm whitespace-pre-line text-cocoa" aria-live="polite">
+            {preview(template)}
+          </p>
+        </div>
+      </div>
+      <dl className="grid gap-x-4 gap-y-1 text-xs text-cocoa-soft sm:grid-cols-2">
+        {variables.map(([variable, description]) => (
+          <div key={variable}>
+            <dt className="inline font-mono">{`{${variable}}`}</dt> <dd className="inline">{description}</dd>
+          </div>
+        ))}
+      </dl>
+    </fieldset>
   );
 }

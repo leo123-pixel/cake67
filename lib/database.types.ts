@@ -23,7 +23,6 @@ export type Database = {
           name: string;
           address: string;
           phone: string | null;
-          // stores.whatsapp is deprecated (spec 08) and left out on purpose.
           whatsapp_ready: string;
           whatsapp_made_to_order: string;
           whatsapp_support: string;

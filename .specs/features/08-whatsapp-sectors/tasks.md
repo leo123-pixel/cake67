@@ -1,7 +1,7 @@
 # 08 · WhatsApp por setor e aviso de confirmação — Tasks
 
 **Design**: `.specs/features/08-whatsapp-sectors/design.md`
-**Status**: In review (2026-09-28)
+**Status**: Done (2026-09-28)
 
 ## Progress
 
@@ -11,7 +11,7 @@
 | T4–T6 | ✅ | 197 testes unitários passando |
 | T7–T11 | ✅ | Formatação original restaurada (sem Prettier, L-021) |
 | T12–T13 | ✅ | lint, typecheck, 197 unit, 64 integração, build. Localhost: home só com SAC (Loja 1 (67) 99328-5925, Loja 2 (67) 99619-7916), bolo sem preço → Encomenda; pedido real só vitrine na Loja 2 → (67) 99987-3946, pedido com encomenda → (67) 99625-8783; link mostra Confirmado / Em produção / Pronto para retirar / Entregue / Cancelado com "Falar com a loja" no SAC; 360 px sem rolagem. Achado e corrigido: cartão dizia "Retirada em até 2 h" depois de confirmado. **Não verificado:** clique em Confirmar no painel (login do painel é do Leonardo) |
-| T14 | 🟡 | PR aberto; falta preview, teste do Confirmar pelo Leonardo, merge e PR que apaga `stores.whatsapp` |
+| T14 | ✅ | PR #14 mergeado; produção mostra o status real (C67-000076 confirmado no preview → "Pedido confirmado" no ar); `stores.whatsapp` apagada depois do deploy |
 
 Branch: `feat/08-whatsapp-sectors`, a partir da `main`.
 

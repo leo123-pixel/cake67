@@ -62,7 +62,7 @@ Cada feature = uma etapa do SPEC (seção 11). Uma por vez, com commit e deploy 
 - Cabeçalho e rodapé do protótipo em todo o site
 - Aceite: lado a lado com `cake67.vercel.app` em 1280 e 375 px; pedido real pela home
 
-**08 · WhatsApp por setor e aviso de confirmação** - IN REVIEW (verificado em localhost em 2026-09-28)
+**08 · WhatsApp por setor e aviso de confirmação** - COMPLETE (verificado em localhost e preview em 2026-09-28; PR #14)
 
 - Três WhatsApp por loja (pronta entrega, encomenda, SAC); pedido vai para o setor certo; site mostra só o SAC (AD-015)
 - Confirmar no painel abre o WhatsApp do cliente com mensagem e link; página do pedido com status real

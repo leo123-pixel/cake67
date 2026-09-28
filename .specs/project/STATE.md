@@ -1,7 +1,7 @@
 # State
 
 **Last Updated:** 2026-09-28
-**Current Work:** Sistema no ar em https://cake67.vercel.app desde 2026-09-27 (produção = `main`). Etapa 08 (WhatsApp por setor e aviso de confirmação) em PR; migration já aplicada no projeto. Depois do merge: PR que apaga `stores.whatsapp`. Próximo: M2 · Lançamento (pendências da cliente, plano pago da Vercel e domínio).
+**Current Work:** Sistema no ar em https://cake67.vercel.app desde 2026-09-27 (produção = `main`). Etapa 08 (WhatsApp por setor e aviso de confirmação) no ar desde 2026-09-28 (PR #14); `stores.whatsapp` apagada em seguida. Próximo: M2 · Lançamento (pendências da cliente, plano pago da Vercel e domínio).
 
 ---
 
@@ -12,7 +12,7 @@
 **Decision:** Cada loja tem três WhatsApp: pronta entrega, encomenda e SAC. Pedido com qualquer item de encomenda vai para Encomenda; só vitrine vai para Pronta entrega (a escolha fica em `get_order_public`). Contato público (home, assistente, Cakelovers, pedido depois de `novo`) é só o SAC; "Pedir pelo WhatsApp" de bolo sem preço vai para Encomenda. Ao **Confirmar** (e **Reativar e confirmar**), o painel abre o WhatsApp do cliente com a mensagem de confirmação (modelo editável em Configurações, exige `{codigo}` e `{link}`, sem valores); a página `/pedido/[code]` mostra o status real. Etapa 08.
 **Reason:** Pedido do Leonardo: a operação real separa os setores e o cliente não sabia que o pedido foi confirmado.
 **Trade-off:** O aviso não é automático (o atendente envia). A API oficial do WhatsApp (Meta) ficou fora: exige conta verificada, modelo aprovado e custo por mensagem; o gatilho é o mesmo, então dá para trocar depois.
-**Impact:** `stores.whatsapp` fica anulável e fora dos tipos até um PR seguinte apagar a coluna (a migration foi aplicada antes do merge sem quebrar o site no ar). Resolve a pendência do WhatsApp da Loja 2.
+**Impact:** A migration foi aplicada antes do merge sem quebrar o site no ar (manteve `stores.whatsapp`); a coluna foi apagada depois do deploy (`20261005000100`). Resolve a pendência do WhatsApp da Loja 2.
 
 ### AD-014: Uma checagem de sessão no servidor por acesso (2026-09-28)
 

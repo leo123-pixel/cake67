@@ -15,23 +15,25 @@ export type Staff = {
 
 // Signed-in user and their staff row (read through RLS "staff reads own row").
 // null = no session; staff null = signed in but not part of the team.
+// getClaims verifies the ES256 JWT locally (cached JWKS); the middleware
+// already asked the Auth server with getUser on this request. Access is
+// revoked through staff.active, which is read fresh every time.
 export const getSession = cache(async () => {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  const { data: auth } = await supabase.auth.getClaims();
+  const claims = auth?.claims;
+  if (!claims) return null;
 
   const { data, error } = await supabase
     .from("staff")
     .select("name, role, store_id, active")
-    .eq("user_id", user.id)
+    .eq("user_id", claims.sub)
     .maybeSingle();
   if (error) throw new Error(`Could not load staff: ${error.message}`);
 
   const staff: Staff | null = data && {
-    userId: user.id,
-    email: user.email ?? "",
+    userId: claims.sub,
+    email: claims.email ?? "",
     name: data.name,
     role: data.role,
     storeId: data.store_id,

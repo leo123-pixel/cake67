@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { ProductCard } from "@/components/site/product-card";
 import { StorePicker } from "@/components/site/store-picker";
 import { listStores, listVitrineMenu } from "@/lib/catalog";
@@ -46,9 +47,22 @@ export default async function MenuPage({ searchParams }: Props) {
         >
           <strong className="block text-lg text-peach">Primeiro, escolha a loja.</strong>
           <p className="mt-1.5 text-linen/90">
-            Cada loja tem a sua vitrine. Selecione acima a loja onde você vai retirar para ver os produtos disponíveis
-            hoje e fazer o pedido.
+            Cada loja tem a sua vitrine. Escolha a loja onde você vai retirar para ver os produtos disponíveis hoje e
+            fazer o pedido.
           </p>
+          <ul className="mt-5 flex flex-wrap gap-3">
+            {stores.map((s) => (
+              <li key={s.id}>
+                <Link
+                  href={`/cardapio?loja=${s.slug}`}
+                  className="inline-flex min-h-11 flex-col justify-center rounded-2xl border border-peach/40 px-5 py-2.5 hover:border-peach hover:bg-olive-dark"
+                >
+                  <span className="font-semibold text-peach">{s.name}</span>
+                  <span className="text-sm text-linen/90">{s.address}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 

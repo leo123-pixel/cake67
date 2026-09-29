@@ -73,7 +73,6 @@ html {
 .ck-f1 { width: 32%; left: -16%; top: 52%; animation: ck-bob 6s ease-in-out infinite; }
 .ck-f2 { width: 22%; right: -6%; top: 6%; animation: ck-bob 7s ease-in-out -2s infinite; }
 .ck-f3 { width: 20%; right: -9%; bottom: 10%; animation: ck-bob 5.5s ease-in-out -1s infinite; }
-.ck-f4 { width: 17%; left: -4%; top: 10%; animation: ck-bob 6.5s ease-in-out -3s infinite; }
 @keyframes ck-bob { 50% { translate: 0 -12px; rotate: -3deg; } }
 .ck-seal { position: absolute; left: 50%; bottom: -38px; translate: -50% 0; width: 108px; height: 108px; border-radius: 50%; background: var(--color-peach); color: var(--color-olive); display: grid; place-items: center; z-index: 3; box-shadow: 0 10px 30px -10px rgba(0,0,0,.4); }
 .ck-seal svg { position: absolute; inset: 0; width: 100%; height: 100%; animation: ck-spin 24s linear infinite; }
@@ -83,7 +82,7 @@ html {
 @media (max-width: 860px) {
   .ck-hero .ck-wrap { grid-template-columns: 1fr; padding-block: 36px 90px; }
   .ck-stage { justify-self: center; max-width: 380px; }
-  .ck-f1 { left: -6%; } .ck-f2 { right: -2%; } .ck-f3 { right: -3%; } .ck-f4 { left: 0; }
+  .ck-f1 { left: -6%; } .ck-f2 { right: -2%; } .ck-f3 { right: -3%; }
 }
 
 /* MARQUEE */

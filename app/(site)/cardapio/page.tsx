@@ -20,13 +20,13 @@ type Props = { searchParams: Promise<{ loja?: string | string[] }> };
 export default async function MenuPage({ searchParams }: Props) {
   const { loja } = await searchParams;
   const stores = await listStores();
-  const store = stores.find((s) => s.slug === loja) ?? stores[0];
-
-  if (!store) {
+  if (stores.length === 0) {
     return <p className="mx-auto max-w-[1320px] px-4 py-20 sm:px-8">Nenhuma loja disponível no momento.</p>;
   }
 
-  const menu = await listVitrineMenu(store.id);
+  // No store is preselected: the customer must pick one to see the menu and order.
+  const store = stores.find((s) => s.slug === loja);
+  const menu = store ? await listVitrineMenu(store.id) : [];
 
   return (
     <section className="mx-auto max-w-[1320px] px-4 py-14 sm:px-8 sm:py-20">
@@ -35,8 +35,22 @@ export default async function MenuPage({ searchParams }: Props) {
           <p className="text-xs font-medium tracking-[0.32em] text-peach uppercase">Pronta entrega</p>
           <h1 className="mt-3 text-4xl text-peach sm:text-6xl">Na vitrine hoje</h1>
         </div>
-        <StorePicker stores={stores} current={store.slug} />
+        <StorePicker stores={stores} current={store?.slug ?? ""} />
       </div>
+
+      {!store && (
+        <div
+          id="loja-hint"
+          role="note"
+          className="mt-8 rounded-2xl border border-dashed border-peach/50 px-7 py-7 text-linen"
+        >
+          <strong className="block text-lg text-peach">Primeiro, escolha a loja.</strong>
+          <p className="mt-1.5 text-linen/90">
+            Cada loja tem a sua vitrine. Selecione acima a loja onde você vai retirar para ver os produtos disponíveis
+            hoje e fazer o pedido.
+          </p>
+        </div>
+      )}
 
       {menu.length > 0 && (
         <nav aria-label="Categorias" className="mt-8 flex flex-wrap gap-2 border-b border-peach/25 pb-3">
@@ -52,20 +66,21 @@ export default async function MenuPage({ searchParams }: Props) {
         </nav>
       )}
 
-      {menu.length === 0 && (
+      {store && menu.length === 0 && (
         <p className="mt-10 text-linen/80">Nenhum produto na vitrine desta loja no momento.</p>
       )}
 
-      {menu.map((category) => (
-        <section key={category.id} id={category.slug} className="mt-10 scroll-mt-24">
-          <h2 className="text-2xl text-peach-light">{category.name}</h2>
-          <div className="mt-4 grid gap-px overflow-hidden rounded-2xl border border-peach/20 bg-peach/20 md:grid-cols-2">
-            {category.products.map((product) => (
-              <ProductCard key={product.id} product={product} storeSlug={store.slug} />
-            ))}
-          </div>
-        </section>
-      ))}
+      {store &&
+        menu.map((category) => (
+          <section key={category.id} id={category.slug} className="mt-10 scroll-mt-24">
+            <h2 className="text-2xl text-peach-light">{category.name}</h2>
+            <div className="mt-4 grid gap-px overflow-hidden rounded-2xl border border-peach/20 bg-peach/20 md:grid-cols-2">
+              {category.products.map((product) => (
+                <ProductCard key={product.id} product={product} storeSlug={store.slug} />
+              ))}
+            </div>
+          </section>
+        ))}
     </section>
   );
 }

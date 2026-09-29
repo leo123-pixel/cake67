@@ -1,8 +1,8 @@
 "use client";
 
-import imageCompression from "browser-image-compression";
 import Image from "next/image";
 import { useState } from "react";
+import { toWebp, UPLOAD_TIMEOUT_MS, withTimeout } from "@/lib/image-upload";
 import { PRODUCT_BUCKET, productImageUrl } from "@/lib/images";
 import { createClient } from "@/lib/supabase/browser";
 
@@ -23,17 +23,13 @@ export function ImageField({ name, folder, defaultPath, error }: Props) {
     setBusy(true);
     setMessage(null);
     try {
-      if (!file.type.startsWith("image/")) throw new Error("not an image");
-      const blob = await imageCompression(file, {
-        fileType: "image/webp",
-        maxWidthOrHeight: 1600,
-        initialQuality: 0.82,
-        useWebWorker: true,
-      });
+      const blob = await toWebp(file);
       const next = `${folder}/${crypto.randomUUID()}.webp`;
-      const { error: uploadError } = await createClient()
-        .storage.from(PRODUCT_BUCKET)
-        .upload(next, blob, { contentType: "image/webp" });
+      const { error: uploadError } = await withTimeout(
+        createClient().storage.from(PRODUCT_BUCKET).upload(next, blob, { contentType: "image/webp" }),
+        UPLOAD_TIMEOUT_MS,
+        "upload",
+      );
       if (uploadError) throw uploadError;
       setPath(next);
     } catch {

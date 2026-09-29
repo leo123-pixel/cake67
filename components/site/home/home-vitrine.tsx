@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { MAX_VITRINE_QTY } from "@/lib/cart/cart";
+import { MAX_VITRINE_QTY, rememberedStore } from "@/lib/cart/cart";
 import type { MenuCategory, MenuProduct } from "@/lib/catalog";
 import { formatBRL } from "@/lib/money";
 import { flyToCart, showToast } from "@/lib/site-events";
@@ -61,11 +61,11 @@ function Item({ product, storeSlug }: { product: MenuProduct; storeSlug: string 
 }
 
 // Store picker + category tabs over the real menus of every store.
-// No store is preselected: the customer must pick one (or have picked one before) to order.
+// No store is preselected: the customer must pick one, unless the cart already has items from a store.
 export function HomeVitrine({ stores, menus }: { stores: VitrineStore[]; menus: Record<string, MenuCategory[]> }) {
   const { cart } = useCart();
   const [picked, setPicked] = useState<string | null>(null);
-  const remembered = stores.some((s) => s.slug === cart.storeSlug) ? cart.storeSlug : null;
+  const remembered = rememberedStore(cart, stores.map((s) => s.slug));
   const storeSlug = picked ?? remembered ?? "";
   const categories = menus[storeSlug] ?? [];
   const [tab, setTab] = useState("");

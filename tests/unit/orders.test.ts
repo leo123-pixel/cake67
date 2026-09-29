@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { keepWeight, minimumChargeNote, sizeFor, sizeName, suggestCake, weightChoices } from "@/lib/cake";
-import { addLine, countItems, EMPTY_CART, lineKey, parseStoredCart, removeLine, setQty, toOrderItems } from "@/lib/cart/cart";
+import { addLine, countItems, EMPTY_CART, lineKey, parseStoredCart, rememberedStore, removeLine, setQty, toOrderItems } from "@/lib/cart/cart";
 import { formatPickup } from "@/lib/datetime";
 import { buildSlots } from "@/lib/schedule";
 import { formatTaxId, isValidCnpj, isValidCpf, isValidTaxId } from "@/lib/tax-id";
@@ -145,6 +145,15 @@ describe("cart", () => {
       { product_id: P, qty: 1, piece_id: "b" },
     ]);
     expect(orderItemsSchema.safeParse([{ product_id: P, qty: 1, piece_id: "x" }]).success).toBe(false);
+  });
+
+  it("remembers the store only while the cart has items for a known store", () => {
+    const slugs = ["estiva", "afonso-pena"];
+    const withItem = addLine({ ...EMPTY_CART, storeSlug: "estiva" }, base);
+    expect(rememberedStore(withItem, slugs)).toBe("estiva");
+    expect(rememberedStore({ storeSlug: "estiva", lines: [] }, slugs)).toBeNull();
+    expect(rememberedStore({ ...withItem, storeSlug: "fechada" }, slugs)).toBeNull();
+    expect(rememberedStore(EMPTY_CART, slugs)).toBeNull();
   });
 
   it("survives corrupted storage", () => {

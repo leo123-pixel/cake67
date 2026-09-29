@@ -3,15 +3,16 @@
 import Form from "next/form";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { rememberedStore } from "@/lib/cart/cart";
 import type { Store } from "@/lib/catalog";
 import { useCart } from "./use-cart";
 
 // GET form: works without JS (submit button) and navigates client-side with it.
-// With no store in the URL, it reopens the store the cart remembers; otherwise the customer must pick one.
+// With no store in the URL, it reopens the store of the items in the cart; otherwise the customer must pick one.
 export function StorePicker({ stores, current }: { stores: Store[]; current: string }) {
   const router = useRouter();
   const { cart } = useCart();
-  const remembered = stores.some((s) => s.slug === cart.storeSlug) ? cart.storeSlug : null;
+  const remembered = rememberedStore(cart, stores.map((s) => s.slug));
 
   useEffect(() => {
     if (!current && remembered) router.replace(`/cardapio?loja=${remembered}`);

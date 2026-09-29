@@ -77,6 +77,12 @@ export function countItems(cart: Cart): number {
   return cart.lines.reduce((sum, l) => sum + (l.type === "cento" ? 1 : l.qty), 0);
 }
 
+// The store is only reopened while the cart holds items for it; otherwise the customer picks again.
+export function rememberedStore(cart: Cart, storeSlugs: string[]): string | null {
+  if (cart.lines.length === 0 || !cart.storeSlug) return null;
+  return storeSlugs.includes(cart.storeSlug) ? cart.storeSlug : null;
+}
+
 export type OrderItemInput = {
   product_id: string;
   qty: number;

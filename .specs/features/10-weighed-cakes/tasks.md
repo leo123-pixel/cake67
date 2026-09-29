@@ -1,7 +1,7 @@
 # 10 · Bolo inteiro por peso na vitrine — Tasks
 
 **Design**: `.specs/features/10-weighed-cakes/design.md`
-**Status**: Approved (2026-09-29, "aprovado, pode seguir")
+**Status**: Done (2026-09-29)
 
 ## Progress
 
@@ -12,7 +12,7 @@
 | T7–T10 | ✅ | Ações do estoque chamam a action direto, como o `stock-row` (sem `<form>`), então não precisam de `useAdminForm` |
 | T11–T13 | ✅ | Home e assistente ficam sem `vitrine_kg` (`withoutWeighed`); JSON-LD do produto com preço por kg (`UnitPriceSpecification`) |
 | T14 | ✅ | lint, typecheck, 234 unit, 78 integração, build. Localhost: 2 peças (1,340/1,620) → card e página do produto; carrinho sem quantidade; outra aba reservou a mesma peça → "Esse bolo acabou de ser reservado"; pedido C67-000162 com peso no resumo, WhatsApp e `/pedido`, sem "Em produção"; cancelar devolve, entregar vende; corrigir peso, venda no balcão, descarte e histórico certos; 360 px sem rolagem; categoria de encomenda recusada. Dados de teste apagados |
-| T15 | ⏳ | |
+| T15 | ✅ | PR #19 mergeado depois do preview (deploy Vercel ok); produção respondendo em `/`, `/cardapio`, `/carrinho` e `/produto` |
 
 Branch: `feat/10-weighed-cakes`, a partir da `main`.
 

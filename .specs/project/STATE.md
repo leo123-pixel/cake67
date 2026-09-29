@@ -1,7 +1,7 @@
 # State
 
 **Last Updated:** 2026-09-29
-**Current Work:** Sistema no ar em https://www.cake67.com.br (produção = `main`; `cake67.vercel.app` continua respondendo). Etapas 08 (WhatsApp por setor) e 09 (linha do tempo do pedido) no ar desde 2026-09-28. Próximo: M2 · Lançamento (pendências da cliente); hospedagem segue nos planos gratuitos por decisão do Leonardo (AD-017).
+**Current Work:** Sistema no ar em https://www.cake67.com.br (produção = `main`; `cake67.vercel.app` continua respondendo). Etapas 08 (WhatsApp por setor) e 09 (linha do tempo do pedido) no ar desde 2026-09-28; etapa 10 (bolo inteiro por peso na vitrine, AD-018) no ar desde 2026-09-29. Próximo: M2 · Lançamento (pendências da cliente); hospedagem segue nos planos gratuitos por decisão do Leonardo (AD-017).
 
 ---
 

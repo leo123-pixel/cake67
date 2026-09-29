@@ -1,6 +1,5 @@
 "use client";
 
-import imageCompression from "browser-image-compression";
 import Image from "next/image";
 import { useState } from "react";
 import { addProductImage, removeProductImage, updateImageAlt } from "@/app/admin/(panel)/produtos/actions";
@@ -8,22 +7,11 @@ import { reorderItems } from "@/app/admin/(panel)/reorder-action";
 import { SortableList } from "@/components/admin/sortable-list";
 import { SubmitButton } from "@/components/admin/submit-button";
 import { useAdminForm } from "@/components/admin/use-admin-form";
+import { toWebp, UPLOAD_TIMEOUT_MS, withTimeout } from "@/lib/image-upload";
 import { PRODUCT_BUCKET, productImageUrl } from "@/lib/images";
 import { createClient } from "@/lib/supabase/browser";
 
 type ProductImage = { id: string; path: string; alt: string };
-
-const COMPRESSION = {
-  fileType: "image/webp",
-  maxWidthOrHeight: 1600,
-  initialQuality: 0.82,
-  useWebWorker: true,
-} as const;
-
-async function toWebp(file: File): Promise<Blob> {
-  if (!file.type.startsWith("image/")) throw new Error("not an image");
-  return imageCompression(file, COMPRESSION);
-}
 
 function AltForm({ image, productName }: { image: ProductImage; productName: string }) {
   const [state, action, round] = useAdminForm(updateImageAlt.bind(null, image.id), { ok: false });
@@ -71,16 +59,28 @@ export function ProductImages({
       }
 
       const path = `products/${productId}/${crypto.randomUUID()}.webp`;
-      const { error: uploadError } = await supabase.storage
-        .from(PRODUCT_BUCKET)
-        .upload(path, blob, { contentType: "image/webp" });
-      if (uploadError) {
+      let uploadFailed: boolean;
+      try {
+        const { error: uploadError } = await withTimeout(
+          supabase.storage.from(PRODUCT_BUCKET).upload(path, blob, { contentType: "image/webp" }),
+          UPLOAD_TIMEOUT_MS,
+          "upload",
+        );
+        uploadFailed = uploadError !== null;
+      } catch {
+        uploadFailed = true;
+      }
+      if (uploadFailed) {
         setError("Falha ao enviar a foto. Verifique a conexão e tente de novo.");
         continue;
       }
 
-      const result = await addProductImage(productId, path);
-      if (!result.ok) setError(result.message ?? "Não foi possível salvar a foto.");
+      try {
+        const result = await addProductImage(productId, path);
+        if (!result.ok) setError(result.message ?? "Não foi possível salvar a foto.");
+      } catch {
+        setError("Não foi possível salvar a foto. Tente de novo.");
+      }
     }
 
     setBusy(false);

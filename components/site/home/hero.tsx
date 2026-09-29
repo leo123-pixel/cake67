@@ -10,7 +10,6 @@ const FLOATS = [
   { className: "ck-f1", src: "/home/croissant-ninho.webp", depth: 18, width: 440, height: 439 },
   { className: "ck-f2", src: "/home/brigadeiro.webp", depth: -14, width: 440, height: 432 },
   { className: "ck-f3", src: "/home/coxinha-pistache.webp", depth: 22, width: 440, height: 414 },
-  { className: "ck-f4", src: "/home/morango-amor.webp", depth: -10, width: 200, height: 122 },
 ];
 
 // "Rua Estiva, 200" -> "Rua Estiva"; "Av. Afonso Pena, 2716" -> "Afonso Pena".

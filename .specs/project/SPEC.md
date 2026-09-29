@@ -136,7 +136,7 @@ Para entrega, a linha vira "Quero entrega (taxa a combinar)" com o endereço, se
 - **Home**: destaques do painel (Bolo do Mês, Combo da Semana, banners), atalhos para encomendas e vitrine, lojas.
 - **Cardápio / vitrine**: filtro por loja e categoria, disponibilidade em tempo real, "Adicionar".
 - **Produto**: fotos, descrição, preço, lojas onde tem.
-- **Encomendas**: calculadora de convidados (10 fatias por kg com folga de 15%), configurador de bolo (sabor, peso, formato, adicionais, frase), cento (quantidade em passos de 25) e kits.
+- **Encomendas**: calculadora de convidados (tabela de tamanhos do cardápio em `lib/cake.ts`: Redondo Mini a GG, Régua e Retangular P a G, cada um com faixa de peso e fatias; cobra o peso mínimo da faixa e a diferença da pesagem é paga na retirada), configurador de bolo (sabor, peso, formato, adicionais, frase), cento (quantidade em passos de 25) e kits.
 - **Carrinho e checkout**: resumo, escolha de loja, data e hora (respeitando antecedência e horário), dados do cliente, aviso de privacidade.
 - **Pedido recebido** (`/pedido/[code]`): número, resumo e botão para o WhatsApp.
 - **Política de privacidade**.

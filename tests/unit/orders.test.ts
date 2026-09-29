@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { suggestCake } from "@/lib/cake";
+import { keepWeight, minimumChargeNote, sizeFor, sizeName, suggestCake, weightChoices } from "@/lib/cake";
 import { addLine, countItems, EMPTY_CART, lineKey, parseStoredCart, removeLine, setQty, toOrderItems } from "@/lib/cart/cart";
 import { formatPickup } from "@/lib/datetime";
 import { buildSlots } from "@/lib/schedule";
@@ -29,18 +29,56 @@ describe("suggestCake", () => {
   const weights = [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8];
   const formats = ["Redondo", "Retangular", "Régua"];
 
+  const pick = (guests: number, w = weights, f = formats) =>
+    suggestCake(guests, w, f)?.options.map((o) => `${sizeName(o.size)} ${o.weightKg}`);
+
   it.each([
-    [10, 1.5, "Redondo"],
-    [20, 2.5, "Retangular"],
-    [40, 5, "Régua"],
-    [200, 8, "Régua"],
-  ])("%i guests -> %s kg %s", (guests, kg, format) => {
-    expect(suggestCake(guests, weights, formats)).toMatchObject({ weightKg: kg, format });
+    [8, ["Redondo Mini 1"]],
+    [10, ["Redondo Mini 1"]],
+    [12, ["Redondo P 1.5", "Régua 2.5"]],
+    [18, ["Redondo M 2"]],
+    [24, ["Redondo G 2.5"]],
+    [30, ["Redondo GG 3.5"]],
+    [40, ["Retangular P 4"]],
+    [50, ["Retangular M 5.5"]],
+    [70, ["Retangular G 7.5"]],
+    [200, ["Retangular G 7.5"]],
+  ])("%i guests -> %j", (guests, expected) => {
+    expect(pick(guests)).toEqual(expected);
   });
 
-  it("respects the cake's own weights and formats", () => {
-    expect(suggestCake(10, [1.5, 3], ["Retangular"])).toEqual({ weightKg: 1.5, format: "Retangular", slices: 15 });
+  it("charges the smallest offered weight inside the size's range", () => {
+    expect(pick(15, [2.3, 2.5], ["Régua"])).toEqual(["Régua 2.3"]);
+    expect(pick(10, [1.2, 1.4], ["Redondo"])).toEqual(["Redondo Mini 1.2"]);
+  });
+
+  it("only suggests formats and weights the cake offers", () => {
+    expect(pick(10, weights, ["Retangular"])).toEqual(["Retangular P 4"]);
+    expect(pick(10, [3], ["Redondo"])).toEqual(["Redondo G 3"]);
+    expect(suggestCake(10, weights, ["Coração"])).toBeNull();
     expect(suggestCake(0, weights, formats)).toBeNull();
+  });
+
+  it("matches formats ignoring accents and case", () => {
+    expect(pick(15, weights, ["regua"])).toEqual(["Régua 2.5"]);
+  });
+});
+
+describe("cake sizes", () => {
+  it("offers one weight per menu size and every weight for unknown formats", () => {
+    expect(weightChoices("Redondo", [1, 1.5, 2, 2.5, 3, 3.5, 4])).toEqual([1, 1.5, 2, 2.5, 3.5]);
+    expect(weightChoices("Coração", [1, 2])).toEqual([1, 2]);
+    expect(keepWeight("Retangular", [1, 4, 5.5], 1)).toBe(4);
+    expect(keepWeight("Retangular", [1, 4, 5.5], 5.5)).toBe(5.5);
+  });
+
+  it("finds the size of a weight and explains the minimum charge", () => {
+    const mini = sizeFor("Redondo", 1.2);
+    expect(mini?.size).toBe("Mini");
+    expect(sizeFor("Retangular", 2)).toBeNull();
+    expect(minimumChargeNote(mini!, 1)).toBe(
+      "Pesa de 1 a 1,4 kg: cobramos o peso mínimo (1 kg) e, se na pesagem passar disso, a diferença é cobrada na retirada.",
+    );
   });
 });
 

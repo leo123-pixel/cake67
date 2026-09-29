@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { suggestCake } from "@/lib/cake";
+import { keepWeight, minimumChargeNote, sizeFor, sizeName, suggestCake, weightChoices, type CakeOption } from "@/lib/cake";
 import { cakeWhatsappMessage, minCakeDate } from "@/lib/cake-order";
 import { formatBRL } from "@/lib/money";
 import { flyToCart, PICK_CAKE_EVENT, prefersReducedMotion, scrollToId, showToast } from "@/lib/site-events";
@@ -56,8 +56,8 @@ export function HomeBuilder({ cakes, stores, today, hasBulk }: Props) {
   const [cakeId, setCakeId] = useState(cakes[0].id);
   const cake = cakes.find((c) => c.id === cakeId) ?? cakes[0];
   const [guests, setGuests] = useState(24);
-  const [weight, setWeight] = useState(cake.weightsKg.includes(2) ? 2 : cake.weightsKg[0]);
   const [format, setFormat] = useState(cake.formats[0] ?? "");
+  const [weight, setWeight] = useState(weightChoices(format, cake.weightsKg)[0]);
   const [addonIds, setAddonIds] = useState<string[]>([]);
   const cakeStores = stores.filter((s) => cake.storeIds.length === 0 || cake.storeIds.includes(s.id));
   const [chosenPlace, setPlace] = useState(stores[0]?.slug ?? DELIVERY);
@@ -69,6 +69,7 @@ export function HomeBuilder({ cakes, stores, today, hasBulk }: Props) {
   const addButton = useRef<HTMLButtonElement>(null);
 
   const suggestion = suggestCake(guests, cake.weightsKg, cake.formats);
+  const size = sizeFor(format, weight);
   const addons = cake.addons.filter((a) => addonIds.includes(a.id));
   const price =
     cake.priceCents === null ? null : Math.round(cake.priceCents * weight) + addons.reduce((sum, a) => sum + a.priceCents, 0);
@@ -80,8 +81,9 @@ export function HomeBuilder({ cakes, stores, today, hasBulk }: Props) {
     const next = cakes.find((c) => c.id === id);
     if (!next) return;
     setCakeId(id);
-    if (!next.weightsKg.includes(weight)) setWeight(next.weightsKg.includes(2) ? 2 : next.weightsKg[0]);
-    if (!next.formats.includes(format)) setFormat(next.formats[0] ?? "");
+    const nextFormat = next.formats.includes(format) ? format : (next.formats[0] ?? "");
+    setFormat(nextFormat);
+    setWeight(keepWeight(nextFormat, next.weightsKg, weight));
     setAddonIds((ids) => ids.filter((addonId) => next.addons.some((a) => a.id === addonId)));
   }
 
@@ -92,10 +94,14 @@ export function HomeBuilder({ cakes, stores, today, hasBulk }: Props) {
     return () => window.removeEventListener(PICK_CAKE_EVENT, onPick);
   });
 
-  function applySuggestion() {
-    if (!suggestion) return;
-    setWeight(suggestion.weightKg);
-    if (suggestion.format) setFormat(suggestion.format);
+  function chooseFormat(next: string) {
+    setFormat(next);
+    setWeight(keepWeight(next, cake.weightsKg, weight));
+  }
+
+  function applySuggestion(option: CakeOption) {
+    setFormat(cake.formats.find((f) => sizeFor(f, option.weightKg) === option.size) ?? option.size.format);
+    setWeight(option.weightKg);
     scrollToId("ck-cfg", "center");
     showToast("Peso e formato preenchidos");
   }
@@ -158,22 +164,35 @@ export function HomeBuilder({ cakes, stores, today, hasBulk }: Props) {
             </div>
             <div className="ck-result">
               <div>
-                <b>{suggestion ? kgLabel(suggestion.weightKg) : "—"}</b>
+                <b>{suggestion ? `${suggestion.options.map((o) => kgLabel(o.weightKg).replace(" kg", "")).join("/")} kg` : "—"}</b>
                 <span>peso</span>
               </div>
               <div>
-                <b>{suggestion?.format ?? "—"}</b>
+                <b>{suggestion ? suggestion.options.map((o) => o.size.format).join("/") : "—"}</b>
                 <span>formato</span>
               </div>
               <div>
-                <b>{suggestion?.slices ?? "—"}</b>
+                <b>{suggestion?.serves ?? "—"}</b>
                 <span>fatias</span>
               </div>
             </div>
-            <p className="ck-small">Base de cerca de 10 fatias por kg, com folga para repetir. O valor final depende da pesagem.</p>
-            <button type="button" className="ck-btn ck-btn-olive" style={{ marginTop: 20 }} onClick={applySuggestion}>
-              Usar esta sugestão
-            </button>
+            {suggestion ? (
+              suggestion.options.map((o) => (
+                <p key={sizeName(o.size)} className="ck-small">
+                  <strong>
+                    {sizeName(o.size)} ({o.size.measure}), serve até {o.size.serves} fatias.
+                  </strong>{" "}
+                  {minimumChargeNote(o.size, o.weightKg)}
+                </p>
+              ))
+            ) : (
+              <p className="ck-small">Este sabor não tem tamanho do cardápio para essa quantidade. Fale com a loja.</p>
+            )}
+            {suggestion?.options.map((o) => (
+              <button key={sizeName(o.size)} type="button" className="ck-btn ck-btn-olive" style={{ marginTop: 20, marginRight: 8 }} onClick={() => applySuggestion(o)}>
+                {suggestion.options.length > 1 ? `Usar ${o.size.format}` : "Usar esta sugestão"}
+              </button>
+            ))}
           </div>
 
           <div className="ck-card ck-rv" id="ck-cfg" aria-labelledby="ck-cfg-t">
@@ -196,24 +215,32 @@ export function HomeBuilder({ cakes, stores, today, hasBulk }: Props) {
                   Peso
                 </label>
                 <select id="ck-kg" className="ck-field" value={String(weight)} onChange={(e) => setWeight(Number(e.target.value))}>
-                  {cake.weightsKg.map((w) => (
-                    <option key={w} value={String(w)}>
-                      {kgLabel(w)}
-                    </option>
-                  ))}
+                  {weightChoices(format, cake.weightsKg).map((w) => {
+                    const choice = sizeFor(format, w);
+                    return (
+                      <option key={w} value={String(w)}>
+                        {choice?.size ? `${choice.size} · ${kgLabel(w)}` : kgLabel(w)}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
               <div>
                 <label className="ck-label" htmlFor="ck-fmt">
                   Formato
                 </label>
-                <select id="ck-fmt" className="ck-field" value={format} onChange={(e) => setFormat(e.target.value)}>
+                <select id="ck-fmt" className="ck-field" value={format} onChange={(e) => chooseFormat(e.target.value)}>
                   {cake.formats.map((f) => (
                     <option key={f}>{f}</option>
                   ))}
                 </select>
               </div>
             </div>
+            <p className="ck-small">
+              {size
+                ? `${sizeName(size)} (${size.measure}), serve até ${size.serves} fatias. ${minimumChargeNote(size, weight)}`
+                : "O valor final depende da pesagem; se passar do peso escolhido, a diferença é cobrada na retirada."}
+            </p>
             {cake.addons.length > 0 && (
               <>
                 <span className="ck-label">Adicionais</span>

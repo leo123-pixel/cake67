@@ -59,7 +59,8 @@ describe("answerQuestion", () => {
 
   it("suggests weight and format for N guests", () => {
     const answer = answerQuestion("Bolo para 30 pessoas", data);
-    expect(answer.text).toContain("Para 30 pessoas sugiro 3,5 kg");
+    expect(answer.text).toContain("Para 30 pessoas sugiro Redondo GG (3,5 a 4 kg): serve até 35 fatias");
+    expect(answer.text).toContain("diferença é paga na retirada");
     expect(answer.action?.target).toBe("calc");
   });
 

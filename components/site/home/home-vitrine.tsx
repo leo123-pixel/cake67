@@ -61,10 +61,14 @@ function Item({ product, storeSlug }: { product: MenuProduct; storeSlug: string 
 }
 
 // Store picker + category tabs over the real menus of every store.
+// No store is preselected: the customer must pick one (or have picked one before) to order.
 export function HomeVitrine({ stores, menus }: { stores: VitrineStore[]; menus: Record<string, MenuCategory[]> }) {
-  const [storeSlug, setStoreSlug] = useState(stores[0]?.slug ?? "");
+  const { cart } = useCart();
+  const [picked, setPicked] = useState<string | null>(null);
+  const remembered = stores.some((s) => s.slug === cart.storeSlug) ? cart.storeSlug : null;
+  const storeSlug = picked ?? remembered ?? "";
   const categories = menus[storeSlug] ?? [];
-  const [tab, setTab] = useState(categories[0]?.name ?? "");
+  const [tab, setTab] = useState("");
   const current = categories.find((c) => c.name === tab) ?? categories[0];
 
   return (
@@ -76,11 +80,18 @@ export function HomeVitrine({ stores, menus }: { stores: VitrineStore[]; menus: 
             <h2 className="ck-h">Na vitrine hoje</h2>
           </div>
           {stores.length > 0 && (
-            <div className="ck-storepick">
-              <label htmlFor="ck-vstore" style={{ color: "var(--color-linen)" }}>
-                Loja
-              </label>
-              <select id="ck-vstore" value={storeSlug} onChange={(e) => setStoreSlug(e.target.value)}>
+            <div className={`ck-storepick${storeSlug ? "" : " ck-storepick-need"}`}>
+              <label htmlFor="ck-vstore">Escolha a loja</label>
+              <select
+                id="ck-vstore"
+                value={storeSlug}
+                required
+                aria-describedby={storeSlug ? undefined : "ck-vstore-hint"}
+                onChange={(e) => setPicked(e.target.value)}
+              >
+                <option value="" disabled>
+                  Selecione a loja…
+                </option>
                 {stores.map((store) => (
                   <option key={store.slug} value={store.slug}>
                     {store.address}
@@ -90,7 +101,15 @@ export function HomeVitrine({ stores, menus }: { stores: VitrineStore[]; menus: 
             </div>
           )}
         </div>
-        {current ? (
+        {stores.length > 0 && !storeSlug ? (
+          <div className="ck-pickfirst" id="ck-vstore-hint" role="note">
+            <strong>Primeiro, escolha a loja.</strong>
+            <p>
+              Cada loja tem a sua vitrine. Selecione acima a loja onde você vai retirar para ver os produtos
+              disponíveis hoje e fazer o pedido.
+            </p>
+          </div>
+        ) : current ? (
           <>
             <div className="ck-tabs" role="tablist" aria-label="Categorias">
               {categories.map((category) => (

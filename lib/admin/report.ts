@@ -7,6 +7,7 @@ import { STATUS_LABELS } from "@/lib/order-status";
 import { formatWhatsapp } from "@/lib/phone";
 import { PRODUCT_TYPE_LABELS, type Period, type Report } from "@/lib/report";
 import { formatTaxId } from "@/lib/tax-id";
+import { formatKg } from "@/lib/weight";
 import type { OrderItemSummary } from "@/lib/whatsapp";
 
 type Client = SupabaseClient<Database>;
@@ -110,6 +111,7 @@ function describeOptions(options: OrderItemSummary["options"]): string {
   if (!options) return "";
   return [
     options.weight_kg ? `${String(options.weight_kg).replace(".", ",")} kg` : null,
+    options.weight_g ? formatKg(options.weight_g) : null,
     options.format,
     ...(options.addons ?? []).map((addon) => addon.name),
     options.message ? `frase "${options.message}"` : null,

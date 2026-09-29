@@ -17,7 +17,11 @@ export default async function CountPage({ searchParams }: Props) {
   if (!store) return <p className="text-cocoa-soft">Nenhuma loja ativa.</p>;
 
   // Only items on the site are counted; items off the site keep their value.
-  const { groups } = await getStockGrid(supabase, store.id);
+  // Weighed cakes are added one by one on the stock screen, never counted.
+  const grid = await getStockGrid(supabase, store.id);
+  const groups = grid.groups
+    .map((group) => ({ ...group, items: group.items.filter((item) => item.pieces === null) }))
+    .filter((group) => group.items.length > 0);
 
   return (
     <section className="space-y-6">

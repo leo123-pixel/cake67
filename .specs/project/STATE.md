@@ -1,11 +1,18 @@
 # State
 
-**Last Updated:** 2026-09-28
+**Last Updated:** 2026-09-29
 **Current Work:** Sistema no ar em https://www.cake67.com.br (produção = `main`; `cake67.vercel.app` continua respondendo). Etapas 08 (WhatsApp por setor) e 09 (linha do tempo do pedido) no ar desde 2026-09-28. Próximo: M2 · Lançamento (pendências da cliente); hospedagem segue nos planos gratuitos por decisão do Leonardo (AD-017).
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-018: Bolo inteiro por peso na vitrine (2026-09-29)
+
+**Decision:** Tipo novo `vitrine_kg` ("Bolo inteiro (vitrine, por peso)"), só em categoria de vitrine e independente do `bolo_kg` de encomenda. Cada bolo físico é uma linha em `showcase_pieces` com o peso em gramas; preço = preço do kg × peso, calculado no banco. O cliente escolhe o peso no card do cardápio e na página do produto; cada peça é uma linha do carrinho (qty 1). A peça fica reservada no pedido, volta ao cancelar/expirar, é reservada de novo ao reativar (ou a reativação falha) e fica vendida ao entregar (trigger `sync_order_pieces`). No painel: Adicionar bolo, Vendida no balcão, Descartar, Corrigir peso; a sobra continua no dia seguinte com "há N dias". Toda mudança vai para `stock_movements` com `piece_id` e `weight_g`. Etapa 10.
+**Reason:** Pedido do Leonardo: bolos da vitrine saem com peso quebrado e dois do mesmo sabor têm pesos diferentes.
+**Trade-off:** Mudar o preço do kg muda o preço das peças que estão na vitrine (pedidos já feitos não mudam). Fora desta etapa: home/assistente, balança integrada, foto por peça, fatia cortada na hora.
+**Impact:** Migrations `20261007000100` (enums) e `20261007000200` aplicadas antes do merge; o código antigo ignora `vitrine_kg`. `evaluate_order_lines`, `quote_order` e `create_order` recriados (pedido só com vitrine/vitrine_kg continua de pronta entrega).
 
 ### AD-017: Domínio `www.cake67.com.br` nos planos gratuitos (2026-09-28)
 

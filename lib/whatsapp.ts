@@ -2,14 +2,17 @@
 import { formatPickup } from "@/lib/datetime";
 import { formatBRL } from "@/lib/money";
 import { formatWhatsapp } from "@/lib/phone";
+import { formatKg } from "@/lib/weight";
 
 export type OrderItemSummary = {
   name: string;
-  type: "vitrine" | "bolo_kg" | "cento" | "kit";
+  type: "vitrine" | "vitrine_kg" | "bolo_kg" | "cento" | "kit";
   qty: number;
   total_cents: number;
   options: {
     weight_kg?: number;
+    // Weighed showcase cake (stage 10).
+    weight_g?: number;
     format?: string;
     addons?: { name: string }[];
     message?: string | null;
@@ -37,6 +40,7 @@ function kg(weight: number) {
 export function describeItem(item: OrderItemSummary): string {
   const options = item.options ?? {};
   if (item.type === "cento") return `${item.qty} un. ${item.name}`;
+  if (item.type === "vitrine_kg" && options.weight_g) return `${item.qty}x ${item.name} ${formatKg(options.weight_g)}`;
   if (item.type === "bolo_kg") {
     const details = [options.weight_kg ? kg(options.weight_kg) : null, options.format, ...(options.addons ?? []).map((a) => a.name)]
       .filter(Boolean)

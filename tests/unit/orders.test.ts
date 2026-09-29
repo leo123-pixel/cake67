@@ -6,7 +6,7 @@ import { buildSlots } from "@/lib/schedule";
 import { formatTaxId, isValidCnpj, isValidCpf, isValidTaxId } from "@/lib/tax-id";
 import { checkoutSchema, orderItemsSchema } from "@/lib/validators/order";
 import type { StoreHours } from "@/lib/validators/store";
-import { renderOrderMessage, whatsappLink, type OrderSummary } from "@/lib/whatsapp";
+import { describeItem, renderOrderMessage, whatsappLink, type OrderSummary } from "@/lib/whatsapp";
 
 const P = "0b7c8a5e-8f7a-4c1e-9c55-2f4d2b1a9e01";
 
@@ -94,9 +94,32 @@ describe("cart", () => {
     expect(removeLine(cart, key).lines).toHaveLength(0);
   });
 
+  it("keeps each weighed piece as its own line with qty 1", () => {
+    const piece = { ...base, type: "vitrine_kg" as const, label: "1,34 kg" };
+    let cart = addLine(EMPTY_CART, { ...piece, options: { piece_id: "a" } });
+    cart = addLine(cart, { ...piece, options: { piece_id: "b" }, label: "1,62 kg" });
+    cart = addLine(cart, { ...piece, options: { piece_id: "a" } });
+    expect(cart.lines.map((l) => [l.label, l.qty])).toEqual([["1,34 kg", 1], ["1,62 kg", 1]]);
+    expect(setQty(cart, cart.lines[0].key, 5).lines[0].qty).toBe(1);
+    expect(countItems(cart)).toBe(2);
+    expect(toOrderItems(cart)).toEqual([
+      { product_id: P, qty: 1, piece_id: "a" },
+      { product_id: P, qty: 1, piece_id: "b" },
+    ]);
+    expect(orderItemsSchema.safeParse([{ product_id: P, qty: 1, piece_id: "x" }]).success).toBe(false);
+  });
+
   it("survives corrupted storage", () => {
     expect(parseStoredCart("not json")).toEqual(EMPTY_CART);
     expect(parseStoredCart('{"lines":[{"key":"x"}]}').lines).toEqual([]);
+  });
+});
+
+describe("describeItem", () => {
+  it("shows the weight of a weighed showcase cake", () => {
+    expect(
+      describeItem({ name: "Bolo Ninho com Morango", type: "vitrine_kg", qty: 1, total_cents: 14740, options: { weight_g: 1340 } }),
+    ).toBe("1x Bolo Ninho com Morango 1,34 kg");
   });
 });
 

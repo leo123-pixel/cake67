@@ -1,13 +1,15 @@
 // Cart kept in the browser (localStorage). It only says WHAT the customer
 // wants; prices and availability always come from quote_order.
 
-export type ProductKind = "vitrine" | "bolo_kg" | "cento" | "kit";
+export type ProductKind = "vitrine" | "vitrine_kg" | "bolo_kg" | "cento" | "kit";
 
 export type CartOptions = {
   weight_kg?: string;
   format?: string;
   addon_ids?: string[];
   message?: string;
+  // Weighed showcase cake: the exact piece (one per line).
+  piece_id?: string;
 };
 
 export type CartLine = {
@@ -45,6 +47,7 @@ export function lineKey(productId: string, options?: CartOptions): string {
 }
 
 function clampQty(type: ProductKind, qty: number) {
+  if (type === "vitrine_kg") return 1;
   return type === "vitrine" ? Math.min(qty, MAX_VITRINE_QTY) : qty;
 }
 
@@ -81,6 +84,7 @@ export type OrderItemInput = {
   format?: string;
   addon_ids?: string[];
   message?: string;
+  piece_id?: string;
 };
 
 export function toOrderItems(cart: Cart): OrderItemInput[] {

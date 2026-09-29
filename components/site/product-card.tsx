@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { MenuProduct } from "@/lib/catalog";
 import { formatBRL } from "@/lib/money";
 import { AddToCart } from "./add-to-cart";
+import { PiecePicker } from "./piece-picker";
 
 export function ProductCard({ product, storeSlug }: { product: MenuProduct; storeSlug: string }) {
   return (
@@ -28,24 +29,38 @@ export function ProductCard({ product, storeSlug }: { product: MenuProduct; stor
         {product.description && (
           <p className="mt-1 text-xs leading-snug text-linen/85">{product.description}</p>
         )}
-        <div className="mt-2.5 flex items-center justify-between gap-2">
-          <span className="font-medium tabular-nums text-peach">
-            {formatBRL(product.priceCents)}
-          </span>
-          {product.available ? (
-            <AddToCart
+        {product.pieces ? (
+          // Weighed whole cake (stage 10): price per kg, pick a cake by weight.
+          <div className="mt-2.5 space-y-2.5">
+            <span className="font-medium tabular-nums text-peach">{formatBRL(product.priceCents)} o kg</span>
+            <PiecePicker
               productId={product.id}
               name={product.name}
               imageUrl={product.imageUrl}
-              availableQty={product.availableQty}
+              pieces={product.pieces}
               storeSlug={storeSlug}
             />
-          ) : (
-            <span className="rounded-full border border-peach/60 px-3 py-1 text-[0.68rem] font-semibold tracking-[0.12em] text-peach uppercase">
-              Esgotado
+          </div>
+        ) : (
+          <div className="mt-2.5 flex items-center justify-between gap-2">
+            <span className="font-medium tabular-nums text-peach">
+              {formatBRL(product.priceCents)}
             </span>
-          )}
-        </div>
+            {product.available ? (
+              <AddToCart
+                productId={product.id}
+                name={product.name}
+                imageUrl={product.imageUrl}
+                availableQty={product.availableQty}
+                storeSlug={storeSlug}
+              />
+            ) : (
+              <span className="rounded-full border border-peach/60 px-3 py-1 text-[0.68rem] font-semibold tracking-[0.12em] text-peach uppercase">
+                Esgotado
+              </span>
+            )}
+          </div>
+        )}
       </div>
     </article>
   );

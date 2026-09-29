@@ -10,7 +10,7 @@ export type QuotedLine = {
   index: number;
   product_id: string | null;
   name: string;
-  type: "vitrine" | "bolo_kg" | "cento" | "kit" | null;
+  type: "vitrine" | "vitrine_kg" | "bolo_kg" | "cento" | "kit" | null;
   qty: number;
   unit_price_cents: number;
   total_cents: number;

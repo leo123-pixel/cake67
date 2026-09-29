@@ -27,6 +27,7 @@ const PRIVATE_TABLES = [
   "order_items",
   "stock",
   "stock_movements",
+  "showcase_pieces",
   "staff",
   "settings",
 ] as const satisfies TableName[];
@@ -61,6 +62,7 @@ const INSERTS: { [T in TableName]: Database["public"]["Tables"][T]["Insert"] } =
   staff: { user_id: id, name: "x", role: "admin" },
   order_events: { order_id: id, to_status: "novo", actor_name: "x" },
   highlights: { slot: "banner", title: "x" },
+  showcase_pieces: { product_id: id, store_id: id, weight_g: 1000 },
   settings: { id: 1, order_whatsapp_template: "x" },
 };
 

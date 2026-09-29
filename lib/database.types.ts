@@ -272,6 +272,7 @@ export type Database = {
           total_cents: number;
           options: Json;
           position: number;
+          piece_id: string | null;
         };
         Insert: {
           id?: string;
@@ -284,6 +285,7 @@ export type Database = {
           total_cents: number;
           options?: Json;
           position?: number;
+          piece_id?: string | null;
         };
         Update: Partial<Database["public"]["Tables"]["order_items"]["Insert"]>;
         Relationships: [
@@ -315,6 +317,8 @@ export type Database = {
           quantity_after: number | null;
           actor_name: string | null;
           created_at: string;
+          piece_id: string | null;
+          weight_g: number | null;
         };
         Insert: {
           id?: never;
@@ -327,6 +331,8 @@ export type Database = {
           quantity_after?: number | null;
           actor_name?: string | null;
           created_at?: string;
+          piece_id?: string | null;
+          weight_g?: number | null;
         };
         Update: Partial<Database["public"]["Tables"]["stock_movements"]["Insert"]>;
         Relationships: [
@@ -451,6 +457,48 @@ export type Database = {
           },
         ];
       };
+      showcase_pieces: {
+        Row: {
+          id: string;
+          product_id: string;
+          store_id: string;
+          weight_g: number;
+          status: Database["public"]["Enums"]["piece_status"];
+          order_id: string | null;
+        } & Timestamps;
+        Insert: {
+          id?: string;
+          product_id: string;
+          store_id: string;
+          weight_g: number;
+          status?: Database["public"]["Enums"]["piece_status"];
+          order_id?: string | null;
+        } & Partial<Timestamps>;
+        Update: Partial<Database["public"]["Tables"]["showcase_pieces"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "showcase_pieces_product_id_fkey";
+            columns: ["product_id"];
+            isOneToOne: false;
+            referencedRelation: "products";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "showcase_pieces_store_id_fkey";
+            columns: ["store_id"];
+            isOneToOne: false;
+            referencedRelation: "stores";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "showcase_pieces_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       settings: {
         Row: {
           id: number;
@@ -484,6 +532,16 @@ export type Database = {
         };
         Relationships: [];
       };
+      piece_availability: {
+        Row: {
+          id: string | null;
+          product_id: string | null;
+          store_id: string | null;
+          weight_g: number | null;
+          created_at: string | null;
+        };
+        Relationships: [];
+      };
     };
     Functions: {
       is_admin: { Args: never; Returns: boolean };
@@ -513,11 +571,16 @@ export type Database = {
       list_cake_showcase: { Args: never; Returns: Json };
       report_summary: { Args: { p_from: string; p_to: string; p_store_id?: string | null }; Returns: Json };
       staff_store: { Args: never; Returns: string };
+      add_piece: { Args: { p_product_id: string; p_store_id: string; p_weight_g: number }; Returns: string };
+      sell_piece: { Args: { p_piece_id: string }; Returns: undefined };
+      discard_piece: { Args: { p_piece_id: string }; Returns: undefined };
+      set_piece_weight: { Args: { p_piece_id: string; p_weight_g: number }; Returns: undefined };
     };
     Enums: {
       category_kind: "vitrine" | "encomenda";
-      product_type: "vitrine" | "bolo_kg" | "cento" | "kit";
-      stock_reason: "ajuste" | "reserva" | "devolucao" | "venda";
+      product_type: "vitrine" | "vitrine_kg" | "bolo_kg" | "cento" | "kit";
+      stock_reason: "ajuste" | "reserva" | "devolucao" | "venda" | "descarte" | "correcao_peso";
+      piece_status: "disponivel" | "reservado" | "vendido" | "descartado";
       order_status:
         | "novo"
         | "confirmado"

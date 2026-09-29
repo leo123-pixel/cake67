@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddToCart } from "@/components/site/add-to-cart";
 import { JsonLd } from "@/components/site/json-ld";
+import { PiecePicker } from "@/components/site/piece-picker";
 import { siteUrl } from "@/lib/env";
 import { formatBRL } from "@/lib/money";
 import { OG_DEFAULTS } from "@/lib/seo";
@@ -31,7 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-const UNIT = { vitrine: "", bolo_kg: " o kg", cento: " o cento", kit: "" } as const;
+const UNIT = { vitrine: "", vitrine_kg: " o kg", bolo_kg: " o kg", cento: " o cento", kit: "" } as const;
 
 export default async function ProductPage({ params }: Props) {
   const product = await getProductPage((await params).slug);
@@ -84,6 +85,21 @@ export default async function ProductPage({ params }: Props) {
                   ) : (
                     <span className="text-xs tracking-[0.12em] text-peach uppercase">Esgotado</span>
                   )}
+                </li>
+              ))}
+            </ul>
+          ) : product.type === "vitrine_kg" ? (
+            <ul className="space-y-2">
+              {product.stores.map((store) => (
+                <li key={store.id} className="space-y-3 rounded-2xl bg-olive p-4 text-linen">
+                  <span className="block">{store.name}</span>
+                  <PiecePicker
+                    productId={product.id}
+                    name={product.name}
+                    imageUrl={cover?.url ?? "/placeholder-product.svg"}
+                    pieces={store.pieces ?? []}
+                    storeSlug={store.slug}
+                  />
                 </li>
               ))}
             </ul>

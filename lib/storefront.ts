@@ -2,6 +2,7 @@
 // display; the database recomputes everything when quoting and ordering.
 import { productImageUrl } from "@/lib/images";
 import type { OrderEvent } from "@/lib/order-timeline";
+import { toMenuPieces, type MenuPiece } from "@/lib/catalog";
 import { createPublicClient } from "@/lib/supabase/public";
 import { parseStoredHours, type StoreHours } from "@/lib/validators/store";
 import type { OrderSummary } from "@/lib/whatsapp";
@@ -143,10 +144,11 @@ export type ProductPage = {
   slug: string;
   name: string;
   description: string;
-  type: "vitrine" | "bolo_kg" | "cento" | "kit";
+  type: "vitrine" | "vitrine_kg" | "bolo_kg" | "cento" | "kit";
   priceCents: number;
   images: { url: string; alt: string }[];
-  stores: { id: string; slug: string; name: string; availableQty: number | null }[];
+  // pieces: weighed showcase cakes on that store's shelf (stage 10), else null.
+  stores: { id: string; slug: string; name: string; availableQty: number | null; pieces: MenuPiece[] | null }[];
 };
 
 export async function getProductPage(slug: string): Promise<ProductPage | null> {
@@ -159,11 +161,24 @@ export async function getProductPage(slug: string): Promise<ProductPage | null> 
   if (error) throw new Error(`Could not load product: ${error.message}`);
   if (!product) return null;
 
-  const [{ data: stores, error: storesError }, { data: availability, error: availabilityError }] = await Promise.all([
-    supabase.from("stores").select("id, slug, name").order("sort"),
-    supabase.from("product_availability").select("store_id, quantity").eq("product_id", product.id),
-  ]);
-  if (storesError ?? availabilityError) throw new Error("Could not load product availability");
+  const weighed = product.type === "vitrine_kg";
+  const [{ data: stores, error: storesError }, { data: availability, error: availabilityError }, pieceRows] =
+    await Promise.all([
+      supabase.from("stores").select("id, slug, name").order("sort"),
+      supabase.from("product_availability").select("store_id, quantity").eq("product_id", product.id),
+      weighed
+        ? supabase.from("piece_availability").select("id, store_id, weight_g").eq("product_id", product.id).order("weight_g")
+        : null,
+    ]);
+  if (storesError ?? availabilityError ?? pieceRows?.error) throw new Error("Could not load product availability");
+
+  const piecesOf = (storeId: string) =>
+    toMenuPieces(
+      (pieceRows?.data ?? [])
+        .filter((row) => row.store_id === storeId && row.id && row.weight_g !== null)
+        .map((row) => ({ id: row.id!, weightG: row.weight_g! })),
+      product.price_cents,
+    );
 
   const quantities = new Map((availability ?? []).map((row) => [row.store_id, row.quantity ?? 0]));
   return {
@@ -178,10 +193,14 @@ export async function getProductPage(slug: string): Promise<ProductPage | null> 
       .map((image) => ({ url: productImageUrl(image.path), alt: image.alt || product.name })),
     stores: (stores ?? [])
       .filter((store) => product.store_ids.length === 0 || product.store_ids.includes(store.id))
-      .map((store) => ({
-        ...store,
-        availableQty: product.type === "vitrine" ? (quantities.get(store.id) ?? 0) : null,
-      })),
+      .map((store) => {
+        const pieces = weighed ? piecesOf(store.id) : null;
+        return {
+          ...store,
+          availableQty: pieces ? pieces.length : product.type === "vitrine" ? (quantities.get(store.id) ?? 0) : null,
+          pieces,
+        };
+      }),
   };
 }
 

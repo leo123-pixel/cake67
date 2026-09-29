@@ -12,13 +12,13 @@ export const metadata: Metadata = { title: "Editar produto" };
 
 type Props = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ criado?: string }>;
+  searchParams: Promise<{ criado?: string; duplicado?: string }>;
 };
 
 export default async function EditProductPage({ params, searchParams }: Props) {
   const { supabase } = await requireAdmin();
   const { id } = await params;
-  const { criado } = await searchParams;
+  const { criado, duplicado } = await searchParams;
   if (!z.uuid().safeParse(id).success) notFound();
 
   const [detail, options] = await Promise.all([getAdminProduct(supabase, id), getProductFormOptions(supabase)]);
@@ -36,6 +36,11 @@ export default async function EditProductPage({ params, searchParams }: Props) {
         {criado && (
           <p role="status" className="rounded-xl bg-olive/10 px-4 py-3 text-sm text-olive-dark">
             Produto criado. Agora adicione as fotos.
+          </p>
+        )}
+        {duplicado && (
+          <p role="status" className="rounded-xl bg-olive/10 px-4 py-3 text-sm text-olive-dark">
+            Cópia criada, fora do site. Ajuste o nome e o preço e marque &quot;Mostrar no site&quot;.
           </p>
         )}
       </header>

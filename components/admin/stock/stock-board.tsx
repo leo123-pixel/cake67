@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { deleteProduct, duplicateProduct, setProductActive } from "@/app/admin/(panel)/produtos/actions";
+import type { MenuAction } from "@/components/admin/actions-menu";
 import type { StockGroup, StockItem } from "@/lib/stock-grid";
 import { PiecesRow } from "./pieces-row";
 import { StockRow } from "./stock-row";
@@ -10,13 +12,32 @@ type Props = {
   groups: StockGroup[];
   hidden: StockItem[];
   historyBase: string;
+  isAdmin: boolean;
 };
+
+// Product-level actions on the stock screen (admins only).
+function productActions(item: StockItem): MenuAction[] {
+  const active = item.hiddenReason !== "inativo";
+  return [
+    { label: "Editar produto", href: `/admin/produtos/${item.productId}` },
+    { label: "Duplicar", run: () => duplicateProduct(item.productId) },
+    active
+      ? { label: "Desativar (tirar do site)", run: () => setProductActive(item.productId, false) }
+      : { label: "Ativar (mostrar no site)", run: () => setProductActive(item.productId, true) },
+    {
+      label: "Excluir produto",
+      danger: true,
+      confirm: `Excluir "${item.name}"? Fotos e estoque dele também são apagados. Não dá para desfazer.`,
+      run: () => deleteProduct(item.productId),
+    },
+  ];
+}
 
 function matches(item: StockItem, search: string) {
   return item.name.toLocaleLowerCase("pt-BR").includes(search.toLocaleLowerCase("pt-BR"));
 }
 
-export function StockBoard({ storeId, groups, hidden, historyBase }: Props) {
+export function StockBoard({ storeId, groups, hidden, historyBase, isAdmin }: Props) {
   const [search, setSearch] = useState("");
   const term = search.trim();
   const visibleGroups = groups
@@ -45,7 +66,13 @@ export function StockBoard({ storeId, groups, hidden, historyBase }: Props) {
           <h2 className="text-xl text-olive">{group.categoryName}</h2>
           <ul className="space-y-2">
             {group.items.map((item) => (
-              <Row key={item.productId} item={item} storeId={storeId} historyHref={history(item.productId)} />
+              <Row
+                key={item.productId}
+                item={item}
+                storeId={storeId}
+                historyHref={history(item.productId)}
+                actions={isAdmin ? productActions(item) : []}
+              />
             ))}
           </ul>
         </section>
@@ -64,6 +91,7 @@ export function StockBoard({ storeId, groups, hidden, historyBase }: Props) {
                 storeId={storeId}
                 note={`Fora do site: ${item.hiddenReason}`}
                 historyHref={history(item.productId)}
+                actions={isAdmin ? productActions(item) : []}
               />
             ))}
           </ul>
@@ -73,10 +101,10 @@ export function StockBoard({ storeId, groups, hidden, historyBase }: Props) {
   );
 }
 
-type RowProps = { item: StockItem; storeId: string; note?: string; historyHref: string };
+type RowProps = { item: StockItem; storeId: string; note?: string; historyHref: string; actions: MenuAction[] };
 
 // Counted items get +/−; weighed cakes list their pieces.
-function Row({ item, storeId, note, historyHref }: RowProps) {
+function Row({ item, storeId, note, historyHref, actions }: RowProps) {
   if (item.pieces) {
     return (
       <PiecesRow
@@ -87,6 +115,7 @@ function Row({ item, storeId, note, historyHref }: RowProps) {
         priceCents={item.priceCents}
         pieces={item.pieces}
         historyHref={historyHref}
+        productActions={actions}
       />
     );
   }
@@ -98,6 +127,7 @@ function Row({ item, storeId, note, historyHref }: RowProps) {
       note={note}
       quantity={item.quantity}
       historyHref={historyHref}
+      productActions={actions}
     />
   );
 }

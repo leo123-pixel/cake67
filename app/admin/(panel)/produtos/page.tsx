@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { ProductActions } from "@/components/admin/product-actions";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { listAdminCategories } from "@/lib/admin/catalog";
 import { listAdminProducts } from "@/lib/admin/products";
@@ -53,10 +54,10 @@ export default async function ProductsPage({ searchParams }: Props) {
       {products.length === 0 ? (
         <p className="text-cocoa-soft">Nenhum produto encontrado.</p>
       ) : (
-        <ul className="divide-y divide-cocoa/10 overflow-hidden rounded-2xl border border-cocoa/10 bg-white">
+        <ul className="divide-y divide-cocoa/10 rounded-2xl border border-cocoa/10 bg-white">
           {products.map((product) => (
-            <li key={product.id}>
-              <Link href={`/admin/produtos/${product.id}`} className="flex items-center gap-3 p-3 hover:bg-olive/5">
+            <li key={product.id} className="flex items-center gap-2 pr-3">
+              <Link href={`/admin/produtos/${product.id}`} className="flex min-w-0 flex-1 items-center gap-3 p-3 hover:bg-olive/5">
                 <Image
                   src={productImageUrl(product.coverPath)}
                   alt=""
@@ -80,6 +81,7 @@ export default async function ProductsPage({ searchParams }: Props) {
                   {!product.active && <StatusBadge tone="gray">Inativo</StatusBadge>}
                 </div>
               </Link>
+              <ProductActions product={product} />
             </li>
           ))}
         </ul>

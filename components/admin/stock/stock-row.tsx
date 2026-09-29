@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { adjustStock, setStock, type StockResult } from "@/app/admin/(panel)/estoque/actions";
+import { ActionsMenu, type MenuAction } from "@/components/admin/actions-menu";
 import { StatusBadge } from "@/components/admin/status-badge";
 
 type Props = {
@@ -12,13 +13,15 @@ type Props = {
   note?: string;
   quantity: number;
   historyHref: string;
+  // Product actions for admins (Editar, Duplicar, Ativar/Desativar, Excluir).
+  productActions?: MenuAction[];
 };
 
 const FAILED = "Não foi possível salvar. Tente de novo.";
 
 // Shows confirmed (database) quantity plus in-flight deltas; every response
 // replaces the confirmed value with what the database returned.
-export function StockRow({ productId, storeId, name, note, quantity, historyHref }: Props) {
+export function StockRow({ productId, storeId, name, note, quantity, historyHref, productActions = [] }: Props) {
   const [confirmed, setConfirmed] = useState(quantity);
   const [pendingDelta, setPendingDelta] = useState(0);
   const [busy, setBusy] = useState(0);
@@ -96,7 +99,7 @@ export function StockRow({ productId, storeId, name, note, quantity, historyHref
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-[1fr_1fr_auto] gap-2">
           <button
             type="button"
             aria-label={`Tirar 1 de ${name}`}
@@ -114,24 +117,20 @@ export function StockRow({ productId, storeId, name, note, quantity, historyHref
           >
             +
           </button>
-          <button
-            type="button"
-            onClick={() => {
-              setDraft(String(shown));
-              setEditing(true);
-            }}
-            className="btn btn-secondary px-0"
-          >
-            Definir
-          </button>
-          <button
-            type="button"
-            disabled={shown === 0}
-            onClick={() => run(() => setStock(productId, storeId, 0))}
-            className="btn btn-danger px-0"
-          >
-            Esgotar
-          </button>
+          <ActionsMenu
+            label={name}
+            actions={[
+              {
+                label: "Definir quantidade",
+                run: () => {
+                  setDraft(String(shown));
+                  setEditing(true);
+                },
+              },
+              ...(shown > 0 ? [{ label: "Esgotar", danger: true, run: () => run(() => setStock(productId, storeId, 0)) }] : []),
+              ...productActions,
+            ]}
+          />
         </div>
       )}
 

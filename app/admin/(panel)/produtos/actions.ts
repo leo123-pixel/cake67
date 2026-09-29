@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { dbFailure, isUniqueViolation, nextSort, uniqueSlug } from "@/lib/admin/common";
 import { getAdminContext, NOT_ALLOWED } from "@/lib/auth";
+import { getAdminProduct } from "@/lib/admin/products";
 import { PRODUCT_BUCKET } from "@/lib/images";
 import { invalid, readForm, type ActionState } from "@/lib/validators/common";
 import { productSchema, toProductRow } from "@/lib/validators/product";
@@ -133,9 +134,92 @@ export async function deleteProduct(productId: string): Promise<ActionState> {
     if (storageError) console.error(`deleteProduct files: ${storageError.message}`);
   }
 
+  revalidateCatalog();
+  return { ok: true, message: "Produto excluído." };
+}
+
+function revalidateCatalog() {
   revalidatePath("/admin/produtos", "layout");
   revalidatePath("/admin/estoque", "layout");
-  redirect("/admin/produtos?excluido=1");
+}
+
+// "Ativar / desativar" from the lists: same as the "Mostrar no site" checkbox.
+export async function setProductActive(productId: string, active: boolean): Promise<ActionState> {
+  const context = await getAdminContext();
+  if (!context) return NOT_ALLOWED;
+  if (!uuid.safeParse(productId).success) return { ok: false, message: "Produto inválido." };
+
+  const { error } = await context.supabase.from("products").update({ active }).eq("id", productId);
+  if (error) return dbFailure("setProductActive", error);
+
+  revalidateCatalog();
+  return { ok: true };
+}
+
+// Copy for a similar flavor: same data, addons and photos, hidden from the
+// site until reviewed. Photos are copied to the new product's own folder so
+// deleting either product never removes the other's files.
+export async function duplicateProduct(productId: string): Promise<ActionState> {
+  const context = await getAdminContext();
+  if (!context) return NOT_ALLOWED;
+  if (!uuid.safeParse(productId).success) return { ok: false, message: "Produto inválido." };
+
+  const { supabase } = context;
+  const detail = await getAdminProduct(supabase, productId);
+  if (!detail) return { ok: false, message: "Produto não encontrado." };
+
+  const source = detail.product;
+  const name = `${source.name} (cópia)`;
+  const insert = async () =>
+    supabase
+      .from("products")
+      .insert({
+        category_id: source.category_id,
+        description: source.description,
+        type: source.type,
+        price_cents: source.price_cents,
+        price_pending: source.price_pending,
+        min_qty: source.min_qty,
+        step_qty: source.step_qty,
+        lead_time_hours: source.lead_time_hours,
+        weights_kg: source.weights_kg,
+        formats: source.formats,
+        kit_contents: source.kit_contents,
+        store_ids: source.store_ids,
+        name,
+        active: false,
+        featured: false,
+        slug: await uniqueSlug(supabase, "products", name),
+        sort: await nextSort(supabase, "products"),
+      })
+      .select("id")
+      .single();
+  let result = await insert();
+  if (isUniqueViolation(result.error)) result = await insert();
+  if (result.error) return dbFailure("duplicateProduct", result.error);
+  const copyId = result.data.id;
+
+  const { error: addonError } = await supabase.rpc("set_product_addons", {
+    p_product_id: copyId,
+    p_addon_ids: detail.addonIds,
+  });
+  if (addonError) return dbFailure("duplicateProductAddons", addonError);
+
+  for (const image of detail.images) {
+    const path = `products/${copyId}/${crypto.randomUUID()}.webp`;
+    const { error: copyError } = await supabase.storage.from(PRODUCT_BUCKET).copy(image.path, path);
+    if (copyError) {
+      console.error(`duplicateProduct copy ${image.path}: ${copyError.message}`);
+      continue;
+    }
+    const { error: rowError } = await supabase
+      .from("product_images")
+      .insert({ product_id: copyId, path, alt: image.alt, sort: image.sort });
+    if (rowError) console.error(`duplicateProduct image row: ${rowError.message}`);
+  }
+
+  revalidateCatalog();
+  redirect(`/admin/produtos/${copyId}?duplicado=1`);
 }
 
 export async function removeProductImage(imageId: string): Promise<ActionState> {

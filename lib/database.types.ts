@@ -575,6 +575,7 @@ export type Database = {
       sell_piece: { Args: { p_piece_id: string }; Returns: undefined };
       discard_piece: { Args: { p_piece_id: string }; Returns: undefined };
       set_piece_weight: { Args: { p_piece_id: string; p_weight_g: number }; Returns: undefined };
+      delete_product: { Args: { p_product_id: string }; Returns: string[] };
     };
     Enums: {
       category_kind: "vitrine" | "encomenda";

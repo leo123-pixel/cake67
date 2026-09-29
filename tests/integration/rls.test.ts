@@ -20,6 +20,11 @@ const anon = configured
   ? createClient<Database>(url!, anonKey!, { auth: { persistSession: false } })
   : null;
 
+// Ground truth for the catalog the client keeps editing (counts are not fixed).
+const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const service =
+  configured && serviceKey ? createClient<Database>(url!, serviceKey, { auth: { persistSession: false } }) : null;
+
 type TableName = keyof Database["public"]["Tables"];
 
 const PRIVATE_TABLES = [
@@ -91,15 +96,28 @@ describe.skipIf(!configured)("anon access (RLS)", () => {
     const { data, error } = await anon!.from("products").select("active, type");
     expect(error).toBeNull();
     expect(data!.every((p) => p.active)).toBe(true);
-    expect(data!.filter((p) => p.type === "vitrine")).toHaveLength(20);
+    if (!service) return;
+    const { count } = await service
+      .from("products")
+      .select("id", { count: "exact", head: true })
+      .eq("active", true)
+      .eq("price_pending", false);
+    expect(data).toHaveLength(count!);
   });
 
   it("reads availability with capped quantity", async () => {
     const { data, error } = await anon!.from("product_availability").select("*");
     expect(error).toBeNull();
-    expect(data).toHaveLength(40);
     expect(data!.every((row) => (row.quantity ?? 0) <= 10)).toBe(true);
-    expect(data!.filter((row) => !row.available)).toHaveLength(6);
+    expect(data!.every((row) => row.available === (row.quantity ?? 0) > 0)).toBe(true);
+    if (!service) return;
+    const { data: stock } = await service
+      .from("stock")
+      .select("quantity, product:products!inner(active, price_pending, type)")
+      .eq("product.active", true)
+      .eq("product.price_pending", false)
+      .eq("product.type", "vitrine");
+    expect(data).toHaveLength(stock!.length);
   });
 
   it("sees both seeded stores", async () => {

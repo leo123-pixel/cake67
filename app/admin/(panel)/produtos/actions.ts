@@ -115,6 +115,29 @@ export async function updateImageAlt(imageId: string, _prev: ActionState, formDa
   return { ok: true, message: "Salvo." };
 }
 
+// Only products that never appeared in an order (CK040 otherwise).
+export async function deleteProduct(productId: string): Promise<ActionState> {
+  const context = await getAdminContext();
+  if (!context) return NOT_ALLOWED;
+  if (!uuid.safeParse(productId).success) return { ok: false, message: "Produto inválido." };
+
+  const { supabase } = context;
+  const { data: paths, error } = await supabase.rpc("delete_product", { p_product_id: productId });
+  if (error) return dbFailure("deleteProduct", error);
+
+  // Row first, files second: orphan files are harmless. Only files uploaded
+  // for this product: seed photos (seed/...) are shared by other products.
+  const ownFiles = paths.filter((path) => path.startsWith(`products/${productId}/`));
+  if (ownFiles.length > 0) {
+    const { error: storageError } = await supabase.storage.from(PRODUCT_BUCKET).remove(ownFiles);
+    if (storageError) console.error(`deleteProduct files: ${storageError.message}`);
+  }
+
+  revalidatePath("/admin/produtos", "layout");
+  revalidatePath("/admin/estoque", "layout");
+  redirect("/admin/produtos?excluido=1");
+}
+
 export async function removeProductImage(imageId: string): Promise<ActionState> {
   const context = await getAdminContext();
   if (!context) return NOT_ALLOWED;
@@ -130,8 +153,11 @@ export async function removeProductImage(imageId: string): Promise<ActionState> 
   if (!data) return { ok: false, message: "Foto não encontrada." };
 
   // Row first, file second: an orphan file is harmless, an orphan row is not.
-  const { error: storageError } = await supabase.storage.from(PRODUCT_BUCKET).remove([data.path]);
-  if (storageError) console.error(`remove ${data.path}: ${storageError.message}`);
+  // Seed photos (seed/...) may be shared, so only this product's own uploads go.
+  if (data.path.startsWith(`products/${data.product_id}/`)) {
+    const { error: storageError } = await supabase.storage.from(PRODUCT_BUCKET).remove([data.path]);
+    if (storageError) console.error(`remove ${data.path}: ${storageError.message}`);
+  }
 
   revalidatePath(`/admin/produtos/${data.product_id}`);
   return { ok: true };

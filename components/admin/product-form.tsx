@@ -14,6 +14,7 @@ type ProductType = Enums<"product_type">;
 
 const TYPE_LABELS: Record<ProductType, string> = {
   vitrine: "Vitrine (pronta entrega)",
+  vitrine_kg: "Bolo inteiro (vitrine, por peso)",
   bolo_kg: "Bolo por kg (encomenda)",
   cento: "Cento (encomenda)",
   kit: "Kit festa (encomenda)",
@@ -21,6 +22,7 @@ const TYPE_LABELS: Record<ProductType, string> = {
 
 const PRICE_LABELS: Record<ProductType, string> = {
   vitrine: "Preço unitário",
+  vitrine_kg: "Preço por kg",
   bolo_kg: "Preço por kg",
   cento: "Preço do cento",
   kit: "Preço do kit",
@@ -202,7 +204,7 @@ export function ProductForm({ product, addonIds = [], options }: Props) {
         </fieldset>
       )}
 
-      {type !== "vitrine" && (
+      {type !== "vitrine" && type !== "vitrine_kg" && (
         <Field label="Antecedência mínima (horas)" name="lead_time_hours" errors={errors.lead_time_hours}>
           <input id="lead_time_hours" name="lead_time_hours" type="number" min={0} step={1} defaultValue={leadTime} className="field-input sm:max-w-40" />
         </Field>

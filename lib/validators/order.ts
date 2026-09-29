@@ -15,6 +15,7 @@ export const orderItemSchema = z.object({
   format: z.string().max(40).optional(),
   addon_ids: z.array(z.uuid()).max(10).optional(),
   message: z.string().max(60).optional(),
+  piece_id: z.uuid().optional(),
 });
 
 export const orderItemsSchema = z.array(orderItemSchema).min(1).max(30);

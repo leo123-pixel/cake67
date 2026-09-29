@@ -32,6 +32,20 @@ describe("productSchema", () => {
     expect(pending.price_pending).toBe(true);
   });
 
+  it("accepts a weighed showcase cake and clears made-to-order fields", () => {
+    const input = productSchema.parse({
+      ...base,
+      type: "vitrine_kg",
+      price: "110,00",
+      weights_kg: ["2"],
+      formats: "Redondo",
+      lead_time_hours: "48",
+    });
+    expect(input.price_cents).toBe(11000);
+    expect(toProductRow(input)).toMatchObject({ type: "vitrine_kg", weights_kg: [], formats: [], min_qty: null });
+    expect(toProductRow(input)).not.toHaveProperty("lead_time_hours");
+  });
+
   it("requires weights and formats for cakes", () => {
     const errors = errorsOf(productSchema.safeParse({ ...base, type: "bolo_kg", weights_kg: [], formats: "", lead_time_hours: "48" }));
     expect(errors).toHaveProperty("weights_kg");

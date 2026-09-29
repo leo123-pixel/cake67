@@ -78,7 +78,11 @@ export default async function StockPage({ searchParams }: Props) {
                               href={`/admin/estoque?loja=${target.slug}`}
                               className={cell.quantity === 0 ? "font-semibold text-raspberry" : "text-cocoa"}
                             >
-                              {cell.quantity === 0 ? "Esgotado" : cell.quantity}
+                              {cell.quantity === 0
+                                ? "Esgotado"
+                                : cell.weighed
+                                  ? `${cell.quantity} ${cell.quantity === 1 ? "bolo" : "bolos"}`
+                                  : cell.quantity}
                             </Link>
                           ) : (
                             <span className="text-cocoa-soft">—</span>

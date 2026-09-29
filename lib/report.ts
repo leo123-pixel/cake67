@@ -10,7 +10,13 @@ export const PERIOD_PRESETS = {
 
 export type PeriodPreset = keyof typeof PERIOD_PRESETS;
 
-export const PRODUCT_TYPE_LABELS = { vitrine: "Vitrine", bolo_kg: "Bolo por kg", cento: "Cento", kit: "Kit" } as const;
+export const PRODUCT_TYPE_LABELS = {
+  vitrine: "Vitrine",
+  vitrine_kg: "Bolo inteiro (vitrine)",
+  bolo_kg: "Bolo por kg",
+  cento: "Cento",
+  kit: "Kit",
+} as const;
 
 export const MAX_PERIOD_DAYS = 400;
 // Longer periods list only the days that had orders.
@@ -36,7 +42,7 @@ export type Report = {
   top_products: {
     product_id: string | null;
     name: string;
-    type: "vitrine" | "bolo_kg" | "cento" | "kit";
+    type: "vitrine" | "vitrine_kg" | "bolo_kg" | "cento" | "kit";
     units: number;
     kg: number | null;
     revenue_cents: number;

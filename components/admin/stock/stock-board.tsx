@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { StockGroup, StockItem } from "@/lib/stock-grid";
+import { PiecesRow } from "./pieces-row";
 import { StockRow } from "./stock-row";
 
 type Props = {
@@ -44,14 +45,7 @@ export function StockBoard({ storeId, groups, hidden, historyBase }: Props) {
           <h2 className="text-xl text-olive">{group.categoryName}</h2>
           <ul className="space-y-2">
             {group.items.map((item) => (
-              <StockRow
-                key={item.productId}
-                productId={item.productId}
-                storeId={storeId}
-                name={item.name}
-                quantity={item.quantity}
-                historyHref={history(item.productId)}
-              />
+              <Row key={item.productId} item={item} storeId={storeId} historyHref={history(item.productId)} />
             ))}
           </ul>
         </section>
@@ -64,13 +58,11 @@ export function StockBoard({ storeId, groups, hidden, historyBase }: Props) {
           </summary>
           <ul className="mt-3 space-y-2">
             {hiddenItems.map((item) => (
-              <StockRow
+              <Row
                 key={item.productId}
-                productId={item.productId}
+                item={item}
                 storeId={storeId}
-                name={item.name}
                 note={`Fora do site: ${item.hiddenReason}`}
-                quantity={item.quantity}
                 historyHref={history(item.productId)}
               />
             ))}
@@ -78,5 +70,34 @@ export function StockBoard({ storeId, groups, hidden, historyBase }: Props) {
         </details>
       )}
     </div>
+  );
+}
+
+type RowProps = { item: StockItem; storeId: string; note?: string; historyHref: string };
+
+// Counted items get +/−; weighed cakes list their pieces.
+function Row({ item, storeId, note, historyHref }: RowProps) {
+  if (item.pieces) {
+    return (
+      <PiecesRow
+        productId={item.productId}
+        storeId={storeId}
+        name={item.name}
+        note={note}
+        priceCents={item.priceCents}
+        pieces={item.pieces}
+        historyHref={historyHref}
+      />
+    );
+  }
+  return (
+    <StockRow
+      productId={item.productId}
+      storeId={storeId}
+      name={item.name}
+      note={note}
+      quantity={item.quantity}
+      historyHref={historyHref}
+    />
   );
 }

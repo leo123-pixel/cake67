@@ -22,6 +22,9 @@ const common = {
 
 const vitrine = z.object({ ...common, type: z.literal("vitrine") });
 
+// Whole cake sold by weight in the showcase: price is per kg (stage 10).
+const vitrineKg = z.object({ ...common, type: z.literal("vitrine_kg") });
+
 const boloKg = z.object({
   ...common,
   type: z.literal("bolo_kg"),
@@ -53,7 +56,7 @@ const kit = z.object({
 });
 
 export const productSchema = z
-  .discriminatedUnion("type", [vitrine, boloKg, cento, kit], {
+  .discriminatedUnion("type", [vitrine, vitrineKg, boloKg, cento, kit], {
     error: "Escolha o tipo do produto",
   })
   .superRefine((product, ctx) => {
@@ -95,6 +98,7 @@ export function toProductRow(input: ProductInput): ProductRow {
     case "kit":
       return { ...row, kit_contents: input.kit_contents, lead_time_hours: input.lead_time_hours };
     case "vitrine":
+    case "vitrine_kg":
       return row;
   }
 }

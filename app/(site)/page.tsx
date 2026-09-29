@@ -7,7 +7,7 @@ import { HomeVitrine } from "@/components/site/home/home-vitrine";
 import { Cakelovers, StoresSection } from "@/components/site/home/stores-section";
 import { JsonLd } from "@/components/site/json-ld";
 import type { AssistantData } from "@/lib/assistant";
-import { listHomeHighlights, listStores, listVitrineMenu } from "@/lib/catalog";
+import { listHomeHighlights, listStores, listVitrineMenu, withoutWeighed } from "@/lib/catalog";
 import { todayInCampoGrande } from "@/lib/datetime";
 import { siteUrl } from "@/lib/env";
 import { describeHours } from "@/lib/store-hours";
@@ -22,8 +22,12 @@ export default async function HomePage() {
     listCakeShowcase(),
     listMadeToOrder(),
   ]);
+  // Weighed whole cakes (stage 10) stay on /cardapio only; the home vitrine
+  // and the assistant sell by unit.
   const menus = Object.fromEntries(
-    await Promise.all(stores.map(async (store) => [store.slug, await listVitrineMenu(store.id)] as const)),
+    await Promise.all(
+      stores.map(async (store) => [store.slug, withoutWeighed(await listVitrineMenu(store.id))] as const),
+    ),
   );
 
   const cakes = showcase.filter((cake) => cake.weightsKg.length > 0 && cake.formats.length > 0);

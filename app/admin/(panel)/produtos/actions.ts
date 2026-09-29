@@ -24,6 +24,17 @@ export async function saveProduct(
   if (!parsed.success) return invalid(parsed.error, values);
 
   const { supabase } = context;
+  if (parsed.data.type === "vitrine_kg") {
+    const { data: category } = await supabase.from("categories").select("kind").eq("id", parsed.data.category_id).maybeSingle();
+    if (category?.kind !== "vitrine") {
+      return {
+        ok: false,
+        message: "Confira os campos destacados.",
+        fieldErrors: { category_id: ["Bolo inteiro da vitrine precisa de uma categoria de vitrine"] },
+        values,
+      };
+    }
+  }
   const row = toProductRow(parsed.data);
   let id = productId;
 

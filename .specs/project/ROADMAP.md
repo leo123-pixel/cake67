@@ -73,6 +73,11 @@ Cada feature = uma etapa do SPEC (seção 11). Uma por vez, com commit e deploy 
 - Etapas do pedido com data e hora, por tipo (vitrine/encomenda) e retirada/entrega; cancelado e expirado encerram a linha (AD-016)
 - `get_order_public` devolve só status e horário de cada mudança
 
+**10 · Bolo inteiro por peso na vitrine** - IN PROGRESS (verificado em localhost em 2026-09-29)
+
+- Tipo `vitrine_kg`: cada bolo físico é uma peça com o peso da balança; o cliente escolhe o peso no card (AD-018)
+- Painel: Adicionar bolo, Vendida no balcão, Descartar, Corrigir peso; sobra continua no dia seguinte
+
 ---
 
 ## M2 · Lançamento

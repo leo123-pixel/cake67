@@ -8,7 +8,7 @@ import type { CheckoutStore } from "@/lib/storefront";
 import { useCart } from "./use-cart";
 import { useQuote } from "./use-quote";
 
-const MAX_BY_TYPE = { vitrine: MAX_VITRINE_QTY, bolo_kg: 5, cento: 2000, kit: 20 } as const;
+const MAX_BY_TYPE = { vitrine: MAX_VITRINE_QTY, vitrine_kg: 1, bolo_kg: 5, cento: 2000, kit: 20 } as const;
 
 function stepFor(line: CartLine) {
   return line.type === "cento" ? (line.stepQty ?? 25) : 1;
@@ -86,29 +86,43 @@ export function CartView({ stores }: { stores: CheckoutStore[] }) {
                     {quoted.problem_text}
                   </p>
                 )}
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    aria-label={`Menos ${line.name}`}
-                    onClick={() => setQty(line.key, line.qty - step < minFor(line) ? 0 : line.qty - step)}
-                    className="btn btn-secondary size-11 px-0"
-                  >
-                    −
-                  </button>
-                  <span className="min-w-14 text-center tabular-nums">{line.type === "cento" ? `${line.qty} un.` : line.qty}</span>
-                  <button
-                    type="button"
-                    aria-label={`Mais ${line.name}`}
-                    disabled={line.qty + step > MAX_BY_TYPE[line.type]}
-                    onClick={() => setQty(line.key, line.qty + step)}
-                    className="btn btn-secondary size-11 px-0"
-                  >
-                    +
-                  </button>
-                  <button type="button" onClick={() => remove(line.key)} className="ml-auto text-sm text-raspberry underline">
-                    Remover
-                  </button>
-                </div>
+                {line.type === "vitrine_kg" ? (
+                  // One weighed cake per line: no quantity, only remove or pick another.
+                  <div className="flex items-center gap-3">
+                    {quoted?.problem && store && (
+                      <Link href={`/cardapio?loja=${store.slug}`} className="text-sm text-olive underline">
+                        Escolher outro peso
+                      </Link>
+                    )}
+                    <button type="button" onClick={() => remove(line.key)} className="ml-auto text-sm text-raspberry underline">
+                      Remover
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      aria-label={`Menos ${line.name}`}
+                      onClick={() => setQty(line.key, line.qty - step < minFor(line) ? 0 : line.qty - step)}
+                      className="btn btn-secondary size-11 px-0"
+                    >
+                      −
+                    </button>
+                    <span className="min-w-14 text-center tabular-nums">{line.type === "cento" ? `${line.qty} un.` : line.qty}</span>
+                    <button
+                      type="button"
+                      aria-label={`Mais ${line.name}`}
+                      disabled={line.qty + step > MAX_BY_TYPE[line.type]}
+                      onClick={() => setQty(line.key, line.qty + step)}
+                      className="btn btn-secondary size-11 px-0"
+                    >
+                      +
+                    </button>
+                    <button type="button" onClick={() => remove(line.key)} className="ml-auto text-sm text-raspberry underline">
+                      Remover
+                    </button>
+                  </div>
+                )}
               </div>
             </li>
           );

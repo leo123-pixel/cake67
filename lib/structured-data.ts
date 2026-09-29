@@ -39,7 +39,9 @@ export function bakeryJsonLd(store: SeoStore, siteUrl: string) {
   };
 }
 
-type SeoProduct = Pick<ProductPage, "slug" | "name" | "description" | "type" | "priceCents" | "images" | "stores">;
+type SeoProduct = Pick<ProductPage, "slug" | "name" | "description" | "type" | "priceCents" | "images"> & {
+  stores: { availableQty: number | null }[];
+};
 
 export function productJsonLd(product: SeoProduct, siteUrl: string) {
   const url = `${siteUrl}/produto/${product.slug}`;
@@ -58,8 +60,19 @@ export function productJsonLd(product: SeoProduct, siteUrl: string) {
       priceCurrency: "BRL",
       price: (product.priceCents / 100).toFixed(2),
       // Made-to-order items have no stock: availability depends on the date.
-      ...(product.type === "vitrine"
+      ...(product.type === "vitrine" || product.type === "vitrine_kg"
         ? { availability: `https://schema.org/${inStock ? "InStock" : "OutOfStock"}` }
+        : {}),
+      // Weighed showcase cakes: the price is per kg.
+      ...(product.type === "vitrine_kg"
+        ? {
+            priceSpecification: {
+              "@type": "UnitPriceSpecification",
+              price: (product.priceCents / 100).toFixed(2),
+              priceCurrency: "BRL",
+              referenceQuantity: { "@type": "QuantitativeValue", value: 1, unitCode: "KGM" },
+            },
+          }
         : {}),
     },
   };

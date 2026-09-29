@@ -45,6 +45,8 @@ describe("buildStockGrid", () => {
     store_ids: [],
     sort: 1,
     category: cat("a", 1),
+    type: "vitrine",
+    price_cents: 1000,
     ...overrides,
   });
 
@@ -61,6 +63,27 @@ describe("buildStockGrid", () => {
     expect(groups[0].items[0]).toMatchObject({ name: "Fatia", quantity: 4 });
     expect(groups[1].items[0]).toMatchObject({ name: "Croissant", quantity: 0 });
     expect(hidden).toEqual([]);
+  });
+
+  it("lists the store's pieces of weighed cakes and counts the available ones", () => {
+    const piece = (id: string, storeId: string, status: "disponivel" | "reservado", createdAt: string) => ({
+      id, productId: "k", storeId, weightG: 1340, status, orderCode: status === "reservado" ? "C67-000001" : null, createdAt,
+    });
+    const { groups } = buildStockGrid(
+      [product({ id: "k", name: "Bolo inteiro", type: "vitrine_kg" }), product({ id: "f", name: "Fatia" })],
+      [{ product_id: "k", store_id: STORE, quantity: 7 }],
+      STORE,
+      [
+        piece("new", STORE, "disponivel", "2026-09-29T10:00:00Z"),
+        piece("old", STORE, "disponivel", "2026-09-27T10:00:00Z"),
+        piece("res", STORE, "reservado", "2026-09-28T10:00:00Z"),
+        piece("elsewhere", "other", "disponivel", "2026-09-29T10:00:00Z"),
+      ],
+    );
+    const [cake, slice] = groups[0].items;
+    expect(cake.quantity).toBe(2);
+    expect(cake.pieces!.map((p) => p.id)).toEqual(["old", "res", "new"]);
+    expect(slice.pieces).toBeNull();
   });
 
   it("moves items off the site to hidden with the reason", () => {

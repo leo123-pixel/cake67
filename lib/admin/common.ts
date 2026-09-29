@@ -16,6 +16,8 @@ const DB_MESSAGES: Record<string, string> = {
   CK002: "O estoque não pode ficar negativo.",
   CK003: "Quantidade acima de 9999. Confira o número.",
   CK004: "Este produto não é de vitrine.",
+  CK030: "Esse bolo mudou. Atualize a lista.",
+  CK031: "Peso entre 0,300 e 10,000 kg.",
   "42501": "Você não tem permissão para esta ação.",
   // check constraints (settings: reservation range, template variables)
   "23514": "Revise os campos destacados: algum valor ficou fora do permitido.",

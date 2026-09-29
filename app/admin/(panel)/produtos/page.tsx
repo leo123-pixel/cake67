@@ -11,11 +11,11 @@ import { PRODUCT_TYPE_LABELS } from "@/lib/report";
 
 export const metadata: Metadata = { title: "Produtos" };
 
-type Props = { searchParams: Promise<{ categoria?: string; busca?: string }> };
+type Props = { searchParams: Promise<{ categoria?: string; busca?: string; excluido?: string }> };
 
 export default async function ProductsPage({ searchParams }: Props) {
   const { supabase } = await requireAdmin();
-  const { categoria, busca } = await searchParams;
+  const { categoria, busca, excluido } = await searchParams;
   const [categories, products] = await Promise.all([
     listAdminCategories(supabase),
     listAdminProducts(supabase, { categoryId: categoria || undefined, search: busca?.trim() || undefined }),
@@ -29,6 +29,11 @@ export default async function ProductsPage({ searchParams }: Props) {
           Novo produto
         </Link>
       </header>
+      {excluido && (
+        <p role="status" className="rounded-xl bg-olive/10 px-4 py-3 text-sm text-olive-dark">
+          Produto excluído.
+        </p>
+      )}
 
       <form className="grid gap-3 sm:grid-cols-[1fr_220px_auto]">
         <input name="busca" defaultValue={busca} placeholder="Buscar pelo nome" aria-label="Buscar pelo nome" className="field-input" />

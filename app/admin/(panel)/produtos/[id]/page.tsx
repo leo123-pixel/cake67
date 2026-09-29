@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
+import { DeleteProductButton } from "@/components/admin/delete-product-button";
 import { ProductForm } from "@/components/admin/product-form";
 import { ProductImages } from "@/components/admin/product-images";
 import { getAdminProduct, getProductFormOptions } from "@/lib/admin/products";
@@ -41,6 +42,7 @@ export default async function EditProductPage({ params, searchParams }: Props) {
 
       <ProductImages productId={product.id} productName={product.name} images={images} />
       <ProductForm product={product} addonIds={addonIds} options={options} />
+      <DeleteProductButton productId={product.id} productName={product.name} />
     </section>
   );
 }

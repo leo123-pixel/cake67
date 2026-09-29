@@ -28,7 +28,8 @@ const PRICE_LABELS: Record<ProductType, string> = {
   kit: "Preço do kit",
 };
 
-const WEIGHT_OPTIONS = Array.from({ length: 15 }, (_, i) => String(1 + i * 0.5));
+// Half-kilo steps plus 2.3 kg, the lightest Régua in the menu.
+const WEIGHT_OPTIONS = [...Array.from({ length: 15 }, (_, i) => 1 + i * 0.5), 2.3].sort((a, b) => a - b).map(String);
 const DEFAULT_FORMATS = "Redondo, Retangular, Régua";
 
 type Props = {

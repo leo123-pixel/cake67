@@ -84,7 +84,7 @@ insert into public.products (
 select
   c.id, v.slug, v.name, v.description, 'bolo_kg', v.price_cents, true,
   v.sort, 48,
-  array(select w from generate_series(1, 8, 0.5) as w where w >= v.min_kg)::numeric(4, 1)[],
+  array(select w from (select generate_series(1, 8, 0.5) union select 2.3) as s(w) where w >= v.min_kg order by w)::numeric(4, 1)[],
   '{Redondo,Retangular,Régua}'
 from (values
   ('bolo-ninho-morango', 'Bolo Ninho com Morango', 'Massa branca, creme de leite Ninho, morangos frescos e farofa caramelizada por cima.', 10990, 1, 1.0),

@@ -1,6 +1,6 @@
 // Home assistant (AD-012): rule-based answers built only from database data.
 // It never invents a price, a deadline or availability; unknown → WhatsApp.
-import { suggestCake } from "@/lib/cake";
+import { rangeText, sizeName, suggestCake } from "@/lib/cake";
 import { formatBRL } from "@/lib/money";
 
 export type AssistantData = {
@@ -16,8 +16,6 @@ export type AssistantAnswer = { text: string; action?: { target: AssistantAction
 export const ASSISTANT_SUGGESTIONS = ["Tem fatia hoje?", "Bolo para 30 pessoas", "Abre domingo?", "Qual o prazo?"];
 
 export const ASSISTANT_GREETING = "Oi! Sou o assistente da Cake 67. Posso ajudar com sabores, preços, prazos e lojas.";
-
-const kg = (weight: number) => `${String(weight).replace(".", ",")} kg`;
 
 function availableIn(data: AssistantData, category: RegExp) {
   return data.vitrine
@@ -45,9 +43,9 @@ function guestsAnswer(data: AssistantData, question: string): AssistantAnswer {
   const formats = [...new Set(data.cakes.flatMap((cake) => cake.formats))];
   const suggestion = suggestCake(guests, weights, formats);
   if (!suggestion) return { text: "Me diga quantas pessoas vão à festa e eu sugiro o peso e o formato.", action };
-  const format = suggestion.format ? ` no formato ${suggestion.format.toLowerCase()}` : "";
+  const sizes = suggestion.options.map((o) => `${sizeName(o.size)} (${rangeText(o.size)})`).join(" ou ");
   return {
-    text: `Conto uns 10 pedaços por kg. Para ${guests} pessoas sugiro ${kg(suggestion.weightKg)}${format}, cerca de ${suggestion.slices} fatias.`,
+    text: `Para ${guests} pessoas sugiro ${sizes}: serve até ${suggestion.serves} fatias. Cobramos o peso mínimo e, se passar na pesagem, a diferença é paga na retirada.`,
     action,
   };
 }

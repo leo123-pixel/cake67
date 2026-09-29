@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { suggestCake } from "@/lib/cake";
+import { keepWeight, minimumChargeNote, sizeFor, sizeName, suggestCake, weightChoices } from "@/lib/cake";
 import { formatBRL } from "@/lib/money";
 import type { MadeToOrderProduct } from "@/lib/storefront";
 import { useCart } from "./use-cart";
@@ -33,22 +33,24 @@ export function CakeConfigurator({ cakes }: { cakes: MadeToOrderProduct[] }) {
   const { add } = useCart();
   const [cakeId, setCakeId] = useState(cakes[0].id);
   const cake = cakes.find((c) => c.id === cakeId) ?? cakes[0];
-  const [weight, setWeight] = useState(cake.weightsKg[0]);
   const [format, setFormat] = useState(cake.formats[0]);
+  const [weight, setWeight] = useState(weightChoices(format, cake.weightsKg)[0]);
   const [addonIds, setAddonIds] = useState<string[]>([]);
   const [message, setMessage] = useState("");
   const [guests, setGuests] = useState(20);
   const [added, setAdded] = useState(false);
 
   const suggestion = suggestCake(guests, cake.weightsKg, cake.formats);
+  const size = sizeFor(format, weight);
   const addons = cake.addons.filter((a) => addonIds.includes(a.id));
   const price = Math.round(cake.priceCents * weight) + addons.reduce((sum, a) => sum + a.priceCents, 0);
 
   function chooseCake(id: string) {
     const next = cakes.find((c) => c.id === id)!;
     setCakeId(id);
-    if (!next.weightsKg.includes(weight)) setWeight(next.weightsKg[0]);
-    if (!next.formats.includes(format)) setFormat(next.formats[0]);
+    const nextFormat = next.formats.includes(format) ? format : next.formats[0];
+    setFormat(nextFormat);
+    setWeight(keepWeight(nextFormat, next.weightsKg, weight));
     setAddonIds((ids) => ids.filter((addonId) => next.addons.some((a) => a.id === addonId)));
     setAdded(false);
   }
@@ -105,24 +107,25 @@ export function CakeConfigurator({ cakes }: { cakes: MadeToOrderProduct[] }) {
             onChange={(e) => setGuests(Number(e.target.value))}
             className="w-full accent-olive"
           />
-          {suggestion && (
-            <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
+          {suggestion?.options.map((o) => (
+            <div key={sizeName(o.size)} className="flex flex-wrap items-center justify-between gap-3 text-sm">
               <p>
-                Sugestão: <strong>{kgLabel(suggestion.weightKg)}</strong>, {suggestion.format} · cerca de {suggestion.slices} fatias
+                Sugestão: <strong>{sizeName(o.size)}</strong> ({o.size.measure}), serve até {o.size.serves} fatias.{" "}
+                {minimumChargeNote(o.size, o.weightKg)}
               </p>
               <button
                 type="button"
                 onClick={() => {
-                  setWeight(suggestion.weightKg);
-                  if (suggestion.format) setFormat(suggestion.format);
+                  setFormat(cake.formats.find((f) => sizeFor(f, o.weightKg) === o.size) ?? o.size.format);
+                  setWeight(o.weightKg);
                   setAdded(false);
                 }}
                 className="min-h-11 rounded-full border border-olive px-4 text-olive"
               >
-                Usar sugestão
+                {suggestion.options.length > 1 ? `Usar ${o.size.format}` : "Usar sugestão"}
               </button>
             </div>
-          )}
+          ))}
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -136,11 +139,14 @@ export function CakeConfigurator({ cakes }: { cakes: MadeToOrderProduct[] }) {
               }}
               className="field-input"
             >
-              {cake.weightsKg.map((w) => (
-                <option key={w} value={String(w)}>
-                  {kgLabel(w)}
-                </option>
-              ))}
+              {weightChoices(format, cake.weightsKg).map((w) => {
+                const choice = sizeFor(format, w);
+                return (
+                  <option key={w} value={String(w)}>
+                    {choice?.size ? `${choice.size} · ${kgLabel(w)}` : kgLabel(w)}
+                  </option>
+                );
+              })}
             </select>
           </label>
           <label className="space-y-1.5 text-sm font-medium">
@@ -149,6 +155,7 @@ export function CakeConfigurator({ cakes }: { cakes: MadeToOrderProduct[] }) {
               value={format}
               onChange={(e) => {
                 setFormat(e.target.value);
+                setWeight(keepWeight(e.target.value, cake.weightsKg, weight));
                 setAdded(false);
               }}
               className="field-input"
@@ -158,6 +165,11 @@ export function CakeConfigurator({ cakes }: { cakes: MadeToOrderProduct[] }) {
               ))}
             </select>
           </label>
+          <p className="text-sm text-cocoa-soft sm:col-span-2">
+            {size
+              ? `${sizeName(size)} (${size.measure}), serve até ${size.serves} fatias. ${minimumChargeNote(size, weight)}`
+              : "O valor final depende da pesagem; se passar do peso escolhido, a diferença é cobrada na retirada."}
+          </p>
         </div>
 
         {cake.addons.length > 0 && (

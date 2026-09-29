@@ -109,6 +109,7 @@ export default async function StockPage({ searchParams }: Props) {
         groups={groups}
         hidden={isAdmin ? hidden : []}
         historyBase={`/admin/estoque/historico?loja=${store.slug}`}
+        isAdmin={isAdmin}
       />
     </section>
   );

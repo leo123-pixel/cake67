@@ -1,20 +1,23 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { deleteProduct } from "@/app/admin/(panel)/produtos/actions";
 
-// Deletes a product that never appeared in an order; the action redirects to
-// the list on success and returns the reason otherwise.
+// Deletes a product that never appeared in an order; back to the list on
+// success, the reason otherwise.
 export function DeleteProductButton({ productId, productName }: { productId: string; productName: string }) {
   const [pending, startDelete] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
+  const router = useRouter();
 
   function onDelete() {
     if (!window.confirm(`Excluir "${productName}"? Fotos e estoque dele também são apagados. Não dá para desfazer.`)) return;
     setMessage(null);
     startDelete(async () => {
       const result = await deleteProduct(productId);
-      if (!result.ok) setMessage(result.message ?? "Não foi possível excluir. Tente de novo.");
+      if (result.ok) router.push("/admin/produtos?excluido=1");
+      else setMessage(result.message ?? "Não foi possível excluir. Tente de novo.");
     });
   }
 

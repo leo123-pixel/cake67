@@ -9,6 +9,7 @@ import {
   sellPiece,
   type PieceResult,
 } from "@/app/admin/(panel)/estoque/actions";
+import { ActionsMenu, type MenuAction } from "@/components/admin/actions-menu";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { formatBRL } from "@/lib/money";
 import type { GridPiece } from "@/lib/stock-grid";
@@ -22,6 +23,7 @@ type Props = {
   priceCents: number;
   pieces: GridPiece[];
   historyHref: string;
+  productActions?: MenuAction[];
 };
 
 const FAILED = "Não foi possível salvar. Tente de novo.";
@@ -29,7 +31,7 @@ const BAD_WEIGHT = "Digite o peso da balança em kg, ex. 1,340 (entre 0,300 e 10
 
 // Whole cakes sold by weight: one line per cake in the showcase. The list
 // refreshes from the server after each change (revalidatePath).
-export function PiecesRow({ productId, storeId, name, note, priceCents, pieces, historyHref }: Props) {
+export function PiecesRow({ productId, storeId, name, note, priceCents, pieces, historyHref, productActions = [] }: Props) {
   const [weight, setWeight] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -71,7 +73,7 @@ export function PiecesRow({ productId, storeId, name, note, priceCents, pieces, 
             Histórico
           </Link>
         </div>
-        <div className="shrink-0">
+        <div className="flex shrink-0 items-center gap-2">
           {available === 0 ? (
             <StatusBadge tone="red">Esgotado</StatusBadge>
           ) : (
@@ -79,6 +81,7 @@ export function PiecesRow({ productId, storeId, name, note, priceCents, pieces, 
               {available} {available === 1 ? "bolo" : "bolos"}
             </span>
           )}
+          {productActions.length > 0 && <ActionsMenu label={name} actions={productActions} />}
         </div>
       </div>
 

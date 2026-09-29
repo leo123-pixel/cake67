@@ -168,7 +168,12 @@ html {
 .ck-tabs button { border: 0; background: transparent; color: var(--color-linen); opacity: .85; padding: 12px 16px; min-height: 44px; font-size: .76rem; letter-spacing: .2em; text-transform: uppercase; border-bottom: 2px solid transparent; margin-bottom: -1px; cursor: pointer; }
 .ck-tabs button[aria-selected="true"] { opacity: 1; border-color: var(--color-peach); color: var(--color-peach); }
 .ck-storepick { display: flex; align-items: center; gap: 10px; font-size: .82rem; }
-.ck-storepick label { font-weight: 600; font-size: .74rem; letter-spacing: .14em; text-transform: uppercase; }
+.ck-storepick label { font-weight: 600; font-size: .74rem; letter-spacing: .14em; text-transform: uppercase; color: var(--color-linen); }
+.ck-storepick-need label { color: var(--color-peach); }
+.ck-storepick-need select { border: 2px solid var(--color-peach); box-shadow: 0 0 0 4px rgba(241,200,168,.18); }
+.ck-pickfirst { margin-top: 28px; padding: 28px 30px; border: 1px dashed rgba(241,200,168,.5); border-radius: 18px; color: var(--color-linen); }
+.ck-pickfirst strong { display: block; color: var(--color-peach); font-size: 1.1rem; margin-bottom: 6px; }
+.ck-pickfirst p { margin: 0; opacity: .9; }
 .ck-storepick select { width: auto; padding: 12px 14px; min-height: 44px; border-radius: 12px; font: inherit; font-size: .92rem; background: var(--color-olive-dark); color: var(--color-linen); border: 1px solid rgba(241,200,168,.3); }
 .ck-items { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; margin-top: 28px; background: rgba(241,200,168,.18); border: 1px solid rgba(241,200,168,.18); border-radius: 18px; overflow: hidden; }
 .ck-item { background: var(--color-olive); padding: 24px 26px; display: grid; grid-template-columns: 110px 1fr; gap: 16px; align-items: center; transition: background .25s; }

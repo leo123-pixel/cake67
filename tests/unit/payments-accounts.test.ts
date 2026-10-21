@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { accountEnvNames, accountState, isValidAlias, readAccount } from "@/lib/payments/accounts";
-import { ATTEMPT_LABELS, ORDER_PAYMENT_LABELS, methodLabel } from "@/lib/payments/labels";
+import { ATTEMPT_LABELS, ORDER_PAYMENT_LABELS, methodLabel, shownAttempts } from "@/lib/payments/labels";
 
 const env = {
   STRIPE_LOJA1_SECRET_KEY: "sk_test_1",
@@ -74,6 +74,13 @@ describe("payment labels", () => {
     expect(ORDER_PAYMENT_LABELS.nenhum).toBeNull();
     expect(ORDER_PAYMENT_LABELS.falha_devolucao).toBe("Reembolso pendente");
     expect(ATTEMPT_LABELS.falhou).toBe("Recusado");
+  });
+
+  it("lists only attempts where money arrived", () => {
+    const attempts = (["aberto", "pago", "expirado", "falhou", "cancelado", "erro", "conferir", "devolvendo", "devolvido", "falha_devolucao"] as const).map(
+      (status) => ({ status }),
+    );
+    expect(shownAttempts(attempts).map((a) => a.status)).toEqual(["pago", "conferir", "devolvendo", "devolvido", "falha_devolucao"]);
   });
 
   it("names the method", () => {

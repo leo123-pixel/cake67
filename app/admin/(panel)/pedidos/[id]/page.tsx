@@ -10,6 +10,7 @@ import { formatDateTime, formatPickup } from "@/lib/datetime";
 import { siteUrl } from "@/lib/env";
 import { formatBRL } from "@/lib/money";
 import { minutesLeft, STATUS_LABELS, STATUS_TONES } from "@/lib/order-status";
+import { ATTEMPT_LABELS, methodLabel, ORDER_PAYMENT_LABELS, ORDER_PAYMENT_TONES, shownAttempts } from "@/lib/payments/labels";
 import { formatWhatsapp } from "@/lib/phone";
 import { formatTaxId } from "@/lib/tax-id";
 import { describeItem, renderConfirmationMessage, whatsappLink } from "@/lib/whatsapp";
@@ -27,6 +28,8 @@ export default async function OrderDetailPage({ params }: Props) {
   const [detail, confirmationTemplate] = await Promise.all([getOrder(supabase, id), getConfirmationTemplate(supabase)]);
   if (!detail) notFound();
   const { order, items, events } = detail;
+  const payments = shownAttempts(detail.payments);
+  const paymentLabel = ORDER_PAYMENT_LABELS[order.payment_status];
 
   const left = order.status === "novo" ? minutesLeft(order.expires_at) : null;
   const greeting = `Olá, ${order.customer_name}! Sobre o pedido ${order.code} da Cake 67…`;
@@ -45,6 +48,7 @@ export default async function OrderDetailPage({ params }: Props) {
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-3xl text-olive tabular-nums">{order.code}</h1>
           <StatusBadge tone={STATUS_TONES[order.status]}>{STATUS_LABELS[order.status]}</StatusBadge>
+          {paymentLabel && <StatusBadge tone={ORDER_PAYMENT_TONES[order.payment_status]}>{paymentLabel}</StatusBadge>}
           {left !== null && <StatusBadge tone={left < 30 ? "red" : "amber"}>expira em {left} min</StatusBadge>}
         </div>
         <p className="text-sm text-cocoa-soft">
@@ -100,6 +104,42 @@ export default async function OrderDetailPage({ params }: Props) {
           <span className="tabular-nums">{formatBRL(order.subtotal_cents)}</span>
         </p>
       </section>
+
+      {payments.length > 0 && (
+        <section className="space-y-2 rounded-2xl border border-cocoa/10 bg-white p-4">
+          <h2 className="text-xl text-olive">Pagamento</h2>
+          <ul className="divide-y divide-cocoa/10 text-sm">
+            {payments.map((payment) => (
+              <li key={payment.id} className="space-y-1 py-2">
+                <p className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="font-medium">
+                    Pago pelo site{methodLabel(payment.method) ? ` · ${methodLabel(payment.method)}` : ""}
+                    {payment.paid_at && <span className="font-normal text-cocoa-soft"> · {formatDateTime(payment.paid_at)}</span>}
+                  </span>
+                  <span className="flex items-center gap-2">
+                    <span className="tabular-nums">{formatBRL(payment.amount_cents)}</span>
+                    <StatusBadge tone={payment.status === "pago" ? "green" : payment.status === "devolvido" ? "gray" : "red"}>
+                      {ATTEMPT_LABELS[payment.status]}
+                    </StatusBadge>
+                  </span>
+                </p>
+                {payment.refunded_cents > 0 && (
+                  <p className="text-cocoa-soft">
+                    Devolvido {formatBRL(payment.refunded_cents)}
+                    {payment.refunded_at && ` em ${formatDateTime(payment.refunded_at)}`}
+                  </p>
+                )}
+                {payment.note && <p className="text-cocoa-soft">{payment.note}</p>}
+                {payment.payment_intent_id && (
+                  <p className="break-all text-xs text-cocoa-soft">
+                    Stripe: <span className="font-mono">{payment.payment_intent_id}</span>
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="space-y-2 rounded-2xl border border-cocoa/10 bg-white p-4">
         <h2 className="text-xl text-olive">Histórico</h2>

@@ -6,6 +6,7 @@ import { getOrder } from "@/lib/admin/orders";
 import { requireStaff } from "@/lib/auth";
 import { formatDateTime, formatPickup } from "@/lib/datetime";
 import { formatBRL } from "@/lib/money";
+import { methodLabel } from "@/lib/payments/labels";
 import { formatWhatsapp } from "@/lib/phone";
 import { describeItem } from "@/lib/whatsapp";
 
@@ -22,6 +23,7 @@ export default async function OrderSlipPage({ params }: Props) {
   const detail = await getOrder(supabase, id);
   if (!detail) notFound();
   const { order, items } = detail;
+  const paid = order.payment_status === "pago" ? detail.payments.find((payment) => payment.status === "pago") : undefined;
 
   return (
     <main className="mx-auto w-full max-w-[80mm] space-y-3 bg-white p-3 font-sans text-[13px] leading-snug text-black print:p-0">
@@ -61,7 +63,19 @@ export default async function OrderSlipPage({ params }: Props) {
         <span>Subtotal</span>
         <span className="tabular-nums">{formatBRL(order.subtotal_cents)}</span>
       </p>
-      <p className="text-center text-[11px]">Pagamento e taxa de entrega combinados no WhatsApp.</p>
+      {paid ? (
+        <>
+          <p className="border border-black text-center text-base font-bold">
+            PAGO PELO SITE{methodLabel(paid.method) ? ` · ${methodLabel(paid.method)!.toUpperCase()}` : ""}
+          </p>
+          {order.fulfillment === "entrega" && <p className="text-center text-[11px]">Taxa de entrega combinada no WhatsApp.</p>}
+          {items.some((item) => item.type === "bolo_kg") && (
+            <p className="text-center text-[11px]">Diferença da pesagem do bolo paga na retirada.</p>
+          )}
+        </>
+      ) : (
+        <p className="text-center text-[11px]">Pagamento e taxa de entrega combinados no WhatsApp.</p>
+      )}
     </main>
   );
 }

@@ -38,6 +38,14 @@ export const ATTEMPT_LABELS: Record<PaymentAttemptStatus, string> = {
   falha_devolucao: "Reembolso pendente",
 };
 
+// Attempts worth showing in the order detail: money that arrived, and what
+// happened to it. Open, expired, refused and replaced sessions are noise.
+const SHOWN: readonly PaymentAttemptStatus[] = ["pago", "conferir", "devolvendo", "devolvido", "falha_devolucao"];
+
+export function shownAttempts<T extends { status: PaymentAttemptStatus }>(attempts: T[]): T[] {
+  return attempts.filter((attempt) => SHOWN.includes(attempt.status));
+}
+
 const METHOD_LABELS: Record<string, string> = { pix: "Pix", card: "Cartão" };
 
 export function methodLabel(method: string | null | undefined): string | null {

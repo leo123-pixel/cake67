@@ -18,7 +18,7 @@ graph LR
     SP -->|lib/payments: stripeFor alias| ST[Stripe da loja<br/>Checkout Session]
     ST -->|redireciona| PD
     ST -->|webhook| WH[/api/stripe/webhook/alias/]
-    WH -->|settle_order_payment<br/>close_payment_attempt<br/>record_refund| DB
+    WH -->|settle_order_payment<br/>close_payment_attempt<br/>mark_refund| DB
     WH -->|devolução automática| ST
     subgraph Painel
       PC[cancelOrder / retryRefund] -->|cancel_order| DB
@@ -113,26 +113,29 @@ grant select on public.order_payments to authenticated;
 grant all on public.order_payments to service_role;
 ```
 
-Sem política de escrita e sem grant para anon. `stores.payment_account` fica legível como o resto da loja (é só um apelido, não segredo).
+Sem política de escrita e sem grant para anon. `stores.payment_account` fica legível como o resto da loja (é só um apelido, não segredo). A equipe também não muda `orders.payment_status` pela API: `orders` não tem política de `update` desde a etapa 05.
+
+**Ordem das travas** em todas as funções: primeiro o pedido, depois as tentativas (a mesma do `cancel_order`, que atualiza as tentativas depois de travar o pedido). Evita deadlock entre webhook e painel.
 
 **Funções do pagamento** (todas `security definer`, `search_path = ''`; `revoke` de `public, anon, authenticated`; `grant execute ... to service_role`). Chamadas só do servidor com `createAdminClient()`.
 
 | Função | Faz |
 |---|---|
 | `begin_order_payment(p_code, p_token) returns jsonb` | Trava o pedido pelo `code` + `public_token` (P0002 se não achar). Exige `status = 'novo'` (`CK040`), `payment_status in ('nenhum', 'pagando')` (`CK041`), loja com `payment_account` (`CK042`), menos de 5 tentativas (`CK043`), subtotal ≥ 50. Marca as tentativas `aberto` como `cancelado` e devolve os `session_id` delas. Calcula `v_until := least(greatest(o.expires_at, now() + interval '31 minutes'), now() + interval '23 hours')` (D9; a Stripe aceita de 30 min a 24 h). Estende `orders.expires_at` para `v_until + 5 min` (folga para o aviso atrasado). Insere a tentativa (`account`, `amount_cents = subtotal`, `expires_at = v_until`) e põe `payment_status = 'pagando'`. Retorna `{ payment_id, account, amount_cents, code, expires_at, stale_sessions[] }`. |
-| `attach_payment_session(p_payment_id, p_session_id)` | Grava o `session_id` na tentativa `aberto`. |
+| `attach_payment_session(p_payment_id, p_session_id) returns boolean` | Grava o `session_id` (mesmo se a tentativa já foi cancelada por outra aba, para um pagamento que passe ainda ser achado). Devolve `false` quando a tentativa não está mais `aberto`: o servidor encerra essa sessão na Stripe. |
 | `fail_payment_attempt(p_payment_id)` | Stripe recusou criar a sessão: tentativa `erro`; recalcula o resumo. |
 | `settle_order_payment(p_account, p_session_id, p_payment_intent_id, p_amount_cents, p_currency, p_method) returns jsonb` | Ver abaixo. |
-| `close_payment_attempt(p_account, p_session_id, p_status)` | Sessão expirou (`expirado`) ou Pix/cartão recusado (`falhou`). Só mexe em tentativa `aberto`; recalcula o resumo. |
-| `mark_refund(p_payment_id, p_refund_id, p_status, p_refunded_cents)` | Resultado de uma devolução (`devolvendo`, `devolvido`, `falha_devolucao`), vindo da action ou do webhook `refund.*`. Idempotente. Recalcula o resumo. |
+| `close_payment_attempt(p_account, p_session_id, p_status) returns jsonb` | Sessão expirou (`expirado`) ou Pix/cartão recusado (`falhou`). Só mexe em tentativa `aberto` (ou `cancelado` → `falhou`); conta diferente → `ignore`; repetido → `duplicate`. Recalcula o resumo. |
+| `mark_refund(p_account, p_payment_id, p_payment_intent_id, p_refund_id, p_refund_status, p_total_refunded_cents) returns jsonb` | Resultado de uma devolução, vindo da action ou do webhook `refund.*`. Acha a tentativa pelo id ou, sem ele (devolução feita no painel da Stripe), pelo `payment_intent`. `p_refund_status` é o status da Stripe: `succeeded` grava o total devolvido da cobrança (idempotente em eventos repetidos) e vira `devolvido` quando cobre o valor; `pending` → `devolvendo`; `failed`/`canceled` → `falha_devolucao`. `pending` e falha só valem para devoluções pedidas pelo sistema (`devolvendo`/`falha_devolucao`); devolução parcial pelo painel da Stripe só atualiza o valor devolvido. Recalcula o resumo. |
 
-**`settle_order_payment`**: o coração da etapa. Trava a tentativa (por `session_id`) e o pedido, nessa ordem, e devolve `{ action, payment_id, payment_intent_id }`:
+**`settle_order_payment`**: o coração da etapa. Trava o pedido e depois a tentativa (achada pelo `session_id`) e devolve `{ action, payment_id, payment_intent_id }`:
 
 | Situação | Tentativa | Pedido | `action` |
 |---|---|---|---|
 | Tentativa não existe ou `account` diferente de `p_account` | — | — | `ignore` (webhook responde 400) |
+| `devolvendo` sem `refund_id` (a chamada à Stripe não aconteceu) | — | — | `refund` de novo (a chave de idempotência evita devolução dupla) |
 | Já processada (`pago`, `devolv*`, `conferir`) | — | — | `duplicate` |
-| `p_amount_cents <> amount_cents` ou `p_currency <> 'brl'` | `conferir`, `note` com o valor recebido | `payment_status = 'conferir'` | `review` |
+| `p_amount_cents <> amount_cents` ou `p_currency <> 'brl'` | `conferir`, `note` com o valor recebido | `payment_status = 'conferir'`; `novo` deixa de expirar (o dinheiro entrou) | `review` |
 | Outra tentativa do pedido já `pago` | `devolvendo`, `note = 'Pagamento em duplicidade'` | — | `refund` |
 | Pedido `cancelado` | `devolvendo`, `note = 'Pedido cancelado'` | `payment_status = 'devolvendo'` | `refund` |
 | Pedido `expirado` e a nova reserva funciona | `pago` | `status = 'novo'`, `expires_at = null`, `payment_status = 'pago'` | `ok` |
@@ -182,7 +185,7 @@ Toda saída grava `payment_intent_id` e `method` na tentativa (a devolução pre
   - `client_reference_id = paymentId`, `metadata` e `payment_intent_data.metadata` com `payment_id` e `order_code`;
   - `success_url = /pedido/{code}?t={token}&pagamento=ok`, `cancel_url = ...&pagamento=cancelado`.
   `createCheckout(alias, params)` chama `sessions.create` com `idempotencyKey = paymentId`. `expireSessions(alias, ids)` encerra as antigas (falha ignorada e logada: a sessão expira sozinha).
-- `refund.ts`: `refundPayment(alias, { paymentId, paymentIntentId })` → `refunds.create({ payment_intent, metadata: { payment_id } }, { idempotencyKey: "refund-" + paymentId })` e grava o resultado com `mark_refund` (`succeeded` → `devolvido`; `pending` → `devolvendo`; erro → `falha_devolucao`).
+- `refund.ts`: `refundPayment(alias, { paymentId, paymentIntentId })` → `refunds.create({ payment_intent, metadata: { payment_id } }, { idempotencyKey: "refund-" + paymentId })` e grava o resultado com `mark_refund` (`succeeded` → `devolvido`; `pending` → `devolvendo`; erro → `failed` → `falha_devolucao`). Em **Tentar devolver de novo** a chave ganha um sufixo (a Stripe repete a resposta de erro para a mesma chave por 24 h); devolver além do valor pago é recusado pela própria Stripe.
 - `webhook.ts`: `handleStripeEvent(alias, event, deps)` com `deps = { rpc, refund }` injetáveis (teste unitário sem rede):
 
 | Evento | Faz |
@@ -192,7 +195,7 @@ Toda saída grava `payment_intent_id` e `method` na tentativa (a devolução pre
 | `checkout.session.async_payment_succeeded` | igual ao pago |
 | `checkout.session.async_payment_failed` | `close_payment_attempt(..., 'falhou')` |
 | `checkout.session.expired` | `close_payment_attempt(..., 'expirado')` |
-| `refund.created`, `refund.updated` | `mark_refund` pelo `metadata.payment_id` ou, sem ele (devolução feita no painel da Stripe), pelo `payment_intent` |
+| `refund.created`, `refund.updated` | `mark_refund` pelo `metadata.payment_id` ou, sem ele (devolução feita no painel da Stripe), pelo `payment_intent`; em `succeeded`, o total vem de `amount_refunded` da cobrança (`charges.retrieve(refund.charge)`) |
 
   `method` vem de `payment_method_types` do PaymentIntent (`pix`/`card`), lido com `sessions.retrieve(id, { expand: ["payment_intent"] })` só quando o evento é de pagamento.
 - `labels.ts` (pura): rótulos PT-BR do resumo e das tentativas ("Pago", "Pagando", "Devolvendo", "Devolvido", "Reembolso pendente", "Conferir"; "Pix", "Cartão").

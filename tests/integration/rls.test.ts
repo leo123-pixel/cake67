@@ -30,6 +30,7 @@ type TableName = keyof Database["public"]["Tables"];
 const PRIVATE_TABLES = [
   "orders",
   "order_items",
+  "order_payments",
   "stock",
   "stock_movements",
   "showcase_pieces",
@@ -63,6 +64,7 @@ const INSERTS: { [T in TableName]: Database["public"]["Tables"][T]["Insert"] } =
     unit_price_cents: 0,
     total_cents: 0,
   },
+  order_payments: { order_id: id, account: "loja1", amount_cents: 100, expires_at: new Date().toISOString() },
   stock_movements: { product_id: id, store_id: id, delta: 1, reason: "ajuste" },
   staff: { user_id: id, name: "x", role: "admin" },
   order_events: { order_id: id, to_status: "novo", actor_name: "x" },

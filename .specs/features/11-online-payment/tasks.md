@@ -8,7 +8,8 @@
 | Tarefas | Status | Notas |
 |---|---|---|
 | T1 | 🟡 | Migration escrita e validada num Postgres 16 local; tipos em `database.types.ts`. Falta aplicar no projeto (o conector desta sessão não enxerga a Leo Org): `supabase db push --db-url "$SUPABASE_DB_URL" --yes` |
-| T2–T5 | ⏳ | Banco |
+| T2–T4 | 🟡 | `20261021000200_online_payment.sql` escrita. Validada num Postgres 16 local com stubs do Supabase (todas as migrations + seed aplicam) e um roteiro SQL com 80 checagens: permissões, `begin_order_payment` (token, CK040–CK043, extensão da reserva, tentativa anterior cancelada), cada linha de `settle_order_payment` (ok, duplicate, ignore, review, duplicidade, cancelado, expirado com e sem estoque, peça `vitrine_kg`), `close_payment_attempt`, `mark_refund`, cancelamento de pedido pago, `reactivate_order` e `report_summary`. Tipos à mão e `rls.test.ts` com a tabela nova. Falta aplicar no projeto e rodar `test:integration` |
+| T5 | ⏳ | Portar o roteiro SQL para `tests/integration/payments.test.ts` |
 | T6–T9 | ⏳ | `lib/payments` e webhook |
 | T10–T12 | ⏳ | Site |
 | T13–T16 | ⏳ | Painel |

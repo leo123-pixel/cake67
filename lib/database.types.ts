@@ -29,6 +29,7 @@ export type Database = {
           hours: Json;
           active: boolean;
           sort: number;
+          payment_account: string | null;
         } & Timestamps;
         Insert: {
           id?: string;
@@ -42,6 +43,7 @@ export type Database = {
           hours?: Json;
           active?: boolean;
           sort?: number;
+          payment_account?: string | null;
         } & Partial<Timestamps>;
         Update: Partial<Database["public"]["Tables"]["stores"]["Insert"]>;
         Relationships: [];
@@ -227,6 +229,7 @@ export type Database = {
           cancel_reason: string | null;
           handled_by: string | null;
           customer_tax_id: string | null;
+          payment_status: Database["public"]["Enums"]["order_payment_status"];
         } & Timestamps;
         Insert: {
           id?: string;
@@ -248,6 +251,7 @@ export type Database = {
           cancel_reason?: string | null;
           handled_by?: string | null;
           customer_tax_id?: string | null;
+          payment_status?: Database["public"]["Enums"]["order_payment_status"];
         } & Partial<Timestamps>;
         Update: Partial<Database["public"]["Tables"]["orders"]["Insert"]>;
         Relationships: [
@@ -301,6 +305,50 @@ export type Database = {
             columns: ["product_id"];
             isOneToOne: false;
             referencedRelation: "products";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      order_payments: {
+        Row: {
+          id: string;
+          order_id: string;
+          account: string;
+          session_id: string | null;
+          payment_intent_id: string | null;
+          amount_cents: number;
+          status: Database["public"]["Enums"]["payment_attempt_status"];
+          method: "pix" | "card" | null;
+          refunded_cents: number;
+          refund_id: string | null;
+          note: string | null;
+          expires_at: string;
+          paid_at: string | null;
+          refunded_at: string | null;
+        } & Timestamps;
+        Insert: {
+          id?: string;
+          order_id: string;
+          account: string;
+          session_id?: string | null;
+          payment_intent_id?: string | null;
+          amount_cents: number;
+          status?: Database["public"]["Enums"]["payment_attempt_status"];
+          method?: "pix" | "card" | null;
+          refunded_cents?: number;
+          refund_id?: string | null;
+          note?: string | null;
+          expires_at: string;
+          paid_at?: string | null;
+          refunded_at?: string | null;
+        } & Partial<Timestamps>;
+        Update: Partial<Database["public"]["Tables"]["order_payments"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "order_payments_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
             referencedColumns: ["id"];
           },
         ];
@@ -576,6 +624,40 @@ export type Database = {
       discard_piece: { Args: { p_piece_id: string }; Returns: undefined };
       set_piece_weight: { Args: { p_piece_id: string; p_weight_g: number }; Returns: undefined };
       delete_product: { Args: { p_product_id: string }; Returns: string[] };
+      // stage 11 · service role only
+      begin_order_payment: { Args: { p_code: string; p_token: string }; Returns: Json };
+      attach_payment_session: { Args: { p_payment_id: string; p_session_id: string }; Returns: boolean };
+      fail_payment_attempt: { Args: { p_payment_id: string }; Returns: undefined };
+      settle_order_payment: {
+        Args: {
+          p_account: string;
+          p_session_id: string;
+          p_payment_intent_id: string | null;
+          p_amount_cents: number | null;
+          p_currency: string | null;
+          p_method: string | null;
+        };
+        Returns: Json;
+      };
+      close_payment_attempt: {
+        Args: {
+          p_account: string;
+          p_session_id: string;
+          p_status: Database["public"]["Enums"]["payment_attempt_status"];
+        };
+        Returns: Json;
+      };
+      mark_refund: {
+        Args: {
+          p_account: string;
+          p_payment_id: string | null;
+          p_payment_intent_id: string | null;
+          p_refund_id: string | null;
+          p_refund_status: string;
+          p_total_refunded_cents: number | null;
+        };
+        Returns: Json;
+      };
     };
     Enums: {
       category_kind: "vitrine" | "encomenda";

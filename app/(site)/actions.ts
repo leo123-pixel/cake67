@@ -1,6 +1,10 @@
 "use server";
 
 import { z } from "zod";
+import { siteUrl } from "@/lib/env";
+import { readAccount } from "@/lib/payments/accounts";
+import { createCheckout, expireSessions } from "@/lib/payments/checkout";
+import { attachPaymentSession, beginOrderPayment, failPaymentAttempt } from "@/lib/payments/db";
 import { createPublicClient } from "@/lib/supabase/public";
 import type { FieldErrors } from "@/lib/validators/common";
 import { toFieldErrors } from "@/lib/validators/common";
@@ -122,5 +126,68 @@ export async function placeOrder(
     default:
       console.error(`create_order: ${error.code} ${error.message}`);
       return { ok: false, message: "Não foi possível enviar agora. Seu carrinho continua salvo." };
+  }
+}
+
+export type StartPaymentResult = { ok: true; url: string } | { ok: false; message: string };
+
+const PAYMENT_FAILED = "Não conseguimos abrir o pagamento agora. Tente de novo ou finalize pelo WhatsApp.";
+const PAYMENT_ERRORS: Record<string, string> = {
+  P0002: "Pedido não encontrado.",
+  CK040: "Este pedido não aceita mais pagamento.",
+  CK041: "Este pedido já foi pago.",
+  CK042: "Esta loja não recebe pagamento pelo site. Finalize pelo WhatsApp.",
+  CK043: "Limite de tentativas atingido. Finalize pelo WhatsApp.",
+};
+
+function errorCode(error: unknown) {
+  return typeof error === "object" && error && "code" in error ? String(error.code) : "";
+}
+
+// Opens a Stripe Checkout Session for an order (spec 11). The amount comes
+// from the database attempt, never from the browser (rule 1); the account is
+// the one of the order's store (D5).
+export async function startPayment(code: string, token: string): Promise<StartPaymentResult> {
+  if (!/^C67-\d{6}$/.test(code) || !/^[0-9a-f]{32}$/.test(token)) return { ok: false, message: PAYMENT_ERRORS.P0002 };
+
+  let attempt;
+  try {
+    attempt = await beginOrderPayment(code, token);
+  } catch (error) {
+    const message = PAYMENT_ERRORS[errorCode(error)];
+    if (message) return { ok: false, message };
+    console.error(`startPayment ${code}: ${error instanceof Error ? error.message : error}`);
+    return { ok: false, message: PAYMENT_FAILED };
+  }
+
+  // Alias set in the panel but no keys on this server: WhatsApp only.
+  if (!readAccount(attempt.account)) {
+    await failPaymentAttempt(attempt.payment_id).catch(() => {});
+    return { ok: false, message: PAYMENT_ERRORS.CK042 };
+  }
+
+  let sessionId: string | null = null;
+  try {
+    await expireSessions(attempt.account, attempt.stale_sessions);
+    const session = await createCheckout(attempt.account, {
+      paymentId: attempt.payment_id,
+      code,
+      token,
+      amountCents: attempt.amount_cents,
+      expiresAt: attempt.expires_at,
+      siteUrl: siteUrl(),
+    });
+    sessionId = session.id;
+    if (!(await attachPaymentSession(attempt.payment_id, session.id))) {
+      // Another tab opened a newer attempt meanwhile.
+      await expireSessions(attempt.account, [session.id]);
+      return { ok: false, message: "O pagamento foi aberto em outra aba. Use a mais recente." };
+    }
+    return { ok: true, url: session.url };
+  } catch (error) {
+    console.error(`startPayment ${code}: ${error instanceof Error ? error.message : error}`);
+    if (sessionId) await expireSessions(attempt.account, [sessionId]);
+    await failPaymentAttempt(attempt.payment_id).catch(() => {});
+    return { ok: false, message: PAYMENT_FAILED };
   }
 }

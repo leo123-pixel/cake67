@@ -3,6 +3,7 @@
 import { productImageUrl } from "@/lib/images";
 import type { OrderEvent } from "@/lib/order-timeline";
 import { toMenuPieces, type MenuPiece } from "@/lib/catalog";
+import { accountState } from "@/lib/payments/accounts";
 import { createPublicClient } from "@/lib/supabase/public";
 import { parseStoredHours, type StoreHours } from "@/lib/validators/store";
 import type { OrderSummary } from "@/lib/whatsapp";
@@ -13,16 +14,23 @@ export type CheckoutStore = {
   name: string;
   address: string;
   hours: StoreHours;
+  // Stage 11: takes payment through the site. Decided on the server, where the
+  // account keys are; the browser never sees the alias or the keys.
+  paymentsEnabled: boolean;
 };
 
 export async function listCheckoutStores(): Promise<CheckoutStore[]> {
   const supabase = await createPublicClient();
   const { data, error } = await supabase
     .from("stores")
-    .select("id, slug, name, address, hours")
+    .select("id, slug, name, address, hours, payment_account")
     .order("sort");
   if (error) throw new Error(`Could not load stores: ${error.message}`);
-  return data.map((store) => ({ ...store, hours: parseStoredHours(store.hours) }));
+  return data.map(({ payment_account, ...store }) => ({
+    ...store,
+    hours: parseStoredHours(store.hours),
+    paymentsEnabled: accountState(payment_account) === "ativo",
+  }));
 }
 
 export type Addon = { id: string; name: string; priceCents: number };

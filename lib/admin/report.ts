@@ -4,6 +4,7 @@ import { csvCents, csvDateTime, type CsvValue } from "@/lib/csv";
 import type { Database } from "@/lib/database.types";
 import { dayEndExclusiveIso, dayStartIso } from "@/lib/datetime";
 import { STATUS_LABELS } from "@/lib/order-status";
+import { paymentColumns } from "@/lib/payments/labels";
 import { formatWhatsapp } from "@/lib/phone";
 import { PRODUCT_TYPE_LABELS, type Period, type Report } from "@/lib/report";
 import { formatTaxId } from "@/lib/tax-id";
@@ -56,6 +57,8 @@ export const ORDER_CSV_HEADER = [
   "Subtotal",
   "Motivo do cancelamento",
   "Confirmado por",
+  "Pagamento pelo site",
+  "Devolvido",
 ];
 
 // Every status; the tax id goes out for invoicing (AD-011, admin only).
@@ -65,7 +68,7 @@ export async function exportOrders(supabase: Client, period: Period, storeId?: s
     let query = supabase
       .from("orders")
       .select(
-        "code, created_at, status, customer_name, customer_whatsapp, customer_tax_id, fulfillment, scheduled_for, delivery_address, subtotal_cents, cancel_reason, store:stores(name), order_events(to_status, actor_name)",
+        "code, created_at, status, customer_name, customer_whatsapp, customer_tax_id, fulfillment, scheduled_for, delivery_address, subtotal_cents, cancel_reason, store:stores(name), order_events(to_status, actor_name), order_payments(status, method, refunded_cents)",
       )
       .gte("created_at", from)
       .lt("created_at", to)
@@ -77,21 +80,26 @@ export async function exportOrders(supabase: Client, period: Period, storeId?: s
     return query;
   });
 
-  return orders.map((order) => [
-    order.code,
-    csvDateTime(order.created_at),
-    order.store?.name,
-    STATUS_LABELS[order.status],
-    order.customer_name,
-    formatWhatsapp(order.customer_whatsapp),
-    order.customer_tax_id ? formatTaxId(order.customer_tax_id) : "",
-    order.fulfillment === "entrega" ? "Entrega" : "Retirada",
-    csvDateTime(order.scheduled_for),
-    order.delivery_address,
-    csvCents(order.subtotal_cents),
-    order.cancel_reason,
-    order.order_events.at(-1)?.actor_name,
-  ]);
+  return orders.map((order) => {
+    const payment = paymentColumns(order.order_payments);
+    return [
+      order.code,
+      csvDateTime(order.created_at),
+      order.store?.name,
+      STATUS_LABELS[order.status],
+      order.customer_name,
+      formatWhatsapp(order.customer_whatsapp),
+      order.customer_tax_id ? formatTaxId(order.customer_tax_id) : "",
+      order.fulfillment === "entrega" ? "Entrega" : "Retirada",
+      csvDateTime(order.scheduled_for),
+      order.delivery_address,
+      csvCents(order.subtotal_cents),
+      order.cancel_reason,
+      order.order_events.at(-1)?.actor_name,
+      payment.method,
+      csvCents(payment.refundedCents),
+    ];
+  });
 }
 
 export const ITEM_CSV_HEADER = [

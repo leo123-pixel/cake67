@@ -237,7 +237,7 @@ Dependência nova: `stripe` (SDK oficial, versão fixa no `package-lock.json`). 
 - `app/admin/(panel)/pedidos/actions.ts`:
   - `cancelOrder`: depois do `cancel_order` (client da sessão, que confere loja e permissão), busca com o admin client as tentativas `devolvendo` sem `refund_id` daquele pedido e chama `refundPayment` com o `account` gravado (D7); também `expireSessions` das que viraram `cancelado`. Mensagem final diz se a devolução foi pedida ou ficou pendente.
   - `retryRefund(orderId)`: confere acesso lendo o pedido com o client da sessão (RLS da loja) e repete `refundPayment` para as tentativas `falha_devolucao`.
-- `components/admin/orders-live.tsx`: já recarrega em qualquer evento de `orders`; o som continua só no INSERT (conferir).
+- `components/admin/orders-live.tsx`: já recarrega em qualquer evento de `orders`. O som toca no INSERT de pedido novo e, uma vez por pedido, no UPDATE de pedido `novo` que fica `pago` (pedido expirado que volta por pagamento atrasado reaparece em Novos; decisão do Leonardo em 2026-10-21).
 - Relatório (P2): cartão "Pago pelo site" no total e por loja; CSV com colunas "Pagamento" (Pix/Cartão/vazio) e "Devolvido" (`csvCents`).
 
 ### Privacidade

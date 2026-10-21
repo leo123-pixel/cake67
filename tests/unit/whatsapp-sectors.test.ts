@@ -40,6 +40,28 @@ describe("confirmation message", () => {
   });
 });
 
+describe("{pagamento} in the confirmation (stage 11)", () => {
+  const withPayment = "Pedido {codigo} confirmado.\n\n{pagamento}\n\nAcompanhe: {link}";
+
+  it("is a known variable", () => {
+    expect(templateProblems(withPayment, CONFIRMATION_TEMPLATE)).toEqual({ missing: [], unknown: [] });
+  });
+
+  it("says the order was paid on the site", () => {
+    expect(renderConfirmationMessage(withPayment, { ...order, payment_status: "pago" }, LINK)).toBe(
+      `Pedido C67-000123 confirmado.\n\nPago pelo site\n\nAcompanhe: ${LINK}`,
+    );
+  });
+
+  it("disappears without leaving a gap when not paid online", () => {
+    for (const payment_status of [undefined, "nenhum", "devolvido"]) {
+      expect(renderConfirmationMessage(withPayment, { ...order, payment_status }, LINK)).toBe(
+        `Pedido C67-000123 confirmado.\n\nAcompanhe: ${LINK}`,
+      );
+    }
+  });
+});
+
 describe("describeConfirmedFulfillment", () => {
   const scheduled = localInputToIso("2026-10-04T15:00");
 

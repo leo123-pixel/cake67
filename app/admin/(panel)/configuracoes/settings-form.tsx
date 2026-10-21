@@ -97,7 +97,7 @@ function SettingsFields({ initial, errors }: { initial: SettingsValues; errors: 
         spec={CONFIRMATION_TEMPLATE}
         initial={initial.confirmation_whatsapp_template}
         errors={errors.confirmation_whatsapp_template}
-        preview={(template) => renderConfirmationMessage(template, SAMPLE_ORDER, SAMPLE_LINK)}
+        preview={(template) => renderConfirmationMessage(template, { ...SAMPLE_ORDER, payment_status: "pago" }, SAMPLE_LINK)}
       />
 
       <fieldset className="space-y-4">
@@ -130,8 +130,35 @@ function SettingsFields({ initial, errors }: { initial: SettingsValues; errors: 
           />
           Texto revisado pela Cake 67 (tira o selo &quot;Texto provisório&quot; do site)
         </label>
+        <PaymentPrivacyHint />
       </fieldset>
     </>
+  );
+}
+
+// Stage 11: paragraph for the policy once a store takes payment on the site.
+// The admin pastes it (the policy is the client's text, not a migration).
+const PAYMENT_PRIVACY_PARAGRAPH =
+  "Pagamento pelo site: se você escolher pagar pelo site, o pagamento é processado pela Stripe, que recebe o Pix ou o cartão em nome da loja. Os dados do cartão e do pagamento são informados na página da Stripe e não ficam com a Cake 67; recebemos só a confirmação, o valor e a forma de pagamento (Pix ou cartão). A Stripe pode pedir seu e-mail para enviar o comprovante. Se o pedido for cancelado, o valor volta pela mesma forma de pagamento.";
+
+function PaymentPrivacyHint() {
+  const [copied, setCopied] = useState(false);
+  return (
+    <details className="rounded-2xl border border-cocoa/10 bg-white p-4 text-sm">
+      <summary className="min-h-11 cursor-pointer content-center font-medium text-olive">Parágrafo sugerido para o pagamento online</summary>
+      <p className="mt-2 text-cocoa-soft">Cole no texto acima quando alguma loja passar a receber pelo site.</p>
+      <p className="mt-2 rounded-xl bg-linen p-3">{PAYMENT_PRIVACY_PARAGRAPH}</p>
+      <button
+        type="button"
+        onClick={async () => {
+          await navigator.clipboard.writeText(PAYMENT_PRIVACY_PARAGRAPH);
+          setCopied(true);
+        }}
+        className="btn btn-secondary mt-3"
+      >
+        {copied ? "Copiado" : "Copiar parágrafo"}
+      </button>
+    </details>
   );
 }
 

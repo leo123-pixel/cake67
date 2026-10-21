@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { accountEnvNames, accountState, isValidAlias, readAccount } from "@/lib/payments/accounts";
-import { ATTEMPT_LABELS, ORDER_PAYMENT_LABELS, methodLabel, shownAttempts } from "@/lib/payments/labels";
+import { ATTEMPT_LABELS, ORDER_PAYMENT_LABELS, methodLabel, paymentColumns, shownAttempts } from "@/lib/payments/labels";
 
 const env = {
   STRIPE_LOJA1_SECRET_KEY: "sk_test_1",
@@ -81,6 +81,18 @@ describe("payment labels", () => {
       (status) => ({ status }),
     );
     expect(shownAttempts(attempts).map((a) => a.status)).toEqual(["pago", "conferir", "devolvendo", "devolvido", "falha_devolucao"]);
+  });
+
+  it("fills the CSV payment columns", () => {
+    expect(paymentColumns([])).toEqual({ method: "", refundedCents: null });
+    expect(paymentColumns([{ status: "expirado", method: null, refunded_cents: 0 }])).toEqual({ method: "", refundedCents: null });
+    expect(
+      paymentColumns([
+        { status: "devolvido", method: "card", refunded_cents: 2500 },
+        { status: "pago", method: "pix", refunded_cents: 0 },
+      ]),
+    ).toEqual({ method: "Pix", refundedCents: 2500 });
+    expect(paymentColumns([{ status: "devolvido", method: "card", refunded_cents: 2500 }])).toEqual({ method: "Cartão", refundedCents: 2500 });
   });
 
   it("names the method", () => {

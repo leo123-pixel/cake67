@@ -29,7 +29,11 @@ function Totals({ totals }: { totals: Report["totals"] }) {
   return (
     <div className="grid gap-3 sm:grid-cols-3">
       <Card label="Pedidos" value={String(totals.orders)} note="Confirmados, em produção, prontos e entregues" />
-      <Card label="Faturamento" value={formatBRL(totals.revenue_cents)} />
+      <Card
+        label="Faturamento"
+        value={formatBRL(totals.revenue_cents)}
+        note={totals.online_cents ? `${formatBRL(totals.online_cents)} pago pelo site` : undefined}
+      />
       <Card label="Ticket médio" value={totals.avg_ticket_cents === null ? "—" : formatBRL(totals.avg_ticket_cents)} />
       <Card label="Cancelados" value={aside(totals.cancelled)} />
       <Card label="Expirados" value={aside(totals.expired)} />
@@ -84,6 +88,7 @@ function ByStore({ stores }: { stores: Report["by_store"] }) {
             <p className="font-medium text-olive">{store.name}</p>
             <p className="mt-1">
               {store.orders} {store.orders === 1 ? "pedido" : "pedidos"} · {formatBRL(store.revenue_cents)} · ticket médio {formatBRL(store.avg_ticket_cents)}
+              {store.online_cents ? ` · ${formatBRL(store.online_cents)} pelo site` : ""}
             </p>
           </li>
         ))}

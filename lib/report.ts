@@ -27,6 +27,7 @@ export type Period = { preset: PeriodPreset; from: string; to: string; notice?: 
 export type ReportTotals = {
   orders: number;
   revenue_cents: number;
+  online_cents?: number; // stage 11: paid through the site, minus refunds
   avg_ticket_cents: number | null;
   cancelled: { count: number; cents: number };
   expired: { count: number; cents: number };
@@ -38,7 +39,7 @@ export type ReportDay = { day: string; orders: number; revenue_cents: number };
 export type Report = {
   totals: ReportTotals;
   by_day: ReportDay[];
-  by_store: { store_id: string; name: string; orders: number; revenue_cents: number; avg_ticket_cents: number }[];
+  by_store: { store_id: string; name: string; orders: number; revenue_cents: number; online_cents?: number; avg_ticket_cents: number }[];
   top_products: {
     product_id: string | null;
     name: string;

@@ -119,6 +119,7 @@ export const CONFIRMATION_TEMPLATE = {
     loja: "Nome e endereço da loja",
     entrega: "Retirada ou entrega, com data e hora",
     link: "Link para acompanhar o pedido",
+    pagamento: "“Pago pelo site” se o cliente pagou online; vazio se não",
   },
   required: ["codigo", "link"],
 } as const satisfies TemplateSpec;
@@ -140,6 +141,7 @@ export function describeConfirmedFulfillment(order: Pick<OrderSummary, "fulfillm
 
 export type ConfirmationOrder = Pick<OrderSummary, "code" | "customer_name" | "fulfillment" | "scheduled_for"> & {
   store: { name: string; address: string };
+  payment_status?: string; // stage 11
 };
 
 export function renderConfirmationMessage(template: string, order: ConfirmationOrder, link: string): string {
@@ -149,7 +151,8 @@ export function renderConfirmationMessage(template: string, order: ConfirmationO
     loja: `${order.store.name} · ${order.store.address}`,
     entrega: describeConfirmedFulfillment(order),
     link,
-  });
+    pagamento: order.payment_status === "pago" ? "Pago pelo site" : "",
+  }).replace(/\n{3,}/g, "\n\n"); // an empty {pagamento} line leaves no gap
 }
 
 // Example order for the template preview in the panel.

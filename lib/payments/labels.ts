@@ -60,6 +60,15 @@ export function refundNotice(results: RefundResult[], formatBRL: (cents: number)
     : { text: `Devolução de ${total} pedida à Stripe. No Pix pode levar alguns minutos.`, tone: "info" };
 }
 
+// CSV columns of an order (spec 11, P2): how it was paid through the site and
+// how much went back. Empty when the order was paid on WhatsApp.
+export function paymentColumns(attempts: { status: PaymentAttemptStatus; method: string | null; refunded_cents: number }[]) {
+  const shown = shownAttempts(attempts);
+  const main = shown.find((a) => a.status === "pago") ?? shown[0];
+  const refunded = shown.reduce((sum, a) => sum + a.refunded_cents, 0);
+  return { method: main ? (methodLabel(main.method) ?? "Site") : "", refundedCents: refunded > 0 ? refunded : null };
+}
+
 const METHOD_LABELS: Record<string, string> = { pix: "Pix", card: "Cartão" };
 
 export function methodLabel(method: string | null | undefined): string | null {

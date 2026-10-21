@@ -33,6 +33,8 @@ function beep(context: AudioContext) {
 
 // Listens to order inserts/updates the signed-in staff can see (Realtime
 // applies orders RLS), refreshes the page, rings and marks the tab title.
+// Rings for a new order and, once per order, for a new order paid through the
+// site (stage 11): a late payment can bring an expired order back to "novo".
 export function OrdersLive() {
   const router = useRouter();
   const [soundOn, setSoundOn] = useState(false);
@@ -42,6 +44,7 @@ export function OrdersLive() {
   const lastSound = useRef(0);
   const refreshTimer = useRef<number | undefined>(undefined);
   const baseTitle = useRef("");
+  const paidRung = useRef(new Set<string>());
 
   useEffect(() => setSoundOn(readSoundPreference()), []);
 
@@ -81,7 +84,12 @@ export function OrdersLive() {
         .channel("orders-live")
         .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, (payload) => {
           scheduleRefresh();
-          if (payload.eventType === "INSERT" && (payload.new as { status?: string }).status === "novo") onNewOrder();
+          const row = payload.new as { id?: string; status?: string; payment_status?: string };
+          if (payload.eventType === "INSERT" && row.status === "novo") onNewOrder();
+          if (payload.eventType === "UPDATE" && row.status === "novo" && row.payment_status === "pago" && row.id && !paidRung.current.has(row.id)) {
+            paidRung.current.add(row.id);
+            onNewOrder();
+          }
         })
         .subscribe((status) => {
           if (status === "SUBSCRIBED") {

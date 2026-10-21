@@ -6,6 +6,7 @@ import {
   advanceOrder,
   cancelOrder,
   reactivateOrder,
+  retryRefund,
   type OrderActionResult,
 } from "@/app/admin/(panel)/pedidos/actions";
 import {
@@ -17,14 +18,25 @@ import {
   OTHER_REASON,
   type OrderStatus,
 } from "@/lib/order-status";
+import { formatBRL } from "@/lib/money";
 
 // notifyHref: wa.me link to the customer with the confirmation message (spec 08).
-type Props = { orderId: string; status: OrderStatus; hasMadeToOrder: boolean; notifyHref: string | null };
+// paidCents: paid through the site, refunded on cancel; refundPending: the
+// last refund failed (spec 11, D11).
+type Props = {
+  orderId: string;
+  status: OrderStatus;
+  hasMadeToOrder: boolean;
+  notifyHref: string | null;
+  paidCents: number | null;
+  refundPending: boolean;
+};
 
-export function OrderActions({ orderId, status, hasMadeToOrder, notifyHref }: Props) {
+export function OrderActions({ orderId, status, hasMadeToOrder, notifyHref, paidCents, refundPending }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<OrderActionResult["notice"]>(null);
   const [cancelling, setCancelling] = useState(false);
   const [reason, setReason] = useState<string>(CANCEL_REASONS[0]);
   const [note, setNote] = useState("");
@@ -34,6 +46,7 @@ export function OrderActions({ orderId, status, hasMadeToOrder, notifyHref }: Pr
   // a pop-up; it only goes to WhatsApp if the action succeeded.
   function run(task: () => Promise<OrderActionResult>, notify = false) {
     setError(null);
+    setNotice(null);
     const tab = notify && notifyHref ? window.open("", "_blank") : null;
     startTransition(async () => {
       try {
@@ -48,6 +61,7 @@ export function OrderActions({ orderId, status, hasMadeToOrder, notifyHref }: Pr
           tab.opener = null;
           tab.location.href = notifyHref;
         }
+        setNotice(result.notice ?? null);
         setCancelling(false);
       } catch {
         tab?.close();
@@ -81,6 +95,11 @@ export function OrderActions({ orderId, status, hasMadeToOrder, notifyHref }: Pr
           <a href={notifyHref} target="_blank" rel="noopener noreferrer" className="btn btn-secondary">
             Avisar cliente no WhatsApp
           </a>
+        )}
+        {refundPending && (
+          <button type="button" disabled={pending} onClick={() => run(() => retryRefund(orderId))} className="btn btn-danger">
+            Tentar devolver de novo
+          </button>
         )}
         {canCancel(status) && !cancelling && (
           <button type="button" disabled={pending} onClick={() => setCancelling(true)} className="btn btn-danger">
@@ -124,6 +143,11 @@ export function OrderActions({ orderId, status, hasMadeToOrder, notifyHref }: Pr
             />
           )}
           <p className="text-sm text-cocoa-soft">Os itens da vitrine voltam para o estoque.</p>
+          {paidCents !== null && (
+            <p className="rounded-xl bg-raspberry/10 p-3 text-sm font-medium text-raspberry">
+              O pagamento de {formatBRL(paidCents)} feito pelo site será devolvido ao cliente. A tarifa da Stripe não volta.
+            </p>
+          )}
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
@@ -138,6 +162,16 @@ export function OrderActions({ orderId, status, hasMadeToOrder, notifyHref }: Pr
             </button>
           </div>
         </fieldset>
+      )}
+
+      {refundPending && !notice && (
+        <p className="text-sm text-raspberry">A devolução do pagamento falhou. Tente de novo; se continuar, devolva pelo painel da Stripe.</p>
+      )}
+
+      {notice && (
+        <p role={notice.tone === "error" ? "alert" : "status"} className={`text-sm ${notice.tone === "error" ? "text-raspberry" : "text-olive"}`}>
+          {notice.text}
+        </p>
       )}
 
       {error && (

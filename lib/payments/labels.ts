@@ -46,6 +46,20 @@ export function shownAttempts<T extends { status: PaymentAttemptStatus }>(attemp
   return attempts.filter((attempt) => SHOWN.includes(attempt.status));
 }
 
+export type RefundResult = { amountCents: number; status: "pending" | "requires_action" | "succeeded" | "failed" | "canceled" };
+
+// What the panel says after asking Stripe for refunds (spec D11).
+export function refundNotice(results: RefundResult[], formatBRL: (cents: number) => string): { text: string; tone: "info" | "error" } | null {
+  if (results.length === 0) return null;
+  if (results.some((r) => r.status === "failed" || r.status === "canceled")) {
+    return { text: "A devolução não foi feita. Use “Tentar devolver de novo”.", tone: "error" };
+  }
+  const total = formatBRL(results.reduce((sum, r) => sum + r.amountCents, 0));
+  return results.every((r) => r.status === "succeeded")
+    ? { text: `Pagamento de ${total} devolvido ao cliente.`, tone: "info" }
+    : { text: `Devolução de ${total} pedida à Stripe. No Pix pode levar alguns minutos.`, tone: "info" };
+}
+
 const METHOD_LABELS: Record<string, string> = { pix: "Pix", card: "Cartão" };
 
 export function methodLabel(method: string | null | undefined): string | null {

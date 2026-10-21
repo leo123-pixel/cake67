@@ -1,4 +1,8 @@
 import "server-only";
+import { readAccount } from "@/lib/payments/accounts";
+import { expireSessions } from "@/lib/payments/checkout";
+import type { RefundResult } from "@/lib/payments/labels";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { closePaymentAttempt, markRefund, settleOrderPayment } from "@/lib/payments/db";
 import { stripeFor } from "@/lib/payments/stripe";
 import type { RefundStatus, WebhookDeps } from "@/lib/payments/webhook";
@@ -46,6 +50,38 @@ export async function refundPayment(
     console.error(`Could not record the refund of payment ${payment.paymentId}: ${error instanceof Error ? error.message : error}`);
   }
   return status;
+}
+
+// After cancel_order (or on "Tentar devolver de novo"): refunds what the
+// database marked for refund and closes sessions the cancel left open, each in
+// the account it belongs to (D7). Callers check access first: this reads with
+// the service role.
+export async function refundOrder(orderId: string, { retry = false } = {}): Promise<RefundResult[]> {
+  const { data, error } = await createAdminClient()
+    .from("order_payments")
+    .select("id, account, status, payment_intent_id, refund_id, amount_cents, session_id, expires_at")
+    .eq("order_id", orderId);
+  if (error) throw new Error(`Could not load payments of ${orderId}: ${error.message}`);
+
+  const now = Date.now();
+  const open = data.filter((p) => p.status === "cancelado" && p.session_id && Date.parse(p.expires_at) > now);
+  for (const account of new Set(open.map((p) => p.account))) {
+    if (!readAccount(account)) continue;
+    await expireSessions(
+      account,
+      open.filter((p) => p.account === account).map((p) => p.session_id!),
+    );
+  }
+
+  const due = data.filter(
+    (p) => p.payment_intent_id && ((p.status === "devolvendo" && !p.refund_id) || (retry && p.status === "falha_devolucao")),
+  );
+  return Promise.all(
+    due.map(async (p) => ({
+      amountCents: p.amount_cents,
+      status: await refundPayment(p.account, { paymentId: p.id, paymentIntentId: p.payment_intent_id! }, { retry }),
+    })),
+  );
 }
 
 // What handleStripeEvent needs for a store's account.

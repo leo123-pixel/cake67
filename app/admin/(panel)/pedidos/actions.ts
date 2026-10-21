@@ -4,9 +4,12 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { dbFailure } from "@/lib/admin/common";
 import { getStaffContext } from "@/lib/auth";
+import { formatBRL } from "@/lib/money";
 import { CANCEL_REASONS, OTHER_REASON } from "@/lib/order-status";
+import { refundNotice } from "@/lib/payments/labels";
+import { refundOrder } from "@/lib/payments/refund";
 
-export type OrderActionResult = { ok: boolean; message?: string };
+export type OrderActionResult = { ok: boolean; message?: string; notice?: { text: string; tone: "info" | "error" } | null };
 
 const SESSION_EXPIRED = { ok: false, message: "Sua sessão expirou. Entre de novo." } as const;
 const status = z.enum(["novo", "confirmado", "em_producao", "pronto", "entregue", "cancelado", "expirado"]);
@@ -72,8 +75,36 @@ export async function cancelOrder(orderId: string, from: string, reason: string,
   });
   if (error) return failure("cancelOrder", error);
 
+  // Stage 11: a paid order is refunded in its store's account (spec D11).
+  const notice = await refundAfterCancel(orderId);
   refresh(orderId);
-  return { ok: true };
+  return { ok: true, notice };
+}
+
+async function refundAfterCancel(orderId: string, retry = false) {
+  try {
+    return refundNotice(await refundOrder(orderId, { retry }), formatBRL);
+  } catch (error) {
+    console.error(`refund of order ${orderId}: ${error instanceof Error ? error.message : error}`);
+    return { text: "A devolução não foi feita. Use “Tentar devolver de novo”.", tone: "error" as const };
+  }
+}
+
+// "Tentar devolver de novo" (spec P1 Painel 4): same staff who may see the order.
+export async function retryRefund(orderId: string): Promise<OrderActionResult> {
+  const context = await getStaffContext();
+  if (!context) return SESSION_EXPIRED;
+  if (!z.uuid().safeParse(orderId).success) return { ok: false, message: "Ação inválida." };
+
+  // RLS: an attendant only reads orders of their store.
+  const { data: order, error } = await context.supabase.from("orders").select("id, payment_status").eq("id", orderId).maybeSingle();
+  if (error) return failure("retryRefund", error);
+  if (!order) return { ok: false, message: "Pedido de outra loja." };
+  if (order.payment_status !== "falha_devolucao") return { ok: false, message: "Este pedido não tem devolução pendente. Atualize a página." };
+
+  const notice = await refundAfterCancel(orderId, true);
+  refresh(orderId);
+  return { ok: true, notice };
 }
 
 export async function reactivateOrder(orderId: string): Promise<OrderActionResult> {

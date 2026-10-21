@@ -56,7 +56,14 @@ export default async function OrderDetailPage({ params }: Props) {
         </p>
       </header>
 
-      <OrderActions orderId={order.id} status={order.status} hasMadeToOrder={order.has_made_to_order} notifyHref={notifyHref} />
+      <OrderActions
+        orderId={order.id}
+        status={order.status}
+        hasMadeToOrder={order.has_made_to_order}
+        notifyHref={notifyHref}
+        paidCents={order.payment_status === "pago" ? (payments.find((p) => p.status === "pago")?.amount_cents ?? null) : null}
+        refundPending={order.payment_status === "falha_devolucao"}
+      />
 
       <section className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2 rounded-2xl border border-cocoa/10 bg-white p-4">

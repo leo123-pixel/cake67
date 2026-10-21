@@ -5,6 +5,8 @@ import { useAdminForm } from "@/components/admin/use-admin-form";
 import { HoursEditor } from "@/components/admin/hours-editor";
 import { SubmitButton } from "@/components/admin/submit-button";
 import type { AdminStore } from "@/lib/admin/catalog";
+import { StatusBadge } from "@/components/admin/status-badge";
+import { accountEnvNames, type AccountState } from "@/lib/payments/accounts";
 import { formatWhatsapp } from "@/lib/phone";
 import { parseStoredHours } from "@/lib/validators/store";
 import { saveStore } from "./actions";
@@ -15,6 +17,17 @@ const WHATSAPP_FIELDS = [
   { name: "whatsapp_made_to_order", label: "WhatsApp · Encomenda", hint: "Recebe pedidos com bolo, cento ou kit" },
   { name: "whatsapp_support", label: "WhatsApp · SAC", hint: "Único número mostrado no site" },
 ] as const;
+
+// Stage 11: what the saved alias means on this server.
+export const PAYMENT_STATES: Record<AccountState, { label: string; tone: "green" | "gray" | "red"; text: string }> = {
+  ativo: { label: "Ativo", tone: "green", text: "O site oferece pagamento por Pix ou cartão nesta loja." },
+  sem_chaves: {
+    label: "Conta sem chaves no servidor",
+    tone: "red",
+    text: "O site continua só com WhatsApp até as chaves desta conta serem cadastradas na Vercel.",
+  },
+  desligado: { label: "Desligado", tone: "gray", text: "Sem conta: os pedidos desta loja seguem só pelo WhatsApp." },
+};
 
 export function StoreForm({ store }: { store?: AdminStore }) {
   const [state, action, round] = useAdminForm(saveStore.bind(null, store?.id ?? null), { ok: false });
@@ -64,6 +77,42 @@ export function StoreForm({ store }: { store?: AdminStore }) {
       </fieldset>
 
       <HoursEditor hours={parseStoredHours(store?.hours)} echoed={echoed} errors={errors} />
+
+      <fieldset className="space-y-4">
+        <legend className="mb-2 text-xl text-olive">Pagamento online</legend>
+        <Field
+          label="Conta de pagamento online"
+          name="payment_account"
+          errors={errors.payment_account}
+          hint="Apelido da conta Stripe do CNPJ desta loja, ex. loja1. Deixe vazio para ficar só com WhatsApp."
+        >
+          <input
+            id="payment_account"
+            name="payment_account"
+            autoCapitalize="none"
+            autoComplete="off"
+            spellCheck={false}
+            maxLength={20}
+            defaultValue={text("payment_account", store?.payment_account ?? "")}
+            aria-invalid={Boolean(errors.payment_account)}
+            className="field-input sm:max-w-xs"
+          />
+        </Field>
+        {store && (
+          <div className="space-y-1 text-sm">
+            <p className="flex items-center gap-2">
+              Situação: <StatusBadge tone={PAYMENT_STATES[store.payment_state].tone}>{PAYMENT_STATES[store.payment_state].label}</StatusBadge>
+            </p>
+            <p className="text-cocoa-soft">{PAYMENT_STATES[store.payment_state].text}</p>
+            {store.payment_state === "sem_chaves" && store.payment_account && (
+              <p className="text-cocoa-soft">
+                Variáveis esperadas: <code>{accountEnvNames(store.payment_account).secretKey}</code> e{" "}
+                <code>{accountEnvNames(store.payment_account).webhookSecret}</code>.
+              </p>
+            )}
+          </div>
+        )}
+      </fieldset>
 
       <SubmitButton className="btn btn-primary w-full sm:w-auto">{store ? "Salvar loja" : "Criar loja"}</SubmitButton>
     </form>

@@ -18,6 +18,8 @@ export function StoresList({ stores }: { stores: AdminStore[] }) {
           <span className="flex items-center gap-2">
             <span className="font-medium text-olive">{store.name}</span>
             {!store.active && <StatusBadge tone="gray">Inativa</StatusBadge>}
+            {store.payment_state === "ativo" && <StatusBadge tone="green">Pagamento online</StatusBadge>}
+            {store.payment_state === "sem_chaves" && <StatusBadge tone="red">Pagamento sem chaves</StatusBadge>}
           </span>
           <span className="block text-sm text-cocoa-soft">{store.address}</span>
           <span className="block text-sm text-cocoa-soft">

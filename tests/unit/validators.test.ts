@@ -108,6 +108,16 @@ describe("storeSchema", () => {
     return { ...data, hours: readHours(data) };
   };
 
+  it("reads the payment account alias in lowercase, empty as none", () => {
+    expect(storeSchema.parse(form({ payment_account: " Loja1 " })).payment_account).toBe("loja1");
+    expect(storeSchema.parse(form({ payment_account: "" })).payment_account).toBeNull();
+    expect(storeSchema.parse(form()).payment_account).toBeNull();
+  });
+
+  it.each(["l", "loja-1", "loja 1", "a".repeat(21)])("rejects the alias %j", (alias) => {
+    expect(errorsOf(storeSchema.safeParse(form({ payment_account: alias })))).toHaveProperty("payment_account");
+  });
+
   it("normalizes the three WhatsApp numbers and reads hours", () => {
     const store = storeSchema.parse(form({ sun_closed: "on" }));
     expect(store).toMatchObject({

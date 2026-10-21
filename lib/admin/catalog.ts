@@ -1,6 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/database.types";
+import { accountState } from "@/lib/payments/accounts";
 
 type Client = SupabaseClient<Database>;
 
@@ -32,10 +33,11 @@ export type AdminAddon = Awaited<ReturnType<typeof listAdminAddons>>[number];
 export async function listAdminStores(supabase: Client) {
   const { data, error } = await supabase
     .from("stores")
-    .select("id, slug, name, address, phone, whatsapp_ready, whatsapp_made_to_order, whatsapp_support, hours, active, sort")
+    .select("id, slug, name, address, phone, whatsapp_ready, whatsapp_made_to_order, whatsapp_support, hours, active, sort, payment_account")
     .order("sort");
   if (error) throw new Error(`Could not load stores: ${error.message}`);
-  return data;
+  // Stage 11: whether the account's keys exist is only known on the server.
+  return data.map((store) => ({ ...store, payment_state: accountState(store.payment_account) }));
 }
 
 export type AdminStore = Awaited<ReturnType<typeof listAdminStores>>[number];

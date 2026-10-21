@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { normalizeWhatsapp } from "@/lib/phone";
+import { isValidAlias } from "@/lib/payments/accounts";
 import { checkbox, optionalText, requiredText } from "./common";
 
 export const WEEK_DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
@@ -42,6 +43,19 @@ export const storeSchema = z.object({
   whatsapp_ready: whatsappField,
   whatsapp_made_to_order: whatsappField,
   whatsapp_support: whatsappField,
+  // Stage 11: alias of the store's Stripe account; empty = WhatsApp only.
+  payment_account: z
+    .string()
+    .optional()
+    .transform((text, ctx) => {
+      const alias = (text ?? "").trim().toLowerCase();
+      if (!alias) return null;
+      if (!isValidAlias(alias)) {
+        ctx.addIssue({ code: "custom", message: "Use de 2 a 20 letras minúsculas ou números, ex. loja1" });
+        return z.NEVER;
+      }
+      return alias;
+    }),
   active: checkbox,
   hours: z.object(
     Object.fromEntries(WEEK_DAYS.map((day) => [day, openDay.nullable()])) as Record<

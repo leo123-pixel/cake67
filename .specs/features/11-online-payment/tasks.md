@@ -17,7 +17,8 @@
 | T10 | ✅ | `listCheckoutStores` com `paymentsEnabled` (decidido no servidor; o navegador não recebe apelido nem chave); `startPayment(code, token)` em `app/(site)/actions.ts`: tentativa no banco, conta sem chaves → WhatsApp, encerra sessões antigas, cria a sessão, grava o id; falhas marcam a tentativa e encerram a sessão órfã. `payments-start.test.ts` (10 casos) |
 | T11 | ✅ | `checkout-form.tsx`: "Como prefere pagar?" só em loja com pagamento ativo (padrão pelo site), resumo e aviso da vitrine acompanham a escolha, explica subtotal/entrega/pesagem, aviso de privacidade cita a Stripe, botão "Fazer pedido e pagar"; depois do `placeOrder` chama `startPayment` e vai para a Stripe, ou cai em `/pedido/...&pagamento=erro`. Loja sem pagamento: igual a hoje. Conferência visual fica para a T18 (a tela depende do banco) |
 | T12 | ✅ | `lib/payments/public.ts` (`paymentView`, pura): Pagar agora + Finalizar no WhatsApp para pedido novo de loja com conta; "Pagamento recebido"/"Avisar a loja no WhatsApp" (mensagem com "Pago pelo site") quando pago; avisos de `?pagamento=ok/cancelado/erro`; selo no resumo (pago, devolvido, devolução em andamento, em conferência). `pay-button.tsx`, `payment-poll.tsx` (atualiza a cada 3 s por ~1 min). Linha do tempo com expirado → novo coberta. `payments-public.test.ts` (20 casos). O botão aparece por `store_has_account`; se o apelido estiver sem chaves no servidor, o clique explica e manda para o WhatsApp |
-| T13–T16 | ⏳ | Painel |
+| T13 | ✅ | Lojas: seção "Pagamento online" com o apelido (validado e gravado em minúsculas; vazio = só WhatsApp), situação Ativo / Conta sem chaves no servidor (com os nomes das variáveis esperadas) / Desligado calculada no servidor em `listAdminStores`; selo na lista de lojas. `useAdminForm` + `values` no erro. Testes do validador |
+| T14–T16 | ⏳ | Painel: pedidos, devolução, tempo real |
 | T17 | ⏳ | Relatório, CSV e mensagens (P2) |
 | T18–T19 | ⏳ | Verificação e entrega |
 

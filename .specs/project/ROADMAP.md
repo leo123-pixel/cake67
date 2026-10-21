@@ -91,7 +91,7 @@ Cada feature = uma etapa do SPEC (seção 11). Uma por vez, com commit e deploy 
 **Domínio `www.cake67.com.br`** - COMPLETE (2026-09-28, AD-017)
 **Hospedagem de produção (Vercel Pro ou conta da Cake 67)** - PLANNED (continua nos planos gratuitos, AD-017; Leonardo manteve assim também com o pagamento online, AD-019)
 
-**11 · Pagamento online (Stripe, uma conta por loja)** - SPECIFIED (2026-10-21, aguardando aprovação; AD-019)
+**11 · Pagamento online (Stripe, uma conta por loja)** - PLANNED (spec, design e tasks aprovados em 2026-10-21; AD-019)
 
 - Pix e cartão pela página da Stripe, opcional no checkout e na página do pedido; loja sem conta fica só com WhatsApp
 - Uma conta Stripe por CNPJ, escolhida pela loja do pedido; chaves só em variáveis de ambiente; webhook por conta

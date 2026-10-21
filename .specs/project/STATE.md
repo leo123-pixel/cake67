@@ -1,7 +1,7 @@
 # State
 
 **Last Updated:** 2026-10-21
-**Current Work:** Etapa 11 (pagamento online pela Stripe, uma conta por loja, AD-019) especificada em `.specs/features/11-online-payment/spec.md`, aguardando aprovação. Sistema no ar em https://www.cake67.com.br (produção = `main`; `cake67.vercel.app` continua respondendo). Etapas 08 (WhatsApp por setor) e 09 (linha do tempo do pedido) no ar desde 2026-09-28; etapa 10 (bolo inteiro por peso na vitrine, AD-018) no ar desde 2026-09-29. Próximo: M2 · Lançamento (pendências da cliente); hospedagem segue nos planos gratuitos por decisão do Leonardo (AD-017).
+**Current Work:** Etapa 11 (pagamento online pela Stripe, uma conta por loja, AD-019) com spec, design e tasks aprovados em `.specs/features/11-online-payment/` (2026-10-21); próximo passo é implementar a partir da T1. Sistema no ar em https://www.cake67.com.br (produção = `main`; `cake67.vercel.app` continua respondendo). Etapas 08 (WhatsApp por setor) e 09 (linha do tempo do pedido) no ar desde 2026-09-28; etapa 10 (bolo inteiro por peso na vitrine, AD-018) no ar desde 2026-09-29. Próximo: M2 · Lançamento (pendências da cliente); hospedagem segue nos planos gratuitos por decisão do Leonardo (AD-017).
 
 ---
 

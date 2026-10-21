@@ -1,6 +1,6 @@
 # 11 · Pagamento online (Stripe, uma conta por loja) — Specification
 
-**Status**: Draft (2026-10-21) — aguardando aprovação do Leonardo
+**Status**: Approved (2026-10-21, "aprovado, pode seguir com o design e as tasks")
 
 ## Problem Statement
 

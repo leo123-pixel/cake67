@@ -13,7 +13,7 @@
 | T6 | ✅ | `stripe@23.0.0`; `lib/payments/accounts.ts` (pura), `stripe.ts` (`server-only`, client por apelido), `labels.ts`; `.env.example` com as variáveis por apelido; `payments-accounts.test.ts` (25 casos) |
 | T7 | ✅ | `checkout-params.ts` (pura) + `checkout.ts` (`server-only`). SDK 23 usa `allowed_payment_method_types` (filtra as formas ativadas na conta) e o Pix só aceita prazo em segundos a partir da escolha: 10 min. Spec D4/D9 e design ajustados. `payments-checkout.test.ts` (7 casos) |
 | T8 | ✅ | `webhook.ts` (pura, `handleStripeEvent`), `db.ts` (funções do banco pela service role), `refund.ts` (`refundPayment`, nunca lança: falha vira `falha_devolucao`; `webhookDeps`). Eventos de devolução incluem `refund.failed`. `payments-webhook.test.ts` (18 casos) |
-| T9 | ⏳ | Rota do webhook |
+| T9 | ✅ | `app/api/stripe/webhook/[account]/route.ts`: 404 conta desconhecida, 400 sem assinatura ou assinatura de outra conta/corpo alterado, 500 em falha do banco, 200 no resto (inclusive evento que não é nosso, para a Stripe não reenviar à toa). `payments-webhook-route.test.ts` (5 casos, assinatura real do SDK). `build` com chaves falsas: nada da Stripe em `.next/static` |
 | T10–T12 | ⏳ | Site |
 | T13–T16 | ⏳ | Painel |
 | T17 | ⏳ | Relatório, CSV e mensagens (P2) |

@@ -209,7 +209,7 @@ Dependência nova: `stripe` (SDK oficial, versão fixa no `package-lock.json`). 
 - `export const runtime = "nodejs"`, `dynamic = "force-dynamic"`. Fora do `middleware.ts` (o matcher só pega `/admin` e `/auth`).
 - `const account = readAccount(params.account)`; sem conta → 404.
 - Corpo cru (`await request.text()`) + `stripe-signature` → `stripe.webhooks.constructEvent(body, signature, webhookSecret)`; inválido → 400 sem tocar no banco (spec Webhook 2).
-- `handleStripeEvent`; erro de banco ou de rede → 500 (a Stripe reenvia). `ignore` → 400; o resto → 200.
+- `handleStripeEvent`; erro de banco ou de rede → 500 (a Stripe reenvia). `ignore` (sessão que não é nossa: evento de teste, outra integração) → 200 com aviso no log, porque reenviar não resolveria; o resto → 200.
 - Log sem dados do cliente (só `event.id`, tipo, `payment_id`).
 
 ### Site

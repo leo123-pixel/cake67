@@ -6,6 +6,7 @@ import { randomBytes, randomUUID } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { Database } from "@/lib/database.types";
+import { stockMismatches } from "./stock-invariant";
 
 if (existsSync(".env.local")) process.loadEnvFile(".env.local");
 
@@ -159,12 +160,6 @@ describe.skipIf(!configured)("order operations", () => {
   }, 30000);
 
   it("movements still sum to the quantity for every stock row", async () => {
-    const [{ data: stock }, { data: movements }] = await Promise.all([
-      service!.from("stock").select("product_id, store_id, quantity"),
-      service!.from("stock_movements").select("product_id, store_id, delta").limit(100000),
-    ]);
-    const sums = new Map<string, number>();
-    for (const m of movements!) sums.set(`${m.product_id}:${m.store_id}`, (sums.get(`${m.product_id}:${m.store_id}`) ?? 0) + m.delta);
-    expect(stock!.filter((r) => (sums.get(`${r.product_id}:${r.store_id}`) ?? 0) !== r.quantity)).toEqual([]);
+    expect(await stockMismatches(service!)).toEqual([]);
   });
 });

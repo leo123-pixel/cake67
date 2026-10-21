@@ -292,6 +292,13 @@ Leonardo desligou "Allow new users to sign up" no painel.
 **Problem:** `npx prettier --write` nos arquivos da etapa 08 reformatou arquivos inteiros (diff de ~1.950 linhas); o código segue o estilo próprio, com linhas longas.
 **Solution:** Não rodar formatador; seguir o estilo do arquivo. O `lint` (ESLint) é o único verificador de estilo.
 
+### L-022: A Data API devolve no máximo 1000 linhas
+
+**Context:** os testes de invariante (soma dos movimentos = estoque) passaram a falhar depois que `stock_movements` passou de 1000 linhas.
+**Problem:** `.limit(100000)` não vale acima de `max_rows` (1000); a soma saía incompleta.
+**Solution:** `tests/integration/stock-invariant.ts` lê as duas tabelas em páginas com `.range()`. Qualquer leitura que precise da tabela inteira pela API faz o mesmo.
+**Prevents:** falso alarme de estoque divergente (e relatório incompleto se um dia ler tabela grande pela API).
+
 ### L-003: Commit no PowerShell 5.1
 
 **Problem:** here-string via stdin não chega ao `git commit -F -`.

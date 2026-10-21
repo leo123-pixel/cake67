@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PIX_EXPIRES_SECONDS, checkoutParams, orderUrl } from "@/lib/payments/checkout-params";
+import { INTEGRATION_IDENTIFIER, PIX_EXPIRES_SECONDS, checkoutParams, orderUrl } from "@/lib/payments/checkout-params";
 
 const input = {
   paymentId: "3f1c2a9e-7a51-4f0e-9d0c-1b2c3d4e5f60",
@@ -44,8 +44,9 @@ describe("checkoutParams", () => {
     expect(params.payment_intent_data).toEqual({ metadata: { payment_id: input.paymentId, order_code: "C67-000123" } });
   });
 
-  it("returns to the order page in Portuguese", () => {
+  it("returns to the order page in Portuguese, tagged as this integration", () => {
     expect(params.locale).toBe("pt-BR");
+    expect(params.integration_identifier).toBe(INTEGRATION_IDENTIFIER);
     expect(params.success_url).toBe("https://www.cake67.com.br/pedido/C67-000123?t=a1b2c3&pagamento=ok");
     expect(params.cancel_url).toBe("https://www.cake67.com.br/pedido/C67-000123?t=a1b2c3&pagamento=cancelado");
   });

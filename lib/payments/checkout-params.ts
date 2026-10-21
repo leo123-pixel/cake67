@@ -9,6 +9,10 @@ import type { PaymentMethod } from "@/lib/payments/accounts";
 // reserves the order again or refunds it (spec D10).
 export const PIX_EXPIRES_SECONDS = 10 * 60;
 
+// Tags our sessions in the Stripe Dashboard (Stripe asks for a label with an
+// 8-letter random suffix, fixed per integration).
+export const INTEGRATION_IDENTIFIER = "cake67-pedido-qhvnrtkw";
+
 export type CheckoutInput = {
   paymentId: string;
   code: string;
@@ -46,6 +50,7 @@ export function checkoutParams(input: CheckoutInput): Stripe.Checkout.SessionCre
     ...(input.methods.includes("pix") && { payment_method_options: { pix: { expires_after_seconds: PIX_EXPIRES_SECONDS } } }),
     expires_at: Math.floor(new Date(input.expiresAt).getTime() / 1000),
     locale: "pt-BR",
+    integration_identifier: INTEGRATION_IDENTIFIER,
     client_reference_id: input.paymentId,
     metadata,
     payment_intent_data: { metadata },

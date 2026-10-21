@@ -1,11 +1,18 @@
 # State
 
-**Last Updated:** 2026-09-29
-**Current Work:** Sistema no ar em https://www.cake67.com.br (produção = `main`; `cake67.vercel.app` continua respondendo). Etapas 08 (WhatsApp por setor) e 09 (linha do tempo do pedido) no ar desde 2026-09-28; etapa 10 (bolo inteiro por peso na vitrine, AD-018) no ar desde 2026-09-29. Próximo: M2 · Lançamento (pendências da cliente); hospedagem segue nos planos gratuitos por decisão do Leonardo (AD-017).
+**Last Updated:** 2026-10-21
+**Current Work:** Etapa 11 (pagamento online pela Stripe, uma conta por loja, AD-019) especificada em `.specs/features/11-online-payment/spec.md`, aguardando aprovação. Sistema no ar em https://www.cake67.com.br (produção = `main`; `cake67.vercel.app` continua respondendo). Etapas 08 (WhatsApp por setor) e 09 (linha do tempo do pedido) no ar desde 2026-09-28; etapa 10 (bolo inteiro por peso na vitrine, AD-018) no ar desde 2026-09-29. Próximo: M2 · Lançamento (pendências da cliente); hospedagem segue nos planos gratuitos por decisão do Leonardo (AD-017).
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-019: Pagamento online pela Stripe, uma conta por loja (2026-10-21)
+
+**Decision:** O site passa a aceitar pagamento online opcional (Pix e cartão à vista) pela página de pagamento da Stripe (Checkout). Cada loja tem CNPJ próprio, então cada uma tem a sua conta Stripe: `stores.payment_account` guarda um apelido (`loja1`) e as chaves ficam só em variáveis de ambiente (`STRIPE_<APELIDO>_SECRET_KEY`, `STRIPE_<APELIDO>_WEBHOOK_SECRET`); loja sem apelido ou sem chaves fica só com WhatsApp. Cobra o subtotal inteiro; entrega e diferença de peso continuam fora. Pedido pago não se confirma sozinho, mas deixa de expirar; cancelar pedido pago devolve tudo; pagamento que chega sem pedido válido é devolvido sozinho. Webhook por conta em `/api/stripe/webhook/<apelido>`. Etapa 11.
+**Reason:** Escolha do Leonardo: Stripe pela facilidade de integração; o dinheiro precisa cair no CNPJ da loja do pedido.
+**Trade-off:** Muda "Pagamento combinado no WhatsApp" (SPEC §1) e "Sem gateway no MVP" (SPEC §2). Tarifas (cartão 3,99% + R$ 0,39; Pix 1,19%) não voltam no reembolso. Loja nova exige chaves novas na Vercel e deploy. Stripe Connect ficou de fora (não compensa para duas lojas). Pix na Stripe Brasil pode exigir convite.
+**Impact:** Ligar em produção exige sair da Vercel Hobby (uso comercial, AD-017) e citar a Stripe na política de privacidade. Sem as variáveis o recurso fica desligado, então pode ir para a `main` antes das contas existirem.
 
 ### AD-018: Bolo inteiro por peso na vitrine (2026-09-29)
 

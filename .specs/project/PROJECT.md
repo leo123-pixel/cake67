@@ -35,7 +35,7 @@ Fonte da verdade detalhada: [SPEC.md](SPEC.md) (decisões de 25/09/2026). Este a
 
 **Explicitly out of scope:**
 
-- Pagamento online / gateway.
+- Pagamento online / gateway (no MVP; entra na etapa 11, AD-019).
 - Conta de cliente, login de cliente.
 - Cálculo de taxa de entrega e endereço estruturado (combinado no WhatsApp).
 - Limite de capacidade de produção por dia.

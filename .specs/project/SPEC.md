@@ -12,7 +12,7 @@ Documento de referência para construir o sistema no repositório `leo123-pixel/
 | Estoque | Quantidade por loja, só para itens de vitrine |
 | Baixa de estoque | Reserva ao criar o pedido. Cancelado ou expirado devolve ao estoque |
 | Encomendas | Sem limite de capacidade por dia no MVP. Só antecedência mínima por produto |
-| Pedido | Gravado no sistema com número e status. Em seguida o cliente abre o WhatsApp da loja com o resumo pronto (link wa.me). Pagamento combinado no WhatsApp |
+| Pedido | Gravado no sistema com número e status. Em seguida o cliente abre o WhatsApp da loja com o resumo pronto (link wa.me). Pagamento combinado no WhatsApp. A partir da etapa 11 (AD-019), pagamento online opcional pela Stripe na loja que tiver conta |
 | Entrega | Retirada na loja ou "quero entrega". Taxa e endereço combinados no WhatsApp |
 | Cliente | Sem conta. Nome, WhatsApp e observações ficam no pedido |
 | Painel | Perfis admin (dona) e atendente (vinculado a uma loja) |
@@ -26,7 +26,7 @@ Documento de referência para construir o sistema no repositório `leo123-pixel/
 - Supabase: `@supabase/ssr` para sessão em cookies, `@supabase/supabase-js`.
 - Zod para validar formulários e o payload do pedido.
 - `browser-image-compression` para reduzir fotos no navegador antes do upload (WebP, máx. 1600 px).
-- Sem gateway de pagamento no MVP.
+- Sem gateway de pagamento no MVP. Etapa 11: `stripe` (Checkout), uma conta por loja (AD-019).
 
 ## 3. Estrutura de pastas
 
@@ -175,7 +175,7 @@ O painel deve funcionar bem no celular, porque a equipe opera no balcão.
 - LGPD: coleta mínima (nome, WhatsApp, endereço opcional), aviso no checkout, página de privacidade.
 - SEO local: metadados por página, `sitemap.xml`, dados estruturados `Bakery` e `Product`.
 - Supabase Free pausa o projeto após 7 dias sem uso. Em produção isso não acontece com tráfego real. No desenvolvimento, basta abrir o site ou o painel de vez em quando; se pausar, reativar no painel do Supabase.
-- Variáveis de ambiente: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_SITE_URL`.
+- Variáveis de ambiente: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_SITE_URL`. Etapa 11: `STRIPE_<APELIDO>_SECRET_KEY` e `STRIPE_<APELIDO>_WEBHOOK_SECRET` por conta de loja (só servidor).
 
 ## 11. Etapas e critérios de aceite
 

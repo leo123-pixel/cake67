@@ -89,12 +89,17 @@ Cada feature = uma etapa do SPEC (seção 11). Uma por vez, com commit e deploy 
 **Publicação na `main`** - COMPLETE (2026-09-27: PRs #1–#7 mergeados; `cake67.vercel.app` com o sistema)
 **Pendências da cliente resolvidas** - PLANNED (ver SPEC §12 e B-002)
 **Domínio `www.cake67.com.br`** - COMPLETE (2026-09-28, AD-017)
-**Hospedagem de produção (Vercel Pro ou conta da Cake 67)** - PLANNED (por ora nos planos gratuitos, AD-017)
+**Hospedagem de produção (Vercel Pro ou conta da Cake 67)** - PLANNED (por ora nos planos gratuitos, AD-017; obrigatória antes de ligar o pagamento online)
+
+**11 · Pagamento online (Stripe, uma conta por loja)** - SPECIFIED (2026-10-21, aguardando aprovação; AD-019)
+
+- Pix e cartão pela página da Stripe, opcional no checkout e na página do pedido; loja sem conta fica só com WhatsApp
+- Uma conta Stripe por CNPJ, escolhida pela loja do pedido; chaves só em variáveis de ambiente; webhook por conta
+- Pedido pago deixa de expirar; cancelar devolve; pagamento sem pedido válido é devolvido sozinho
 
 ---
 
 ## Future Considerations
 
-- Pagamento online (Pix)
 - Capacidade de produção por dia
 - Cálculo de taxa de entrega por bairro

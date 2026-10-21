@@ -388,6 +388,44 @@ describe.skipIf(!configured)("online payment", () => {
     expect((data as { totals: { online_cents: number } }).totals.online_cents).toBeGreaterThanOrEqual(paid.subtotal);
   });
 
+  // T16: the panel (orders-live) refreshes on any change it hears and rings
+  // only on INSERT of a new order; a payment arrives as an UPDATE.
+  it("the panel hears the payment in real time as an update", async () => {
+    const { data: session } = await attendant1.auth.getSession();
+    await attendant1.realtime.setAuth(session.session!.access_token);
+
+    const heard: { type: string; id: string; payment_status: string }[] = [];
+    const channel = attendant1.channel(`pay-${run}`).on("postgres_changes", { event: "*", schema: "public", table: "orders" }, (payload) => {
+      const row = payload.new as { id?: string; payment_status?: string };
+      if (row.id) heard.push({ type: payload.eventType, id: row.id, payment_status: row.payment_status ?? "" });
+    });
+    await new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error("Realtime did not subscribe")), 10000);
+      channel.subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          clearTimeout(timer);
+          resolve();
+        }
+      });
+    });
+    // Same wait as the stage 05 test: streaming starts shortly after SUBSCRIBED.
+    await new Promise((r) => setTimeout(r, 2000));
+
+    const o = await placeOrder();
+    const session_ = `cs_${run}_live`;
+    await begin(o, session_);
+    await settle(session_, o.subtotal);
+
+    const deadline = Date.now() + 10000;
+    const paidHeard = () => heard.some((e) => e.id === o.id && e.payment_status === "pago");
+    while (!paidHeard() && Date.now() < deadline) await new Promise((r) => setTimeout(r, 250));
+    await attendant1.removeChannel(channel);
+
+    const mine = heard.filter((e) => e.id === o.id);
+    expect(mine.find((e) => e.payment_status === "pago")?.type).toBe("UPDATE");
+    expect(mine.filter((e) => e.type === "INSERT")).toHaveLength(1);
+  }, 30000);
+
   it("movements still sum to the quantity for every stock row", async () => {
     expect(await stockMismatches(service!)).toEqual([]);
   });

@@ -255,7 +255,7 @@ Leonardo desligou "Allow new users to sign up" no painel.
 ### L-014: Realtime confirma a inscrição antes de transmitir
 
 **Problem:** o teste de Realtime não recebia o INSERT feito logo após `SUBSCRIBED`, embora `orders` estivesse na publicação.
-**Solution:** `realtime.setAuth(token)` antes de assinar (senão o RLS avalia como anon) e, em teste, esperar ~2 s depois de `SUBSCRIBED`. O painel fica conectado o tempo todo e não precisa disso.
+**Solution:** `realtime.setAuth(token)` antes de assinar (senão o RLS avalia como anon) e, em teste, esperar ~2 s depois de `SUBSCRIBED`. O painel fica conectado o tempo todo e não precisa disso. Em 2026-10-21 a espera passou de 10 s numa rodada (o INSERT se perdeu e só as atualizações seguintes chegaram): teste novo de Realtime mexe no próprio registro de teste até ouvir um evento antes de agir (`payments.test.ts`).
 
 ### L-015: `router.refresh()` reescreve o título da aba
 

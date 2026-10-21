@@ -9,7 +9,7 @@
 |---|---|---|
 | T1 | ✅ | Migration aplicada no projeto pelo Leonardo (2026-10-21) |
 | T2–T4 | ✅ | `20261021000200_online_payment.sql` escrita. Validada num Postgres 16 local com stubs do Supabase (todas as migrations + seed aplicam) e um roteiro SQL com 80 checagens: permissões, `begin_order_payment` (token, CK040–CK043, extensão da reserva, tentativa anterior cancelada), cada linha de `settle_order_payment` (ok, duplicate, ignore, review, duplicidade, cancelado, expirado com e sem estoque, peça `vitrine_kg`), `close_payment_attempt`, `mark_refund`, cancelamento de pedido pago, `reactivate_order` e `report_summary`. Tipos à mão e `rls.test.ts` com a tabela nova. Aplicada no projeto (2026-10-21). `test:integration`: `report.test.ts` ajustado para `online_cents`; `rls.test.ts` passou a aceitar lojas criadas no painel (há uma terceira, `cake67-jeriba`); `hookTimeout` de 30 s depois de um `beforeAll` lento em `operations.test.ts`. Rodada completa no projeto: 12 arquivos, 83 testes passando (2026-10-21); para isso o invariante de estoque passou a ler em páginas (L-022) |
-| T5 | ⏳ | Portar o roteiro SQL para `tests/integration/payments.test.ts` |
+| T5 | 🟡 | `tests/integration/payments.test.ts` escrito (11 testes, mesmos casos do roteiro SQL, com conta de teste própria e restauração das lojas). Falta rodar no projeto |
 | T6–T9 | ⏳ | `lib/payments` e webhook |
 | T10–T12 | ⏳ | Site |
 | T13–T16 | ⏳ | Painel |

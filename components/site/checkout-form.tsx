@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { placeOrder } from "@/app/(site)/actions";
+import { placeOrder, startPayment } from "@/app/(site)/actions";
 import { toOrderItems } from "@/lib/cart/cart";
 import { formatWeekdayDate } from "@/lib/datetime";
 import { formatBRL } from "@/lib/money";
@@ -39,6 +39,9 @@ export function CheckoutForm({ stores }: { stores: CheckoutStore[] }) {
   const [message, setMessage] = useState<string | null>(null);
   const [needsCart, setNeedsCart] = useState(false);
   const [pending, startTransition] = useTransition();
+  // Stage 11: pay through the site is the default where the store takes it.
+  const [paySite, setPaySite] = useState(true);
+  const [leaving, setLeaving] = useState(false);
 
   if (cart.lines.length === 0) {
     return (
@@ -56,6 +59,7 @@ export function CheckoutForm({ stores }: { stores: CheckoutStore[] }) {
   const days = quote?.has_made_to_order && quote.earliest_schedule ? buildSlots(store.hours, quote.earliest_schedule) : [];
   const selectedDay = days.find((d) => d.date === day) ?? days[0];
   const hours = quote ? quote.reservation_minutes / 60 : 2;
+  const payNow = store.paymentsEnabled && paySite;
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -67,7 +71,20 @@ export function CheckoutForm({ stores }: { stores: CheckoutStore[] }) {
         const result = await placeOrder(store!.id, toOrderItems(cart), form);
         if (result.ok) {
           clear();
-          router.push(`/pedido/${result.code}?t=${result.token}`);
+          const orderPage = `/pedido/${result.code}?t=${result.token}`;
+          if (!payNow) {
+            router.push(orderPage);
+            return;
+          }
+          // The order exists either way: if the payment cannot open, its page
+          // offers to try again or to finish on WhatsApp.
+          const payment = await startPayment(result.code, result.token).catch(() => null);
+          if (payment?.ok) {
+            setLeaving(true);
+            window.location.assign(payment.url);
+          } else {
+            router.push(`${orderPage}&pagamento=erro`);
+          }
           return;
         }
         setMessage(result.message);
@@ -106,7 +123,7 @@ export function CheckoutForm({ stores }: { stores: CheckoutStore[] }) {
           <span className="tabular-nums">{quote ? formatBRL(quote.subtotal_cents) : "…"}</span>
         </p>
         <p className="text-sm text-cocoa-soft">
-          Loja: {store.name} · {store.address}. Pagamento combinado no WhatsApp.
+          Loja: {store.name} · {store.address}. {payNow ? "Pagamento pelo site, logo depois do pedido." : "Pagamento combinado no WhatsApp."}
         </p>
         {problems && (
           <p role="alert" className="text-sm text-raspberry">
@@ -210,6 +227,10 @@ export function CheckoutForm({ stores }: { stores: CheckoutStore[] }) {
             )}
             <FieldError errors={errors} name="scheduled_for" />
           </div>
+        ) : payNow ? (
+          <p className="rounded-2xl bg-peach-light p-4 text-sm">
+            Separamos seus itens da vitrine. Depois do pagamento, a loja confirma o pedido e avisa no WhatsApp.
+          </p>
         ) : (
           <p className="rounded-2xl bg-peach-light p-4 text-sm">
             Separamos seus itens da vitrine. Retire em até {Number.isInteger(hours) ? `${hours} h` : `${quote?.reservation_minutes} min`} depois de
@@ -217,6 +238,36 @@ export function CheckoutForm({ stores }: { stores: CheckoutStore[] }) {
           </p>
         )}
       </fieldset>
+
+      {store.paymentsEnabled && (
+        <fieldset className="space-y-3">
+          <legend className="mb-2 text-xl text-olive">Como prefere pagar?</legend>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {([true, false] as const).map((site) => (
+              <label
+                key={String(site)}
+                className="flex min-h-11 items-center gap-3 rounded-2xl border border-cocoa/15 bg-white px-4 py-2 has-checked:border-olive has-checked:bg-olive/5"
+              >
+                <input
+                  type="radio"
+                  name="payment_choice"
+                  value={site ? "site" : "whatsapp"}
+                  checked={paySite === site}
+                  onChange={() => setPaySite(site)}
+                  className="accent-olive"
+                />
+                {site ? "Pagar agora pelo site (Pix ou cartão)" : "Combinar no WhatsApp"}
+              </label>
+            ))}
+          </div>
+          {payNow && (
+            <p className="text-sm text-cocoa-soft">
+              Você paga o subtotal. {fulfillment === "entrega" ? "A taxa de entrega é combinada no WhatsApp. " : ""}
+              {quote?.lines.some((l) => l.type === "bolo_kg") ? "A diferença da pesagem do bolo é paga na retirada." : ""}
+            </p>
+          )}
+        </fieldset>
+      )}
 
       <label className="block space-y-1.5 text-sm font-medium">
         Observações <span className="font-normal text-cocoa-soft">(opcional)</span>
@@ -226,7 +277,9 @@ export function CheckoutForm({ stores }: { stores: CheckoutStore[] }) {
       <div className="space-y-2 rounded-2xl border border-cocoa/10 bg-white p-4 text-sm">
         <p>
           Usamos seu nome, WhatsApp e, se informados, endereço e CPF/CNPJ só para atender este pedido e emitir a nota. Para
-          falar sobre seus dados, chame a loja no WhatsApp. <Link href="/privacidade" className="underline">Política de privacidade</Link>.
+          falar sobre seus dados, chame a loja no WhatsApp.{" "}
+          {store.paymentsEnabled && "Se você pagar pelo site, o pagamento é processado pela Stripe. "}
+          <Link href="/privacidade" className="underline">Política de privacidade</Link>.
         </p>
         <label className="flex min-h-11 items-center gap-3 font-medium">
           <input type="checkbox" name="privacy" required className="size-5 accent-olive" />
@@ -243,10 +296,10 @@ export function CheckoutForm({ stores }: { stores: CheckoutStore[] }) {
 
       <button
         type="submit"
-        disabled={pending || loading || !quote || problems}
+        disabled={pending || leaving || loading || !quote || problems}
         className="btn w-full bg-olive text-linen hover:bg-olive-dark sm:w-auto"
       >
-        {pending ? "Enviando…" : "Fazer pedido"}
+        {leaving ? "Abrindo o pagamento…" : pending ? "Enviando…" : payNow ? "Fazer pedido e pagar" : "Fazer pedido"}
       </button>
     </form>
   );

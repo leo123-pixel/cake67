@@ -122,8 +122,9 @@ describe.skipIf(!configured)("anon access (RLS)", () => {
     expect(data).toHaveLength(stock!.length);
   });
 
+  // Stores created in the panel later also show up; the seeded ones stay first.
   it("sees both seeded stores", async () => {
     const { data } = await anon!.from("stores").select("slug").order("sort");
-    expect(data?.map((s) => s.slug)).toEqual(["estiva", "afonso-pena"]);
+    expect(data?.map((s) => s.slug).slice(0, 2)).toEqual(["estiva", "afonso-pena"]);
   });
 });

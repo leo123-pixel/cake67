@@ -17,6 +17,8 @@ export default defineConfig({
           name: "integration",
           include: ["tests/integration/**/*.test.ts"],
           testTimeout: 20_000,
+          // beforeAll creates and signs in users over the network.
+          hookTimeout: 30_000,
           // Files share the real database; running them one at a time keeps
           // invariant checks (movements = stock) from seeing another file mid-way.
           fileParallelism: false,

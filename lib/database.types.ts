@@ -593,6 +593,25 @@ export type Database = {
       fulfillment: "retirada" | "entrega";
       staff_role: "admin" | "atendente";
       highlight_slot: "bolo_do_mes" | "combo_semana" | "banner";
+      order_payment_status:
+        | "nenhum"
+        | "pagando"
+        | "pago"
+        | "devolvendo"
+        | "devolvido"
+        | "falha_devolucao"
+        | "conferir";
+      payment_attempt_status:
+        | "aberto"
+        | "pago"
+        | "expirado"
+        | "falhou"
+        | "cancelado"
+        | "erro"
+        | "conferir"
+        | "devolvendo"
+        | "devolvido"
+        | "falha_devolucao";
     };
     CompositeTypes: {
       [_ in never]: never;

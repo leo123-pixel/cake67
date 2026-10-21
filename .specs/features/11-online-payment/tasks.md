@@ -1,13 +1,14 @@
 # 11 · Pagamento online (Stripe, uma conta por loja) — Tasks
 
 **Design**: `.specs/features/11-online-payment/design.md`
-**Status**: Planned (2026-10-21)
+**Status**: In Progress (2026-10-21)
 
 ## Progress
 
 | Tarefas | Status | Notas |
 |---|---|---|
-| T1–T5 | ⏳ | Banco |
+| T1 | 🟡 | Migration escrita e validada num Postgres 16 local; tipos em `database.types.ts`. Falta aplicar no projeto (o conector desta sessão não enxerga a Leo Org): `supabase db push --db-url "$SUPABASE_DB_URL" --yes` |
+| T2–T5 | ⏳ | Banco |
 | T6–T9 | ⏳ | `lib/payments` e webhook |
 | T10–T12 | ⏳ | Site |
 | T13–T16 | ⏳ | Painel |

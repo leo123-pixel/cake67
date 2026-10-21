@@ -11,7 +11,8 @@
 | T2–T4 | ✅ | `20261021000200_online_payment.sql` escrita. Validada num Postgres 16 local com stubs do Supabase (todas as migrations + seed aplicam) e um roteiro SQL com 80 checagens: permissões, `begin_order_payment` (token, CK040–CK043, extensão da reserva, tentativa anterior cancelada), cada linha de `settle_order_payment` (ok, duplicate, ignore, review, duplicidade, cancelado, expirado com e sem estoque, peça `vitrine_kg`), `close_payment_attempt`, `mark_refund`, cancelamento de pedido pago, `reactivate_order` e `report_summary`. Tipos à mão e `rls.test.ts` com a tabela nova. Aplicada no projeto (2026-10-21). `test:integration`: `report.test.ts` ajustado para `online_cents`; `rls.test.ts` passou a aceitar lojas criadas no painel (há uma terceira, `cake67-jeriba`); `hookTimeout` de 30 s depois de um `beforeAll` lento em `operations.test.ts`. Rodada completa no projeto: 12 arquivos, 83 testes passando (2026-10-21); para isso o invariante de estoque passou a ler em páginas (L-022) |
 | T5 | ✅ | `tests/integration/payments.test.ts` (11 testes) passando no projeto; rodada completa com 13 arquivos e 94 testes (2026-10-21) |
 | T6 | ✅ | `stripe@23.0.0`; `lib/payments/accounts.ts` (pura), `stripe.ts` (`server-only`, client por apelido), `labels.ts`; `.env.example` com as variáveis por apelido; `payments-accounts.test.ts` (25 casos) |
-| T7–T9 | ⏳ | Sessão de pagamento, devolução e webhook |
+| T7 | ✅ | `checkout-params.ts` (pura) + `checkout.ts` (`server-only`). SDK 23 usa `allowed_payment_method_types` (filtra as formas ativadas na conta) e o Pix só aceita prazo em segundos a partir da escolha: 10 min. Spec D4/D9 e design ajustados. `payments-checkout.test.ts` (7 casos) |
+| T8–T9 | ⏳ | Devolução e webhook |
 | T10–T12 | ⏳ | Site |
 | T13–T16 | ⏳ | Painel |
 | T17 | ⏳ | Relatório, CSV e mensagens (P2) |

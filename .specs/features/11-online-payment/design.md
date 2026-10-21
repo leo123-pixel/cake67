@@ -178,13 +178,14 @@ Toda saída grava `payment_intent_id` e `method` na tentativa (a devolução pre
 
 - `accounts.ts` (pura): `isValidAlias(alias)`; `accountEnvNames(alias) → { secretKey: "STRIPE_LOJA1_SECRET_KEY", webhookSecret: "STRIPE_LOJA1_WEBHOOK_SECRET" }`; `readAccount(alias, env = process.env) → { secretKey, webhookSecret } | null` (as duas precisam existir); `accountState(alias, env) → "ativo" | "sem_chaves" | "desligado"`. Os nomes são montados em tempo de execução (não são `NEXT_PUBLIC_*`, então o Next não precisa embutir).
 - `stripe.ts` (`import "server-only"`): `stripeFor(alias)` com cache por apelido (`new Stripe(secretKey)`); lança se a conta não estiver pronta.
-- `checkout.ts`: `checkoutParams({ paymentId, code, token, amountCents, expiresAt, siteUrl })` (pura, testável) monta a sessão:
+- `checkout-params.ts` (pura, testável): `checkoutParams({ paymentId, code, token, amountCents, expiresAt, methods, siteUrl })` monta a sessão:
   - `mode: "payment"`, `currency` via `price_data` `brl`, uma linha `"Pedido C67-000123"` com `unit_amount = amountCents`, `quantity: 1` (D3);
-  - `payment_method_types: ["card", "pix"]` (D4), `payment_method_options.pix.expires_at = expiresAt`;
+  - `allowed_payment_method_types` com as formas da conta (`card`, `pix`; D4). No SDK 23 (API `2026-09-30`) a sessão não aceita mais lista fixa: as formas vêm das ativadas no painel da Stripe e esta lista filtra. Pix ainda não liberado simplesmente não aparece;
+  - `payment_method_options.pix.expires_after_seconds = 600`: a Stripe conta o prazo do Pix a partir de quando o cliente escolhe Pix, não da criação da sessão, então não dá para casar com o fim da sessão. 10 min para pagar o QR; um Pix escolhido no fim da sessão pode passar da folga de 5 min e cai na nova reserva ou na devolução (D10);
   - `expires_at = expiresAt` (segundos), `locale: "pt-BR"`;
   - `client_reference_id = paymentId`, `metadata` e `payment_intent_data.metadata` com `payment_id` e `order_code`;
   - `success_url = /pedido/{code}?t={token}&pagamento=ok`, `cancel_url = ...&pagamento=cancelado`.
-  `createCheckout(alias, params)` chama `sessions.create` com `idempotencyKey = paymentId`. `expireSessions(alias, ids)` encerra as antigas (falha ignorada e logada: a sessão expira sozinha).
+  `checkout.ts` (`server-only`): `createCheckout(alias, params)` chama `sessions.create` com `idempotencyKey = paymentId`. `expireSessions(alias, ids)` encerra as antigas (falha ignorada e logada: a sessão expira sozinha).
 - `refund.ts`: `refundPayment(alias, { paymentId, paymentIntentId })` → `refunds.create({ payment_intent, metadata: { payment_id } }, { idempotencyKey: "refund-" + paymentId })` e grava o resultado com `mark_refund` (`succeeded` → `devolvido`; `pending` → `devolvendo`; erro → `failed` → `falha_devolucao`). Em **Tentar devolver de novo** a chave ganha um sufixo (a Stripe repete a resposta de erro para a mesma chave por 24 h); devolver além do valor pago é recusado pela própria Stripe.
 - `webhook.ts`: `handleStripeEvent(alias, event, deps)` com `deps = { rpc, refund }` injetáveis (teste unitário sem rede):
 
@@ -248,7 +249,7 @@ O aviso curto do checkout ganha "Se você pagar pelo site, o pagamento é proces
 
 **Unitários (vitest)**
 - `accounts.ts`: apelidos válidos/ inválidos, nomes das variáveis, conta com só uma das chaves = `sem_chaves`.
-- `checkoutParams`: valor = subtotal do banco, uma linha, `card` + `pix`, Pix e sessão com o mesmo `expires_at`, URLs com código e token, metadata com `payment_id`.
+- `checkoutParams`: valor = subtotal do banco, uma linha, formas da conta, Pix de 10 min só quando há Pix, `expires_at` da sessão em segundos, URLs com código e token, metadata com `payment_id`.
 - `handleStripeEvent` com `deps` falsos: cada evento da tabela; `refund` chama a devolução; `unpaid` não chama nada; evento desconhecido é ignorado. Assinatura com `stripe.webhooks.generateTestHeaderString` no teste da rota (válida, inválida, apelido desconhecido).
 - `labels.ts`, `{pagamento}` no modelo, `order-timeline` com `novo → expirado → novo`.
 
@@ -267,7 +268,7 @@ O aviso curto do checkout ganha "Se você pagar pelo site, o pagamento é proces
 
 ## Riscos
 
-- **Pix pode depender de liberação da Stripe.** Se a conta não tiver Pix, `payment_method_types` com `pix` faz a criação da sessão falhar. Mitigação: o erro cai em "Não conseguimos abrir o pagamento" e o pedido segue pelo WhatsApp; se demorar, uma variável `STRIPE_<APELIDO>_METHODS` (opcional, padrão `card,pix`) permite ligar só cartão.
+- **Pix pode depender de liberação da Stripe.** Com `allowed_payment_method_types`, um Pix não liberado só não aparece na página da Stripe (a sessão abre com cartão). Pix e cartão precisam estar ativados em Configurações → Formas de pagamento de cada conta Stripe. `STRIPE_<APELIDO>_METHODS` (opcional, padrão `card,pix`) ainda permite tirar uma forma sem mexer no painel da Stripe.
 - **Aviso atrasado depois da expiração.** Coberto pela folga de 5 min e, além dela, pela nova reserva ou devolução automática.
 - **`reactivate_order` muda por dentro.** O helper copia a lógica atual; os testes de operação e de peças rodam de novo.
 - **Devolução não volta a tarifa.** Cancelar pedido pago custa a tarifa da Stripe; o diálogo de cancelar deixa claro que haverá devolução.

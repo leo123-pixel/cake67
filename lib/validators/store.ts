@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { normalizeWhatsapp } from "@/lib/phone";
-import { isValidAlias } from "@/lib/payments/accounts";
+import { isValidAlias } from "@/lib/payments/alias";
 import { checkbox, optionalText, requiredText } from "./common";
 
 export const WEEK_DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;

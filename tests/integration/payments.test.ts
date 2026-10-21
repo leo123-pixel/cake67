@@ -411,20 +411,28 @@ describe.skipIf(!configured)("online payment", () => {
     // Same wait as the stage 05 test: streaming starts shortly after SUBSCRIBED.
     await new Promise((r) => setTimeout(r, 2000));
 
+    const waitFor = async (check: () => boolean, ms: number) => {
+      const deadline = Date.now() + ms;
+      while (!check() && Date.now() < deadline) await new Promise((r) => setTimeout(r, 250));
+      return check();
+    };
+    const mine = () => heard.filter((e) => e.id === o.id);
+
     const o = await placeOrder();
+    // The INSERT proves the stream is live before paying (a missed payment
+    // update must not be confused with a subscription that was not ready).
+    const streaming = await waitFor(() => mine().some((e) => e.type === "INSERT"), 10000);
     const session_ = `cs_${run}_live`;
     await begin(o, session_);
     await settle(session_, o.subtotal);
-
-    const deadline = Date.now() + 10000;
-    const paidHeard = () => heard.some((e) => e.id === o.id && e.payment_status === "pago");
-    while (!paidHeard() && Date.now() < deadline) await new Promise((r) => setTimeout(r, 250));
+    await waitFor(() => mine().some((e) => e.payment_status === "pago"), 15000);
     await attendant1.removeChannel(channel);
 
-    const mine = heard.filter((e) => e.id === o.id);
-    expect(mine.find((e) => e.payment_status === "pago")?.type).toBe("UPDATE");
-    expect(mine.filter((e) => e.type === "INSERT")).toHaveLength(1);
-  }, 30000);
+    const events = JSON.stringify(mine());
+    expect(streaming, `no INSERT heard: ${events}`).toBe(true);
+    expect(mine().find((e) => e.payment_status === "pago")?.type, `events heard: ${events}`).toBe("UPDATE");
+    expect(mine().filter((e) => e.type === "INSERT")).toHaveLength(1);
+  }, 45000);
 
   it("movements still sum to the quantity for every stock row", async () => {
     expect(await stockMismatches(service!)).toEqual([]);

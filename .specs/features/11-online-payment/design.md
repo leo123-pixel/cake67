@@ -187,7 +187,8 @@ Toda saída grava `payment_intent_id` e `method` na tentativa (a devolução pre
   - `success_url = /pedido/{code}?t={token}&pagamento=ok`, `cancel_url = ...&pagamento=cancelado`.
   `checkout.ts` (`server-only`): `createCheckout(alias, params)` chama `sessions.create` com `idempotencyKey = paymentId`. `expireSessions(alias, ids)` encerra as antigas (falha ignorada e logada: a sessão expira sozinha).
 - `refund.ts`: `refundPayment(alias, { paymentId, paymentIntentId })` → `refunds.create({ payment_intent, metadata: { payment_id } }, { idempotencyKey: "refund-" + paymentId })` e grava o resultado com `mark_refund` (`succeeded` → `devolvido`; `pending` → `devolvendo`; erro → `failed` → `falha_devolucao`). Em **Tentar devolver de novo** a chave ganha um sufixo (a Stripe repete a resposta de erro para a mesma chave por 24 h); devolver além do valor pago é recusado pela própria Stripe.
-- `webhook.ts`: `handleStripeEvent(alias, event, deps)` com `deps = { rpc, refund }` injetáveis (teste unitário sem rede):
+- `db.ts` (`server-only`): as funções de pagamento do banco chamadas com `createAdminClient()`; erro vira exceção (o webhook responde 500 e a Stripe reenvia).
+- `webhook.ts` (pura): `handleStripeEvent(alias, event, deps)` com `deps` injetáveis (banco, forma de pagamento, total devolvido da cobrança, devolução), testado sem rede. `refund.ts` monta os `deps` reais (`webhookDeps(alias)`):
 
 | Evento | Faz |
 |---|---|
@@ -196,7 +197,7 @@ Toda saída grava `payment_intent_id` e `method` na tentativa (a devolução pre
 | `checkout.session.async_payment_succeeded` | igual ao pago |
 | `checkout.session.async_payment_failed` | `close_payment_attempt(..., 'falhou')` |
 | `checkout.session.expired` | `close_payment_attempt(..., 'expirado')` |
-| `refund.created`, `refund.updated` | `mark_refund` pelo `metadata.payment_id` ou, sem ele (devolução feita no painel da Stripe), pelo `payment_intent`; em `succeeded`, o total vem de `amount_refunded` da cobrança (`charges.retrieve(refund.charge)`) |
+| `refund.created`, `refund.updated`, `refund.failed` | `mark_refund` pelo `metadata.payment_id` ou, sem ele (devolução feita no painel da Stripe), pelo `payment_intent`; em `succeeded`, o total vem de `amount_refunded` da cobrança (`charges.retrieve(refund.charge)`) |
 
   `method` vem de `payment_method_types` do PaymentIntent (`pix`/`card`), lido com `sessions.retrieve(id, { expand: ["payment_intent"] })` só quando o evento é de pagamento.
 - `labels.ts` (pura): rótulos PT-BR do resumo e das tentativas ("Pago", "Pagando", "Devolvendo", "Devolvido", "Reembolso pendente", "Conferir"; "Pix", "Cartão").

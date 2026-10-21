@@ -119,7 +119,8 @@ Esta etapa muda a decisão "Pagamento combinado no WhatsApp" do SPEC §1 e o "Se
 
 - Uma conta Stripe por CNPJ, com a conta bancária da própria loja; o mesmo login administra as duas. Pix ativado em cada uma (a página de preços da Stripe já indicou "somente por convite"; confirmar no painel da conta).
 - Webhook cadastrado em cada conta (D8) com os eventos de sessão concluída, pagamento assíncrono aprovado/recusado, sessão expirada e reembolso.
-- Antes de ligar em produção: hospedagem fora da Vercel Hobby (uso comercial, AD-017) e política de privacidade citando a Stripe como processadora do pagamento.
+- Antes de ligar em produção: política de privacidade citando a Stripe como processadora do pagamento.
+- Hospedagem continua como está, na Vercel (Hobby) + Supabase Free, por decisão do Leonardo (2026-10-21). Risco aceito: os termos do Hobby são para uso não comercial e receber pagamento deixa o uso claramente comercial; se a Vercel restringir o projeto, a saída é passar o mesmo projeto para o plano pago da Vercel, sem mudar código.
 - Desenvolvimento e preview usam as chaves de teste; sem variáveis, o recurso fica desligado, então o merge não muda nada no ar.
 
 ## Custos de referência (stripe.com/br/pricing, 2026-10-21)

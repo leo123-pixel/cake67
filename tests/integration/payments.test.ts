@@ -124,8 +124,8 @@ async function quantity() {
   return data!.quantity;
 }
 
-async function setStock(qty: number) {
-  const { error } = await admin.rpc("set_stock", { p_product_id: ids.product, p_store_id: ids.loja1, p_quantity: qty });
+async function setStock(qty: number, storeId = ids.loja1) {
+  const { error } = await admin.rpc("set_stock", { p_product_id: ids.product, p_store_id: storeId, p_quantity: qty });
   if (error) throw error;
 }
 
@@ -167,6 +167,7 @@ beforeAll(async () => {
   attendant1 = await signedInAs("atendente", ids.loja1);
   attendant2 = await signedInAs("atendente", ids.loja2);
   await setStock(20);
+  await setStock(5, ids.loja2);
 });
 
 afterAll(async () => {

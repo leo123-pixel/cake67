@@ -4,6 +4,7 @@ import { productImageUrl } from "@/lib/images";
 import type { OrderEvent } from "@/lib/order-timeline";
 import { toMenuPieces, type MenuPiece } from "@/lib/catalog";
 import { accountState } from "@/lib/payments/accounts";
+import type { PublicPayment } from "@/lib/payments/public";
 import { createPublicClient } from "@/lib/supabase/public";
 import { parseStoredHours, type StoreHours } from "@/lib/validators/store";
 import type { OrderSummary } from "@/lib/whatsapp";
@@ -218,6 +219,7 @@ export type PublicOrder = OrderSummary & {
   expires_at: string | null;
   has_made_to_order: boolean;
   events: OrderEvent[];
+  payment?: PublicPayment; // stage 11
 };
 
 export async function getOrderPublic(code: string, token: string): Promise<PublicOrder | null> {

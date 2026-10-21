@@ -11,6 +11,26 @@ function order(overrides: Partial<TimelineOrder> & { events: OrderEvent[] }): Ti
 const summary = (timeline: ReturnType<typeof buildTimeline>) => timeline.steps.map((s) => [s.label, s.state, s.at]);
 
 describe("buildTimeline", () => {
+  // Stage 11: a late payment reserves an expired order again (expirado -> novo).
+  it("an order back to new after a late payment shows the current path, without the expiry", () => {
+    const timeline = buildTimeline(
+      order({
+        events: [
+          { status: "novo", at: CREATED },
+          { status: "expirado", at: at(20) },
+          { status: "novo", at: at(21) },
+        ],
+      }),
+    );
+    expect(summary(timeline)).toEqual([
+      ["Pedido recebido", "current", CREATED],
+      ["Confirmado", "upcoming", null],
+      ["Pronto para retirar", "upcoming", null],
+      ["Retirado", "upcoming", null],
+    ]);
+    expect(timeline.end).toBeNull();
+  });
+
   it("a new vitrine order has 4 steps, only the first reached", () => {
     const timeline = buildTimeline(order({ events: [{ status: "novo", at: CREATED }] }));
     expect(summary(timeline)).toEqual([

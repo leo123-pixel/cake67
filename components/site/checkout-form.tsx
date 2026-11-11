@@ -76,6 +76,7 @@ export function CheckoutForm({ stores }: { stores: CheckoutStore[] }) {
   const days = quote?.has_made_to_order && quote.earliest_schedule ? buildSlots(store.hours, quote.earliest_schedule) : [];
   const selectedDay = days.find((d) => d.date === day) ?? days[0];
   const hours = quote ? quote.reservation_minutes / 60 : 2;
+  const reservation = Number.isInteger(hours) ? `${hours} h` : `${quote?.reservation_minutes} min`;
   const isDelivery = fulfillment === "entrega";
   const feeCents = isDelivery && deliveryFee.status === "ok" ? deliveryFee.feeCents : 0;
   const feeLoading = isDelivery && deliveryFee.status === "loading";
@@ -286,8 +287,9 @@ export function CheckoutForm({ stores }: { stores: CheckoutStore[] }) {
           </div>
         ) : (
           <p className="rounded-2xl bg-peach-light p-4 text-sm">
-            Separamos seus itens da vitrine. Retire em até {Number.isInteger(hours) ? `${hours} h` : `${quote?.reservation_minutes} min`} depois de
-            finalizar no WhatsApp.
+            {isDelivery
+              ? `Separamos seus itens da vitrine por até ${reservation}. Finalize no WhatsApp para a loja confirmar a entrega.`
+              : `Separamos seus itens da vitrine. Retire em até ${reservation} depois de finalizar no WhatsApp.`}
           </p>
         )}
       </fieldset>

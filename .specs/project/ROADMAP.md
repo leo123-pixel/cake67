@@ -83,6 +83,10 @@ Cada feature = uma etapa do SPEC (seção 11). Uma por vez, com commit e deploy 
 - Endereço em campos; taxa da Juma (plataforma Machine, Entregas v2) calculada no servidor e somada ao total (AD-020)
 - Sem cálculo, taxa a combinar; painel com endereço e categoria da Juma por loja; taxa e total no pedido, comanda e CSV
 
+**12 · Chamar o entregador da Juma pelo painel** - SPECIFIED (rascunho em `.specs/features/12-courier-dispatch/spec.md`, 2026-11-11; aguarda aprovação e respostas da Juma; depende do checkout com pagamento)
+
+- Botão "Chamar entregador" no pedido pronto e pago; situação por aviso assinado da Juma; link de rastreio para o cliente; cancelar o pedido cancela a entrega
+
 ---
 
 ## M2 · Lançamento
@@ -102,4 +106,3 @@ Cada feature = uma etapa do SPEC (seção 11). Uma por vez, com commit e deploy 
 
 - Pagamento online (Pix)
 - Capacidade de produção por dia
-- Chamar o entregador da Juma pelo painel, situação e link de rastreio (etapa 12 da Juma)

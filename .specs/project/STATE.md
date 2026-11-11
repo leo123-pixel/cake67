@@ -299,6 +299,13 @@ Leonardo desligou "Allow new users to sign up" no painel.
 **Problem:** `npx prettier --write` nos arquivos da etapa 08 reformatou arquivos inteiros (diff de ~1.950 linhas); o código segue o estilo próprio, com linhas longas.
 **Solution:** Não rodar formatador; seguir o estilo do arquivo. O `lint` (ESLint) é o único verificador de estilo.
 
+### L-024: A Data API devolve no máximo 1000 linhas por chamada
+
+**Context:** `test:integration` de 2026-11-11 falhou em três checagens "soma dos movimentos = estoque" com o banco certo (conferido em SQL: 0 divergências em 40 linhas de estoque, 1419 movimentos).
+**Problem:** `.limit(100000)` não passa do `max_rows` (1000); a soma saía de uma lista cortada.
+**Solution:** `tests/integration/stock-invariant.ts` lê em páginas (trazido da branch da Stripe). Na mesma rodada, `report.test.ts` passou a esperar `online_cents`, porque o `report_summary` do projeto é o da Stripe (B-007).
+**Prevents:** acusar erro no estoque que não existe.
+
 ### L-023: Postgres 16 local na sessão na nuvem
 
 **Context:** sessão na nuvem sem Docker nem acesso ao projeto Supabase.

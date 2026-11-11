@@ -123,6 +123,7 @@ describe.skipIf(!configured)("report", () => {
     expect(report.totals).toEqual({
       orders: 2,
       revenue_cents: revenue,
+      online_cents: 0,
       avg_ticket_cents: Math.round(revenue / 2),
       cancelled: { count: 1, cents: cancelled.subtotal },
       expired: { count: 1, cents: expired.subtotal },

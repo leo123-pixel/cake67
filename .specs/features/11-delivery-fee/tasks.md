@@ -1,7 +1,7 @@
 # 11 · Taxa de entrega calculada no site (Juma) — Tasks
 
 **Design**: `.specs/features/11-delivery-fee/design.md`
-**Status**: In Progress (2026-11-11)
+**Status**: Complete (2026-11-11, PR #28)
 
 | Tarefa | Status | Notas |
 |---|---|---|
@@ -13,7 +13,7 @@
 | T6 Mensagem e página do pedido | ✅ | linha só com variável vazia sai da mensagem |
 | T7 Painel: lojas, pedido, lista, comanda, CSV | ✅ | lista mostra o total; selo "Entrega: taxa a combinar" na loja sem Juma |
 | T8 Testes de integração `tests/integration/delivery.test.ts` | ✅ escrito / ⏳ rodar | roda contra o projeto real (Leonardo), depois da migration; `rls.test.ts` ganhou `delivery_quotes` |
-| T9 Verificação e entrega | ⏳ | lint, typecheck, test (265) e build passando na sessão; nada da Juma no bundle além dos nomes das variáveis no texto de ajuda. Falta: migration no projeto, `test:integration`, `juma:check`, preview e conferência visual |
+| T9 Verificação e entrega | ✅ | lint, typecheck, test (265) e build; nada da Juma no bundle além dos nomes das variáveis no texto de ajuda; `juma:check` e `test:integration` passando no computador do Leonardo; taxa conferida no checkout do preview e de produção (390 px). Merge do PR #28 e deploy em 2026-11-11; 000200 aplicada depois do deploy. Pedido real com entrega de ponta a ponta ainda não conferido |
 
 ## Antes de ligar em produção (com o Leonardo)
 

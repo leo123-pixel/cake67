@@ -78,7 +78,7 @@ Cada feature = uma etapa do SPEC (seção 11). Uma por vez, com commit e deploy 
 - Tipo `vitrine_kg`: cada bolo físico é uma peça com o peso da balança; o cliente escolhe o peso no card (AD-018)
 - Painel: Adicionar bolo, Vendida no balcão, Descartar, Corrigir peso; sobra continua no dia seguinte
 
-**11 · Taxa de entrega calculada no site (Juma)** - IN PROGRESS (código e migrations prontos em 2026-11-11; falta aplicar no projeto e testar com a chave)
+**11 · Taxa de entrega calculada no site (Juma)** - COMPLETE (no ar em 2026-11-11; PR #28; taxa conferida no checkout do preview e de produção)
 
 - Endereço em campos; taxa da Juma (plataforma Machine, Entregas v2) calculada no servidor e somada ao total (AD-020)
 - Sem cálculo, taxa a combinar; painel com endereço e categoria da Juma por loja; taxa e total no pedido, comanda e CSV

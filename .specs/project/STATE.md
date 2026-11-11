@@ -150,7 +150,7 @@
 
 ### B-007: Migrations da Stripe aplicadas no projeto e ausentes da `main`
 
-**Discovered:** 2026-11-11
+**Discovered:** 2026-11-11 (confirmado no projeto: as duas versões aparecem em `list_migrations`; `order_payments`, `orders.payment_status`, `stores.payment_account`)
 **Impact:** `20261021000100_online_payment_enums.sql` e `20261021000200_online_payment.sql` (branch `claude/fervent-franklin-ux8f2g`) estão aplicadas no projeto, mas não existem na `main`. O `supabase db push` da `main` deve recusar por "remote migration versions not found in local migrations directory", e um banco novo criado da `main` não tem as tabelas e funções de pagamento.
 **Workaround:** a etapa 11 não recria nenhuma função alterada pela Stripe, então funciona com ou sem elas. Aplicar a `20261111000100` com `psql "$SUPABASE_DB_URL" -f` se o `db push` recusar, e registrar a versão em `supabase_migrations.schema_migrations`.
 **Resolution:** decidir com o Leonardo, junto com o checkout novo: trazer os arquivos da Stripe para a `main` (o banco já é assim) ou desfazer no projeto o que a Stripe criou.

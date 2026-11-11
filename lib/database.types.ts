@@ -29,6 +29,12 @@ export type Database = {
           hours: Json;
           active: boolean;
           sort: number;
+          // stage 11: origin of the delivery and the Juma category
+          address_street: string | null;
+          address_number: string | null;
+          address_district: string | null;
+          delivery_category_id: string | null;
+          delivery_category_name: string | null;
         } & Timestamps;
         Insert: {
           id?: string;
@@ -42,9 +48,56 @@ export type Database = {
           hours?: Json;
           active?: boolean;
           sort?: number;
+          address_street?: string | null;
+          address_number?: string | null;
+          address_district?: string | null;
+          delivery_category_id?: string | null;
+          delivery_category_name?: string | null;
         } & Partial<Timestamps>;
         Update: Partial<Database["public"]["Tables"]["stores"]["Insert"]>;
         Relationships: [];
+      };
+      delivery_quotes: {
+        Row: {
+          id: string;
+          store_id: string;
+          address_key: string;
+          street: string;
+          number: string;
+          district: string;
+          status: Database["public"]["Enums"]["delivery_quote_status"];
+          fee_cents: number | null;
+          km: number | null;
+          minutes: number | null;
+          category_id: string | null;
+          error: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          store_id: string;
+          address_key: string;
+          street: string;
+          number: string;
+          district: string;
+          status: Database["public"]["Enums"]["delivery_quote_status"];
+          fee_cents?: number | null;
+          km?: number | null;
+          minutes?: number | null;
+          category_id?: string | null;
+          error?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["delivery_quotes"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "delivery_quotes_store_id_fkey";
+            columns: ["store_id"];
+            isOneToOne: false;
+            referencedRelation: "stores";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       categories: {
         Row: {
@@ -227,6 +280,16 @@ export type Database = {
           cancel_reason: string | null;
           handled_by: string | null;
           customer_tax_id: string | null;
+          // stage 11: address in fields, fee (null = to be agreed) and total
+          delivery_street: string | null;
+          delivery_number: string | null;
+          delivery_complement: string | null;
+          delivery_district: string | null;
+          delivery_reference: string | null;
+          delivery_fee_cents: number | null;
+          delivery_quote_id: string | null;
+          // Generated: subtotal_cents + coalesce(delivery_fee_cents, 0).
+          total_cents: number;
         } & Timestamps;
         Insert: {
           id?: string;
@@ -248,6 +311,14 @@ export type Database = {
           cancel_reason?: string | null;
           handled_by?: string | null;
           customer_tax_id?: string | null;
+          delivery_street?: string | null;
+          delivery_number?: string | null;
+          delivery_complement?: string | null;
+          delivery_district?: string | null;
+          delivery_reference?: string | null;
+          delivery_fee_cents?: number | null;
+          delivery_quote_id?: string | null;
+          total_cents?: never;
         } & Partial<Timestamps>;
         Update: Partial<Database["public"]["Tables"]["orders"]["Insert"]>;
         Relationships: [
@@ -553,6 +624,7 @@ export type Database = {
       quote_order: { Args: { p_store_id: string; p_items: Json }; Returns: Json };
       create_order: { Args: { p_store_id: string; p_customer: Json; p_items: Json }; Returns: Json };
       get_order_public: { Args: { p_code: string; p_token: string }; Returns: Json };
+      get_order_delivery: { Args: { p_code: string; p_token: string }; Returns: Json };
       get_public_settings: { Args: never; Returns: Json };
       expire_orders: { Args: never; Returns: number };
       advance_order: {
@@ -593,6 +665,7 @@ export type Database = {
       fulfillment: "retirada" | "entrega";
       staff_role: "admin" | "atendente";
       highlight_slot: "bolo_do_mes" | "combo_semana" | "banner";
+      delivery_quote_status: "ok" | "falhou";
     };
     CompositeTypes: {
       [_ in never]: never;

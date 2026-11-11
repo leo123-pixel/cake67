@@ -54,6 +54,8 @@ export const ORDER_CSV_HEADER = [
   "Marcado para",
   "Endereço",
   "Subtotal",
+  "Taxa de entrega",
+  "Total",
   "Motivo do cancelamento",
   "Confirmado por",
 ];
@@ -65,7 +67,7 @@ export async function exportOrders(supabase: Client, period: Period, storeId?: s
     let query = supabase
       .from("orders")
       .select(
-        "code, created_at, status, customer_name, customer_whatsapp, customer_tax_id, fulfillment, scheduled_for, delivery_address, subtotal_cents, cancel_reason, store:stores(name), order_events(to_status, actor_name)",
+        "code, created_at, status, customer_name, customer_whatsapp, customer_tax_id, fulfillment, scheduled_for, delivery_address, subtotal_cents, delivery_fee_cents, total_cents, cancel_reason, store:stores(name), order_events(to_status, actor_name)",
       )
       .gte("created_at", from)
       .lt("created_at", to)
@@ -89,6 +91,9 @@ export async function exportOrders(supabase: Client, period: Period, storeId?: s
     csvDateTime(order.scheduled_for),
     order.delivery_address,
     csvCents(order.subtotal_cents),
+    // Empty when the fee was agreed on WhatsApp (or on pickup).
+    order.delivery_fee_cents === null ? "" : csvCents(order.delivery_fee_cents),
+    csvCents(order.total_cents),
     order.cancel_reason,
     order.order_events.at(-1)?.actor_name,
   ]);

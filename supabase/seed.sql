@@ -187,7 +187,7 @@ insert into public.settings (id, reservation_minutes, order_whatsapp_template)
 values (
   1,
   120,
-  E'Olá, Cake 67! Pedido *{codigo}*\nLoja: {loja}\n{entrega}\n\n{itens}\n\nSubtotal: {subtotal}\nNome: {nome} · WhatsApp: {whatsapp}\n{observacoes}'
+  E'Olá, Cake 67! Pedido *{codigo}*\nLoja: {loja}\n{entrega}\n\n{itens}\n\nSubtotal: {subtotal}\n{taxa_entrega}\nNome: {nome} · WhatsApp: {whatsapp}\n{observacoes}'
 )
 on conflict (id) do nothing;
 

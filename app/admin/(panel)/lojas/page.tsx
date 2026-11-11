@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { listAdminStores } from "@/lib/admin/catalog";
 import { requireAdmin } from "@/lib/auth";
+import { hasJumaCredentials } from "@/lib/delivery/quote";
+import { deliverySetupProblem } from "@/lib/delivery/setup";
 import { StoresList } from "./stores-list";
 
 export const metadata: Metadata = { title: "Lojas" };
@@ -21,7 +23,10 @@ export default async function StoresPage() {
           Nova loja
         </Link>
       </header>
-      <StoresList stores={stores} />
+      <StoresList
+        stores={stores}
+        jumaReady={Object.fromEntries(stores.map((s) => [s.id, deliverySetupProblem(s, hasJumaCredentials()) === null]))}
+      />
     </section>
   );
 }

@@ -12,7 +12,25 @@ import type { CheckoutStore } from "@/lib/storefront";
 import type { FieldErrors } from "@/lib/validators/common";
 import { resolveStore } from "./cart-view";
 import { useCart } from "./use-cart";
+import { useDeliveryFee, type DeliveryAddressFields } from "./use-delivery-fee";
 import { useQuote } from "./use-quote";
+
+const EMPTY_ADDRESS: DeliveryAddressFields = {
+  delivery_street: "",
+  delivery_number: "",
+  delivery_complement: "",
+  delivery_district: "",
+  delivery_reference: "",
+};
+
+// Stage 11: address in fields; city is always Campo Grande - MS.
+const ADDRESS_FIELDS = [
+  { name: "delivery_street", label: "Rua", autoComplete: "address-line1", maxLength: 120, required: true, wide: true },
+  { name: "delivery_number", label: "Número", autoComplete: "off", maxLength: 20, required: true },
+  { name: "delivery_complement", label: "Complemento", autoComplete: "address-line2", maxLength: 60, required: false },
+  { name: "delivery_district", label: "Bairro", autoComplete: "address-level3", maxLength: 80, required: true, wide: true },
+  { name: "delivery_reference", label: "Ponto de referência", autoComplete: "off", maxLength: 120, required: false, wide: true },
+] as const;
 
 function FieldError({ errors, name }: { errors: FieldErrors; name: string }) {
   const message = errors[name]?.[0];
@@ -39,6 +57,8 @@ export function CheckoutForm({ stores }: { stores: CheckoutStore[] }) {
   const [message, setMessage] = useState<string | null>(null);
   const [needsCart, setNeedsCart] = useState(false);
   const [pending, startTransition] = useTransition();
+  const [address, setAddress] = useState<DeliveryAddressFields>(EMPTY_ADDRESS);
+  const [deliveryFee, overrideFee] = useDeliveryFee(store?.id ?? null, fulfillment === "entrega", address);
 
   if (cart.lines.length === 0) {
     return (
@@ -56,6 +76,11 @@ export function CheckoutForm({ stores }: { stores: CheckoutStore[] }) {
   const days = quote?.has_made_to_order && quote.earliest_schedule ? buildSlots(store.hours, quote.earliest_schedule) : [];
   const selectedDay = days.find((d) => d.date === day) ?? days[0];
   const hours = quote ? quote.reservation_minutes / 60 : 2;
+  const isDelivery = fulfillment === "entrega";
+  const feeCents = isDelivery && deliveryFee.status === "ok" ? deliveryFee.feeCents : 0;
+  const feeLoading = isDelivery && deliveryFee.status === "loading";
+  // What the customer saw; the server only compares it with its own quote.
+  const feeSeen = deliveryFee.status === "ok" ? String(deliveryFee.feeCents) : "a_combinar";
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -72,6 +97,7 @@ export function CheckoutForm({ stores }: { stores: CheckoutStore[] }) {
         }
         setMessage(result.message);
         setErrors(result.fieldErrors ?? {});
+        if (result.deliveryFee) overrideFee(result.deliveryFee);
         setNeedsCart(Boolean(result.soldOut?.length || result.unavailable?.length));
       } catch {
         setMessage("Não foi possível enviar agora. Seu carrinho continua salvo.");
@@ -105,6 +131,29 @@ export function CheckoutForm({ stores }: { stores: CheckoutStore[] }) {
           <span>Subtotal</span>
           <span className="tabular-nums">{quote ? formatBRL(quote.subtotal_cents) : "…"}</span>
         </p>
+        {isDelivery && (
+          <>
+            <p className="flex justify-between text-sm">
+              <span>Entrega</span>
+              <span className="tabular-nums" aria-live="polite">
+                {deliveryFee.status === "ok"
+                  ? formatBRL(deliveryFee.feeCents)
+                  : deliveryFee.status === "loading"
+                    ? "calculando…"
+                    : deliveryFee.status === "idle"
+                      ? "informe o endereço"
+                      : "a combinar no WhatsApp"}
+              </span>
+            </p>
+            <p className="flex justify-between border-t border-cocoa/10 pt-2 text-lg font-medium">
+              <span>Total</span>
+              <span className="tabular-nums">
+                {quote ? formatBRL(quote.subtotal_cents + feeCents) : "…"}
+                {deliveryFee.status === "a_combinar" && <span className="text-sm font-normal"> + entrega</span>}
+              </span>
+            </p>
+          </>
+        )}
         <p className="text-sm text-cocoa-soft">
           Loja: {store.name} · {store.address}. Pagamento combinado no WhatsApp.
         </p>
@@ -163,11 +212,36 @@ export function CheckoutForm({ stores }: { stores: CheckoutStore[] }) {
             </label>
           ))}
         </div>
-        {fulfillment === "entrega" && (
-          <label className="block space-y-1.5 text-sm font-medium">
-            Endereço <span className="font-normal text-cocoa-soft">(opcional; taxa e entrega combinadas no WhatsApp)</span>
-            <textarea name="delivery_address" rows={2} maxLength={200} autoComplete="street-address" className="field-input" />
-          </label>
+        {isDelivery && (
+          <div className="space-y-3">
+            <div className="grid gap-3 sm:grid-cols-2">
+              {ADDRESS_FIELDS.map((field) => (
+                <label key={field.name} className={`block space-y-1.5 text-sm font-medium ${"wide" in field ? "sm:col-span-2" : ""}`}>
+                  {field.label}
+                  {!field.required && <span className="font-normal text-cocoa-soft"> (opcional)</span>}
+                  <input
+                    name={field.name}
+                    value={address[field.name]}
+                    onChange={(e) => setAddress((a) => ({ ...a, [field.name]: e.target.value }))}
+                    autoComplete={field.autoComplete}
+                    maxLength={field.maxLength}
+                    required={field.required}
+                    aria-invalid={Boolean(errors[field.name])}
+                    className="field-input"
+                  />
+                  <FieldError errors={errors} name={field.name} />
+                </label>
+              ))}
+            </div>
+            <p className="text-sm text-cocoa-soft">Campo Grande - MS. Entrega feita pela Juma Entregas.</p>
+            {deliveryFee.status === "a_combinar" && (
+              <p role="status" className="rounded-2xl bg-peach-light p-4 text-sm">
+                Não conseguimos calcular a entrega para esse endereço agora. Você pode enviar o pedido e combinar a taxa no
+                WhatsApp.
+              </p>
+            )}
+            <input type="hidden" name="delivery_fee_seen" value={feeSeen} />
+          </div>
         )}
 
         {quote?.has_made_to_order ? (
@@ -225,8 +299,9 @@ export function CheckoutForm({ stores }: { stores: CheckoutStore[] }) {
 
       <div className="space-y-2 rounded-2xl border border-cocoa/10 bg-white p-4 text-sm">
         <p>
-          Usamos seu nome, WhatsApp e, se informados, endereço e CPF/CNPJ só para atender este pedido e emitir a nota. Para
-          falar sobre seus dados, chame a loja no WhatsApp. <Link href="/privacidade" className="underline">Política de privacidade</Link>.
+          Usamos seu nome, WhatsApp e, se informados, endereço e CPF/CNPJ só para atender este pedido e emitir a nota. Na
+          entrega, o endereço vai para a Juma Entregas, que calcula a taxa e faz a entrega. Para falar sobre seus dados,
+          chame a loja no WhatsApp. <Link href="/privacidade" className="underline">Política de privacidade</Link>.
         </p>
         <label className="flex min-h-11 items-center gap-3 font-medium">
           <input type="checkbox" name="privacy" required className="size-5 accent-olive" />
@@ -243,7 +318,7 @@ export function CheckoutForm({ stores }: { stores: CheckoutStore[] }) {
 
       <button
         type="submit"
-        disabled={pending || loading || !quote || problems}
+        disabled={pending || loading || !quote || problems || feeLoading}
         className="btn w-full bg-olive text-linen hover:bg-olive-dark sm:w-auto"
       >
         {pending ? "Enviando…" : "Fazer pedido"}

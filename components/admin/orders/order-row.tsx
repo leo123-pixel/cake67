@@ -33,7 +33,7 @@ export function OrderRow({ order, showStore }: { order: OrderListItem; showStore
           </p>
         </div>
         <div className="shrink-0 text-right text-sm">
-          <p className="tabular-nums">{formatBRL(order.subtotal_cents)}</p>
+          <p className="tabular-nums">{formatBRL(order.total_cents)}</p>
           <p className="text-cocoa-soft">{formatSince(order.created_at)}</p>
         </div>
       </Link>

@@ -7,7 +7,7 @@ import type { AdminStore } from "@/lib/admin/catalog";
 import { formatWhatsapp } from "@/lib/phone";
 import { reorderItems } from "../reorder-action";
 
-export function StoresList({ stores }: { stores: AdminStore[] }) {
+export function StoresList({ stores, jumaReady }: { stores: AdminStore[]; jumaReady: Record<string, boolean> }) {
   return (
     <SortableList
       items={stores}
@@ -18,6 +18,7 @@ export function StoresList({ stores }: { stores: AdminStore[] }) {
           <span className="flex items-center gap-2">
             <span className="font-medium text-olive">{store.name}</span>
             {!store.active && <StatusBadge tone="gray">Inativa</StatusBadge>}
+            {!jumaReady[store.id] && <StatusBadge tone="amber">Entrega: taxa a combinar</StatusBadge>}
           </span>
           <span className="block text-sm text-cocoa-soft">{store.address}</span>
           <span className="block text-sm text-cocoa-soft">

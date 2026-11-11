@@ -35,6 +35,27 @@ const whatsappField = z.string().transform((text, ctx) => {
   return digits;
 });
 
+const limited = (max: number) =>
+  z
+    .string()
+    .optional()
+    .transform((value) => (value?.trim() ? value.trim().replace(/\s+/g, " ") : null))
+    .refine((value) => value === null || value.length <= max, `Use até ${max} caracteres`);
+
+// "<id>|<name>" from the Juma category select; empty = none (spec 11, D7).
+const deliveryCategory = z
+  .string()
+  .optional()
+  .transform((value, ctx) => {
+    if (!value) return { delivery_category_id: null, delivery_category_name: null };
+    const match = /^(\d{1,12})\|(.{1,80})$/.exec(value);
+    if (!match) {
+      ctx.addIssue({ code: "custom", message: "Categoria inválida" });
+      return z.NEVER;
+    }
+    return { delivery_category_id: match[1], delivery_category_name: match[2] };
+  });
+
 export const storeSchema = z.object({
   name: requiredText("Informe o nome"),
   address: requiredText("Informe o endereço"),
@@ -43,6 +64,11 @@ export const storeSchema = z.object({
   whatsapp_made_to_order: whatsappField,
   whatsapp_support: whatsappField,
   active: checkbox,
+  // Stage 11: origin of the delivery (Juma).
+  address_street: limited(120),
+  address_number: limited(20),
+  address_district: limited(80),
+  delivery_category: deliveryCategory,
   hours: z.object(
     Object.fromEntries(WEEK_DAYS.map((day) => [day, openDay.nullable()])) as Record<
       WeekDay,

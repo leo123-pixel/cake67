@@ -13,7 +13,7 @@ Documento de referência para construir o sistema no repositório `leo123-pixel/
 | Baixa de estoque | Reserva ao criar o pedido. Cancelado ou expirado devolve ao estoque |
 | Encomendas | Sem limite de capacidade por dia no MVP. Só antecedência mínima por produto |
 | Pedido | Gravado no sistema com número e status. Em seguida o cliente abre o WhatsApp da loja com o resumo pronto (link wa.me). Pagamento combinado no WhatsApp |
-| Entrega | Retirada na loja ou "quero entrega". Taxa e endereço combinados no WhatsApp |
+| Entrega | Retirada na loja ou "quero entrega". Endereço em campos; a taxa é calculada no site pela **Juma Entregas** e entra no total. Se a Juma não calcular, a taxa é combinada no WhatsApp (etapa 11, AD-020; antes: taxa e endereço combinados no WhatsApp) |
 | Cliente | Sem conta. Nome, WhatsApp e observações ficam no pedido |
 | Painel | Perfis admin (dona) e atendente (vinculado a uma loja) |
 | Painel no MVP | Produtos com fotos, estoque, pedidos, categorias, destaques da home, lojas e horários, relatório simples, usuários |
@@ -74,7 +74,8 @@ Valores em centavos (`integer`). Datas em `timestamptz`, fuso de exibição `Ame
 **orders**:
 - `id`, `code` (ex. `C67-000123`, sequence), `store_id`, `status`, `created_at`, `expires_at`
 - `customer_name`, `customer_whatsapp`, `notes`
-- `fulfillment`: `retirada` | `entrega`; `delivery_address` (texto livre, opcional)
+- `fulfillment`: `retirada` | `entrega`; `delivery_address` (linha do endereço; texto livre nos pedidos antes da etapa 11)
+- Etapa 11: `delivery_street`, `delivery_number`, `delivery_complement`, `delivery_district`, `delivery_reference`; `delivery_fee_cents` (null = a combinar), `delivery_quote_id`, `total_cents` (gerada: subtotal + taxa)
 - `scheduled_for` (data/hora de retirada ou entrega, obrigatório se houver encomenda)
 - `subtotal_cents`, `has_made_to_order` (bool)
 - `confirmed_at`, `cancelled_at`, `cancel_reason`, `handled_by`
@@ -119,7 +120,7 @@ Nome: Carla · WhatsApp: (67) 9xxxx-xxxx
 Obs.: frase "Parabéns, Ana"
 ```
 
-Para entrega, a linha vira "Quero entrega (taxa a combinar)" com o endereço, se informado.
+Para entrega, a linha vira "Entrega em …" com o endereço e, depois do subtotal, `{taxa_entrega}` traz "Entrega: R$ 12,40" e "Total: R$ 284,20". Sem cálculo da Juma: "Quero entrega (taxa a combinar)" e "Entrega: taxa a combinar" (etapa 11).
 
 ## 6. Segurança (RLS e acesso)
 

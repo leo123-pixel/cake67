@@ -74,7 +74,14 @@ export default async function OrderDetailPage({ params }: Props) {
           <h2 className="text-xl text-olive">{order.fulfillment === "entrega" ? "Entrega" : "Retirada"}</h2>
           <p className="font-medium">{order.scheduled_for ? formatPickup(order.scheduled_for) : "Vitrine: retirar no dia"}</p>
           {order.delivery_address && <p className="text-sm">{order.delivery_address}</p>}
-          {order.fulfillment === "entrega" && <p className="text-sm text-cocoa-soft">Taxa combinada no WhatsApp.</p>}
+          {order.fulfillment === "entrega" &&
+            (order.delivery_fee_cents === null ? (
+              <p>
+                <StatusBadge tone="amber">Taxa a combinar no WhatsApp</StatusBadge>
+              </p>
+            ) : (
+              <p className="text-sm">Taxa de entrega (Juma): {formatBRL(order.delivery_fee_cents)}</p>
+            ))}
           {order.notes && <p className="text-sm">Obs.: {order.notes}</p>}
           <Link href={`/admin/pedidos/${order.id}/comanda`} target="_blank" className="btn btn-secondary">
             Imprimir comanda
@@ -99,6 +106,21 @@ export default async function OrderDetailPage({ params }: Props) {
           <span>Subtotal</span>
           <span className="tabular-nums">{formatBRL(order.subtotal_cents)}</span>
         </p>
+        {order.fulfillment === "entrega" && (
+          <>
+            <p className="flex justify-between text-sm">
+              <span>Entrega</span>
+              <span className="tabular-nums">{order.delivery_fee_cents === null ? "a combinar" : formatBRL(order.delivery_fee_cents)}</span>
+            </p>
+            <p className="flex justify-between border-t border-cocoa/10 pt-2 text-lg font-medium">
+              <span>Total</span>
+              <span className="tabular-nums">
+                {formatBRL(order.total_cents)}
+                {order.delivery_fee_cents === null && <span className="text-sm font-normal"> + entrega</span>}
+              </span>
+            </p>
+          </>
+        )}
       </section>
 
       <section className="space-y-2 rounded-2xl border border-cocoa/10 bg-white p-4">

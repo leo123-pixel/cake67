@@ -1,11 +1,18 @@
 # State
 
-**Last Updated:** 2026-09-29
-**Current Work:** Sistema no ar em https://www.cake67.com.br (produção = `main`; `cake67.vercel.app` continua respondendo). Etapas 08 (WhatsApp por setor) e 09 (linha do tempo do pedido) no ar desde 2026-09-28; etapa 10 (bolo inteiro por peso na vitrine, AD-018) no ar desde 2026-09-29. Próximo: M2 · Lançamento (pendências da cliente); hospedagem segue nos planos gratuitos por decisão do Leonardo (AD-017).
+**Last Updated:** 2026-11-11
+**Current Work:** Etapa 11 (taxa de entrega calculada no site pela Juma, AD-020): spec aprovada, design, tarefas, migrations e código prontos na branch `claude/inspiring-mccarthy-58jpeq` (2026-11-11). Migration `20261111000100` aplicada no projeto e variáveis `MACHINE_*` na Vercel (2026-11-11). `npm run juma:check` passou no computador do Leonardo: login ok, uma categoria (39792 · MOTOBOY INTEGRAÇÕES) e estimativa a partir da loja Jeribá. As três lojas já têm origem e categoria no banco: Estiva (Rua Estiva, 200 · Vila Santo Eugênio), Afonso Pena (Avenida Afonso Pena, 2716 · Centro), Jeribá (Rua Jeribá, 454 · Chácara Cachoeira). Um login da Juma para as três por ora; perguntado à Juma se cada loja precisa de cadastro próprio (cobrança da etapa 12) e se a tarifa muda por loja. Falta: `npm run test:integration`, PR + deploy; depois do deploy, a migration `20261111000200` (modelo da mensagem). O endereço exibido da Jeribá está com "Chacará" (sugerir corrigir para "Chácara" pelo painel). O pagamento online pela Stripe (branch `claude/fervent-franklin-ux8f2g`) ficou de lado: o Leonardo vai trocar de checkout. Sistema no ar em https://www.cake67.com.br (produção = `main`; `cake67.vercel.app` continua respondendo). Etapas 08 (WhatsApp por setor) e 09 (linha do tempo do pedido) no ar desde 2026-09-28; etapa 10 (bolo inteiro por peso na vitrine, AD-018) no ar desde 2026-09-29. Próximo: M2 · Lançamento (pendências da cliente); hospedagem segue nos planos gratuitos por decisão do Leonardo (AD-017).
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-020: Taxa de entrega calculada no site pela Juma (2026-11-11)
+
+**Decision:** Muda a decisão "Entrega" do SPEC §1 (pedido do Leonardo em 2026-10-08, spec aprovada em 2026-11-11). O checkout pede o endereço em campos (rua, número, complemento, bairro, referência; Campo Grande - MS) e mostra a taxa da **Juma Entregas** (plataforma Machine, API v2 Entregas, `POST /entregas/estimativas`), exatamente o valor dela, somada ao total. O servidor pergunta à Juma e grava o resultado em `delivery_quotes` (só service role); `create_order` lê a taxa pelo id e confere loja, endereço e idade (até 35 min), então o navegador nunca manda valor. Sem cálculo (Juma fora, endereço recusado, loja sem endereço/categoria, sem chaves), o pedido sai com taxa a combinar. Taxa fixada no pedido; `total_cents` é coluna gerada. Faturamento do relatório continua sendo o subtotal (AD-011); a taxa sai no CSV. Etapa 11.
+**Reason:** Pedido do Leonardo: o valor já deve sair calculado no site e entrar no total.
+**Trade-off:** Uma chamada à Juma por endereço (reaproveitada por 30 min; freio de 60/min por loja). Um login para as duas lojas até a Juma dizer se são duas empresas. A taxa pode diferir do que a Juma cobrar ao chamar o entregador; a Cake 67 absorve.
+**Impact:** Etapa 12 (chamar entregador, situação, rastreio) usa o mesmo cliente `lib/delivery/machine.ts`. `get_order_public` e `report_summary` não foram recriadas, porque o projeto tem as versões da Stripe; a taxa da página do pedido vem de `get_order_delivery`.
 
 ### AD-018: Bolo inteiro por peso na vitrine (2026-09-29)
 
@@ -140,6 +147,13 @@
 ---
 
 ## Active Blockers
+
+### B-007: Migrations da Stripe aplicadas no projeto e ausentes da `main`
+
+**Discovered:** 2026-11-11 (confirmado no projeto: as duas versões aparecem em `list_migrations`; `order_payments`, `orders.payment_status`, `stores.payment_account`)
+**Impact:** `20261021000100_online_payment_enums.sql` e `20261021000200_online_payment.sql` (branch `claude/fervent-franklin-ux8f2g`) estão aplicadas no projeto, mas não existem na `main`. O `supabase db push` da `main` deve recusar por "remote migration versions not found in local migrations directory", e um banco novo criado da `main` não tem as tabelas e funções de pagamento.
+**Workaround:** a etapa 11 não recria nenhuma função alterada pela Stripe, então funciona com ou sem elas. Aplicar a `20261111000100` com `psql "$SUPABASE_DB_URL" -f` se o `db push` recusar, e registrar a versão em `supabase_migrations.schema_migrations`.
+**Resolution:** decidir com o Leonardo, junto com o checkout novo: trazer os arquivos da Stripe para a `main` (o banco já é assim) ou desfazer no projeto o que a Stripe criou.
 
 ### B-001: ~~Projeto Supabase ainda não existe~~ — resolvido 2026-09-26
 
@@ -284,6 +298,19 @@ Leonardo desligou "Allow new users to sign up" no painel.
 
 **Problem:** `npx prettier --write` nos arquivos da etapa 08 reformatou arquivos inteiros (diff de ~1.950 linhas); o código segue o estilo próprio, com linhas longas.
 **Solution:** Não rodar formatador; seguir o estilo do arquivo. O `lint` (ESLint) é o único verificador de estilo.
+
+### L-024: A Data API devolve no máximo 1000 linhas por chamada
+
+**Context:** `test:integration` de 2026-11-11 falhou em três checagens "soma dos movimentos = estoque" com o banco certo (conferido em SQL: 0 divergências em 40 linhas de estoque, 1419 movimentos).
+**Problem:** `.limit(100000)` não passa do `max_rows` (1000); a soma saía de uma lista cortada.
+**Solution:** `tests/integration/stock-invariant.ts` lê em páginas (trazido da branch da Stripe). Na mesma rodada, `report.test.ts` passou a esperar `online_cents`, porque o `report_summary` do projeto é o da Stripe (B-007).
+**Prevents:** acusar erro no estoque que não existe.
+
+### L-023: Postgres 16 local na sessão na nuvem
+
+**Context:** sessão na nuvem sem Docker nem acesso ao projeto Supabase.
+**Solution:** `/usr/lib/postgresql/16/bin` vem instalado: `initdb` num diretório do usuário `postgres` (fora do scratchpad, que perde as permissões), stubs de `anon`/`authenticated`/`service_role`, `auth.users`, `auth.uid()`, `storage` e `extensions.pgcrypto`; aplicar as migrations (menos a do `pg_cron`) e o seed, e rodar o roteiro como `set role anon`.
+**Prevents:** descobrir erro de SQL só no `db push`.
 
 ### L-003: Commit no PowerShell 5.1
 

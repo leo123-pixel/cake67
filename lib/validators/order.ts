@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { deliveryAddressSchema } from "@/lib/delivery/address";
 import { normalizeWhatsapp } from "@/lib/phone";
 import { isValidTaxId, normalizeTaxId } from "@/lib/tax-id";
 
@@ -32,7 +33,6 @@ export const checkoutSchema = z
       return digits;
     }),
     fulfillment: z.enum(["retirada", "entrega"], { error: "Escolha retirada ou entrega" }),
-    delivery_address: optionalTrimmed(200),
     notes: optionalTrimmed(500),
     tax_id: z
       .string()
@@ -47,16 +47,33 @@ export const checkoutSchema = z
       }),
     scheduled_for: z.iso.datetime({ offset: true }).optional().or(z.literal("").transform(() => undefined)),
     privacy: z.literal("on", { error: "É preciso aceitar o aviso de privacidade" }),
+    // Stage 11: address in fields, required for delivery (checked below).
+    delivery_street: z.string().optional(),
+    delivery_number: z.string().optional(),
+    delivery_complement: z.string().optional(),
+    delivery_district: z.string().optional(),
+    delivery_reference: z.string().optional(),
   })
-  // `privacy` is only a gate; it is not sent to the database.
-  .transform((data) => ({
-    name: data.name,
-    whatsapp: data.whatsapp,
-    fulfillment: data.fulfillment,
-    delivery_address: data.fulfillment === "entrega" ? data.delivery_address : undefined,
-    notes: data.notes,
-    tax_id: data.tax_id,
-    scheduled_for: data.scheduled_for,
-  }));
+  .transform((data, ctx) => {
+    let delivery: z.output<typeof deliveryAddressSchema> | undefined;
+    if (data.fulfillment === "entrega") {
+      const parsed = deliveryAddressSchema.safeParse(data);
+      if (!parsed.success) {
+        for (const issue of parsed.error.issues) ctx.addIssue({ code: "custom", message: issue.message, path: issue.path });
+        return z.NEVER;
+      }
+      delivery = parsed.data;
+    }
+    // `privacy` is only a gate; it is not sent to the database.
+    return {
+      name: data.name,
+      whatsapp: data.whatsapp,
+      fulfillment: data.fulfillment,
+      ...delivery,
+      notes: data.notes,
+      tax_id: data.tax_id,
+      scheduled_for: data.scheduled_for,
+    };
+  });
 
 export type CheckoutInput = z.output<typeof checkoutSchema>;

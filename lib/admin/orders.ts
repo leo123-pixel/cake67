@@ -8,7 +8,7 @@ import type { OrderItemSummary } from "@/lib/whatsapp";
 type Client = SupabaseClient<Database>;
 
 const LIST_COLUMNS =
-  "id, code, status, created_at, expires_at, customer_name, fulfillment, scheduled_for, subtotal_cents, has_made_to_order, store_id, store:stores(name)";
+  "id, code, status, created_at, expires_at, customer_name, fulfillment, scheduled_for, subtotal_cents, total_cents, has_made_to_order, store_id, store:stores(name)";
 
 // Overdue orders become "expirado" before any list is shown (SPEC §5.6).
 async function expireOverdue(supabase: Client) {

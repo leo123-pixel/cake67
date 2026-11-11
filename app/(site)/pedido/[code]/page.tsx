@@ -71,7 +71,21 @@ export default async function OrderPage({ params, searchParams }: Props) {
             <span>Subtotal</span>
             <span className="tabular-nums">{formatBRL(order.subtotal_cents)}</span>
           </p>
-          {order.fulfillment === "entrega" && <p className="text-sm text-cocoa-soft">Taxa de entrega combinada no WhatsApp.</p>}
+          {order.fulfillment === "entrega" &&
+            (order.delivery_fee_cents === null ? (
+              <p className="text-sm text-cocoa-soft">Taxa de entrega combinada no WhatsApp.</p>
+            ) : (
+              <>
+                <p className="flex justify-between text-sm">
+                  <span>Entrega</span>
+                  <span className="tabular-nums">{formatBRL(order.delivery_fee_cents)}</span>
+                </p>
+                <p className="flex justify-between border-t border-cocoa/10 pt-2 text-lg font-medium">
+                  <span>Total</span>
+                  <span className="tabular-nums">{formatBRL(order.total_cents)}</span>
+                </p>
+              </>
+            ))}
         </section>
 
         <p className="text-sm text-cocoa-soft">

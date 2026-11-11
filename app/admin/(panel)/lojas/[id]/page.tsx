@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { z } from "zod";
 import { listAdminStores } from "@/lib/admin/catalog";
 import { requireAdmin } from "@/lib/auth";
+import { hasJumaCredentials, loadJumaCategories } from "@/lib/delivery/quote";
 import { StoreForm } from "../store-form";
 
 export const metadata: Metadata = { title: "Loja" };
@@ -18,7 +19,10 @@ export default async function StorePage({ params }: Props) {
   let store;
   if (id !== "nova") {
     if (!z.uuid().safeParse(id).success) notFound();
-    store = (await listAdminStores(supabase)).find((s) => s.id === id);
+  }
+  const [stores, categories] = await Promise.all([id === "nova" ? [] : listAdminStores(supabase), loadJumaCategories()]);
+  if (id !== "nova") {
+    store = stores.find((s) => s.id === id);
     if (!store) notFound();
   }
 
@@ -30,7 +34,7 @@ export default async function StorePage({ params }: Props) {
         </Link>
         <h1 className="text-3xl text-olive">{store?.name ?? "Nova loja"}</h1>
       </header>
-      <StoreForm store={store} />
+      <StoreForm store={store} categories={categories} hasCredentials={hasJumaCredentials()} />
     </section>
   );
 }

@@ -1,6 +1,9 @@
 "use server";
 
 import { z } from "zod";
+import { deliveryAddressSchema } from "@/lib/delivery/address";
+import { getDeliveryQuote } from "@/lib/delivery/quote";
+import { formatBRL } from "@/lib/money";
 import { createPublicClient } from "@/lib/supabase/public";
 import type { FieldErrors } from "@/lib/validators/common";
 import { toFieldErrors } from "@/lib/validators/common";
@@ -46,6 +49,22 @@ export async function quoteCart(storeId: string, items: unknown): Promise<QuoteR
   return { ok: true, quote: data as Quote };
 }
 
+// What the checkout shows for delivery (spec 11). The quote id stays on the server.
+export type DeliveryFee = { status: "ok"; feeCents: number } | { status: "a_combinar" };
+
+// Delivery fee calculated on the server by Juma. Any failure is "a combinar" (D4).
+export async function quoteDelivery(storeId: string, address: unknown): Promise<DeliveryFee> {
+  const parsedStore = z.uuid().safeParse(storeId);
+  const parsed = deliveryAddressSchema.safeParse(address);
+  if (!parsedStore.success || !parsed.success) return { status: "a_combinar" };
+  const quote = await getDeliveryQuote(storeId, {
+    street: parsed.data.delivery_street,
+    number: parsed.data.delivery_number,
+    district: parsed.data.delivery_district,
+  });
+  return quote.ok ? { status: "ok", feeCents: quote.feeCents } : { status: "a_combinar" };
+}
+
 export type PlaceOrderResult =
   | { ok: true; code: string; token: string }
   | {
@@ -54,13 +73,33 @@ export type PlaceOrderResult =
       fieldErrors?: FieldErrors;
       soldOut?: string[];
       unavailable?: string[];
+      // The fee changed since the checkout showed it: show the new one.
+      deliveryFee?: DeliveryFee;
     };
+
+function sameFee(seen: string | undefined, fee: DeliveryFee): boolean {
+  return fee.status === "ok" ? seen === String(fee.feeCents) : seen === "a_combinar";
+}
+
+function feeChanged(fee: DeliveryFee): PlaceOrderResult {
+  return {
+    ok: false,
+    message:
+      fee.status === "ok"
+        ? `A taxa de entrega mudou para ${formatBRL(fee.feeCents)}. Confira o total e envie de novo.`
+        : "Não conseguimos calcular a entrega agora. A taxa será combinada no WhatsApp. Confira e envie de novo.",
+    deliveryFee: fee,
+  };
+}
 
 const FIELD_BY_DETAIL: Record<string, string> = {
   name: "name",
   whatsapp: "whatsapp",
   fulfillment: "fulfillment",
   tax_id: "tax_id",
+  delivery_street: "delivery_street",
+  delivery_number: "delivery_number",
+  delivery_district: "delivery_district",
 };
 
 function productIds(details: string | undefined): string[] {
@@ -86,10 +125,25 @@ export async function placeOrder(
     return { ok: false, message: "Seu carrinho tem itens inválidos. Revise e tente de novo." };
   }
 
+  // Stage 11: the fee comes from a quote stored by the server; the browser only
+  // says which value it showed, so a change is caught before the order exists.
+  const order = customer.data;
+  let quoteId: string | null = null;
+  if (order.fulfillment === "entrega" && order.delivery_street && order.delivery_number && order.delivery_district) {
+    const quote = await getDeliveryQuote(storeId, {
+      street: order.delivery_street,
+      number: order.delivery_number,
+      district: order.delivery_district,
+    });
+    const fee: DeliveryFee = quote.ok ? { status: "ok", feeCents: quote.feeCents } : { status: "a_combinar" };
+    if (!sameFee(form.delivery_fee_seen, fee)) return feeChanged(fee);
+    quoteId = quote.ok ? quote.quoteId : null;
+  }
+
   const supabase = await createPublicClient();
   const { data, error } = await supabase.rpc("create_order", {
     p_store_id: storeId,
-    p_customer: customer.data,
+    p_customer: { ...order, delivery_quote_id: quoteId },
     p_items: parsedItems.data,
   });
 
@@ -113,6 +167,9 @@ export async function placeOrder(
       };
     case "CK014":
       return { ok: false, message: "Esta loja não está recebendo pedidos agora. Escolha outra." };
+    case "CK016":
+      // The quote expired between the check above and the insert (rare).
+      return feeChanged(await quoteDelivery(storeId, order));
     case "CK011": {
       const field = FIELD_BY_DETAIL[error.details ?? ""];
       return field

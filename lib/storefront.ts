@@ -215,9 +215,22 @@ export type PublicOrder = OrderSummary & {
 export async function getOrderPublic(code: string, token: string): Promise<PublicOrder | null> {
   if (!/^C67-\d{6}$/.test(code) || !/^[0-9a-f]{32}$/.test(token)) return null;
   const supabase = await createPublicClient();
-  const { data, error } = await supabase.rpc("get_order_public", { p_code: code, p_token: token });
-  if (error) throw new Error(`Could not load order: ${error.message}`);
-  return (data as PublicOrder | null) ?? null;
+  // Fee and total come from their own function (stage 11): get_order_public is
+  // left as it is in the project.
+  const [order, delivery] = await Promise.all([
+    supabase.rpc("get_order_public", { p_code: code, p_token: token }),
+    supabase.rpc("get_order_delivery", { p_code: code, p_token: token }),
+  ]);
+  if (order.error) throw new Error(`Could not load order: ${order.error.message}`);
+  if (delivery.error) throw new Error(`Could not load order delivery: ${delivery.error.message}`);
+  const data = order.data as Omit<PublicOrder, "delivery_fee_cents" | "total_cents"> | null;
+  if (!data) return null;
+  const fee = delivery.data as { delivery_fee_cents: number | null; total_cents: number } | null;
+  return {
+    ...data,
+    delivery_fee_cents: fee?.delivery_fee_cents ?? null,
+    total_cents: fee?.total_cents ?? data.subtotal_cents,
+  };
 }
 
 export type PublicSettings = {

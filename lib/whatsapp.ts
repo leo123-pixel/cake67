@@ -28,6 +28,9 @@ export type OrderSummary = {
   customer_whatsapp: string;
   notes: string | null;
   subtotal_cents: number;
+  // Stage 11: null = to be agreed on WhatsApp (and always null on pickup).
+  delivery_fee_cents: number | null;
+  total_cents: number;
   // whatsapp is the sector that handles the order (spec 08, D1); support is the SAC.
   store: { name: string; address: string; whatsapp: string; support_whatsapp: string };
   items: OrderItemSummary[];
@@ -54,11 +57,18 @@ export function describeFulfillment(order: OrderSummary, reservationMinutes: num
   const when = order.scheduled_for ? ` em ${formatPickup(order.scheduled_for)}` : "";
   if (order.fulfillment === "entrega") {
     const address = order.delivery_address ? ` · Endereço: ${order.delivery_address}` : "";
-    return `Quero entrega (taxa a combinar)${when}${address}`;
+    return order.delivery_fee_cents === null ? `Quero entrega (taxa a combinar)${when}${address}` : `Entrega${when}${address}`;
   }
   if (when) return `Retirada${when}`;
   const hours = reservationMinutes / 60;
   return `Retirada em até ${Number.isInteger(hours) ? `${hours} h` : `${reservationMinutes} min`}`;
+}
+
+// Fee and total, after the subtotal (stage 11). Empty on pickup.
+export function describeDeliveryFee(order: Pick<OrderSummary, "fulfillment" | "delivery_fee_cents" | "total_cents">): string {
+  if (order.fulfillment !== "entrega") return "";
+  if (order.delivery_fee_cents === null) return "Entrega: taxa a combinar";
+  return `Entrega: ${formatBRL(order.delivery_fee_cents)}\nTotal: ${formatBRL(order.total_cents)}`;
 }
 
 function describeNotes(order: OrderSummary): string {
@@ -77,6 +87,7 @@ export function renderOrderMessage(template: string, order: OrderSummary, reserv
     entrega: describeFulfillment(order, reservationMinutes),
     itens: order.items.map((item) => `${describeItem(item)} – ${formatBRL(item.total_cents)}`).join("\n"),
     subtotal: formatBRL(order.subtotal_cents),
+    taxa_entrega: describeDeliveryFee(order),
     nome: order.customer_name,
     whatsapp: formatWhatsapp(order.customer_whatsapp),
     observacoes: describeNotes(order),
@@ -84,8 +95,15 @@ export function renderOrderMessage(template: string, order: OrderSummary, reserv
   return fillTemplate(template, values);
 }
 
+// A line that is only an empty variable disappears (e.g. {taxa_entrega} on pickup).
 function fillTemplate(template: string, values: Record<string, string>): string {
   return template
+    .split("\n")
+    .filter((line) => {
+      const only = /^\{(\w+)\}$/.exec(line.trim());
+      return !(only && values[only[1]] === "");
+    })
+    .join("\n")
     .replace(/\{(\w+)\}/g, (match, key: string) => values[key] ?? match)
     .replace(/\n+$/, "");
 }
@@ -103,6 +121,7 @@ export const ORDER_TEMPLATE = {
     entrega: "Retirada ou entrega, com data e hora",
     itens: "Um item por linha, com opções e valor",
     subtotal: "Subtotal do pedido",
+    taxa_entrega: "Taxa de entrega e total (só em pedido com entrega)",
     nome: "Nome do cliente",
     whatsapp: "WhatsApp do cliente",
     observacoes: "Frase do bolo e observações",
@@ -111,7 +130,7 @@ export const ORDER_TEMPLATE = {
 } as const satisfies TemplateSpec;
 
 // Variables of the confirmation message (spec 08); keys match renderConfirmationMessage.
-// No amounts: the delivery fee is still agreed on WhatsApp.
+// No amounts (spec 08; spec 11 keeps it that way).
 export const CONFIRMATION_TEMPLATE = {
   variables: {
     codigo: "Número do pedido",
@@ -162,6 +181,8 @@ export const SAMPLE_ORDER: OrderSummary = {
   customer_whatsapp: "5567999990000",
   notes: "Sem cobertura de coco",
   subtotal_cents: 4880,
+  delivery_fee_cents: null,
+  total_cents: 4880,
   store: { name: "Loja 1", address: "Rua Estiva, 200", whatsapp: "5567998272300", support_whatsapp: "5567993285925" },
   items: [
     { name: "Fatia Karen", type: "vitrine", qty: 2, total_cents: 4400, options: null },

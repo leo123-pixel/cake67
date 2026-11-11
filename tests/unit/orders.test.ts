@@ -182,6 +182,8 @@ describe("renderOrderMessage", () => {
     customer_whatsapp: "5567999998888",
     notes: null,
     subtotal_cents: 27180,
+    delivery_fee_cents: null,
+    total_cents: 27180,
     store: { name: "Loja 1", address: "Rua Estiva, 200", whatsapp: "5567981519796", support_whatsapp: "5567993285925" },
     items: [
       { name: "Fatia Karen", type: "vitrine", qty: 2, total_cents: 4400, options: {} },
@@ -217,8 +219,19 @@ describe("renderOrderMessage", () => {
     expect(renderOrderMessage("{entrega}\n{observacoes}", vitrineOnly, 120)).toBe("Retirada em até 2 h");
     const delivery = { ...order, fulfillment: "entrega" as const, delivery_address: "Rua A, 1", notes: "Portão azul" };
     expect(renderOrderMessage("{entrega}", delivery, 120)).toBe("Quero entrega (taxa a combinar) em 27/09 às 15h · Endereço: Rua A, 1");
+    const quoted = { ...delivery, delivery_fee_cents: 1240, total_cents: 28420 };
+    expect(renderOrderMessage("{entrega}", quoted, 120)).toBe("Entrega em 27/09 às 15h · Endereço: Rua A, 1");
     const cento = { ...order, items: [{ name: "Coxinha", type: "cento" as const, qty: 50, total_cents: 6000, options: null }] };
     expect(renderOrderMessage("{itens}", cento, 120)).toBe("50 un. Coxinha – R$ 60,00");
+  });
+
+  it("adds the delivery fee and total after the subtotal (stage 11)", () => {
+    const withFee = "Subtotal: {subtotal}\n{taxa_entrega}\nNome: {nome}";
+    expect(renderOrderMessage(withFee, order, 120)).toBe("Subtotal: R$ 271,80\nNome: Carla");
+    const delivery = { ...order, fulfillment: "entrega" as const, delivery_fee_cents: 1240, total_cents: 28420 };
+    expect(renderOrderMessage(withFee, delivery, 120)).toBe("Subtotal: R$ 271,80\nEntrega: R$ 12,40\nTotal: R$ 284,20\nNome: Carla");
+    const toAgree = { ...delivery, delivery_fee_cents: null, total_cents: 27180 };
+    expect(renderOrderMessage(withFee, toAgree, 120)).toBe("Subtotal: R$ 271,80\nEntrega: taxa a combinar\nNome: Carla");
   });
 
   it("builds the wa.me link", () => {
@@ -231,9 +244,37 @@ describe("checkoutSchema", () => {
   const base = { name: " Carla ", whatsapp: "(67) 99999-8888", fulfillment: "retirada", privacy: "on" };
 
   it("normalizes and drops the address on pickup", () => {
-    const parsed = checkoutSchema.parse({ ...base, delivery_address: "Rua A", tax_id: "529.982.247-25" });
+    const parsed = checkoutSchema.parse({ ...base, delivery_street: "Rua A", delivery_number: "1", tax_id: "529.982.247-25" });
     expect(parsed).toMatchObject({ name: "Carla", whatsapp: "5567999998888", tax_id: "52998224725" });
-    expect(parsed.delivery_address).toBeUndefined();
+    expect(parsed.delivery_street).toBeUndefined();
+    expect("delivery_address" in parsed).toBe(false);
+  });
+
+  it("requires street, number and district for delivery (stage 11)", () => {
+    const result = checkoutSchema.safeParse({ ...base, fulfillment: "entrega", delivery_street: " ", delivery_number: "", delivery_district: "Centro" });
+    expect(result.success).toBe(false);
+    const paths = result.error!.issues.map((issue) => issue.path.join("."));
+    expect(paths).toEqual(expect.arrayContaining(["delivery_street", "delivery_number"]));
+    expect(paths).not.toContain("delivery_district");
+  });
+
+  it("keeps the delivery fields, with spaces collapsed", () => {
+    const parsed = checkoutSchema.parse({
+      ...base,
+      fulfillment: "entrega",
+      delivery_street: "  Rua   14 de Julho ",
+      delivery_number: "1500",
+      delivery_complement: "",
+      delivery_district: "Centro",
+      delivery_reference: " perto da praça ",
+    });
+    expect(parsed).toMatchObject({
+      delivery_street: "Rua 14 de Julho",
+      delivery_number: "1500",
+      delivery_district: "Centro",
+      delivery_reference: "perto da praça",
+    });
+    expect(parsed.delivery_complement).toBeUndefined();
   });
 
   it("requires privacy and a valid tax id when given", () => {

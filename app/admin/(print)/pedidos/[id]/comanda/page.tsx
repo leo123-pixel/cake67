@@ -61,7 +61,23 @@ export default async function OrderSlipPage({ params }: Props) {
         <span>Subtotal</span>
         <span className="tabular-nums">{formatBRL(order.subtotal_cents)}</span>
       </p>
-      <p className="text-center text-[11px]">Pagamento e taxa de entrega combinados no WhatsApp.</p>
+      {order.fulfillment === "entrega" && order.delivery_fee_cents !== null && (
+        <>
+          <p className="flex justify-between">
+            <span>Entrega (Juma)</span>
+            <span className="tabular-nums">{formatBRL(order.delivery_fee_cents)}</span>
+          </p>
+          <p className="flex justify-between text-base font-bold">
+            <span>Total</span>
+            <span className="tabular-nums">{formatBRL(order.total_cents)}</span>
+          </p>
+        </>
+      )}
+      <p className="text-center text-[11px]">
+        {order.fulfillment === "entrega" && order.delivery_fee_cents === null
+          ? "Pagamento e taxa de entrega combinados no WhatsApp."
+          : "Pagamento combinado no WhatsApp."}
+      </p>
     </main>
   );
 }

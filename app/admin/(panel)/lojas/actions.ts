@@ -16,8 +16,10 @@ export async function saveStore(storeId: string | null, _prev: ActionState, form
   if (!parsed.success) return invalid(parsed.error, values);
 
   const { supabase } = context;
+  const { delivery_category, ...fields } = parsed.data;
+  const row = { ...fields, ...delivery_category };
   if (storeId) {
-    const { error } = await supabase.from("stores").update(parsed.data).eq("id", storeId);
+    const { error } = await supabase.from("stores").update(row).eq("id", storeId);
     if (error) return { ...dbFailure("updateStore", error), values };
     revalidatePath("/admin/lojas", "layout");
     return { ok: true, message: "Loja salva." };
@@ -25,7 +27,7 @@ export async function saveStore(storeId: string | null, _prev: ActionState, form
 
   const insert = async () =>
     supabase.from("stores").insert({
-      ...parsed.data,
+      ...row,
       slug: await uniqueSlug(supabase, "stores", parsed.data.name),
       sort: await nextSort(supabase, "stores"),
     });

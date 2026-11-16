@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { z } from "zod";
 import { PrintOnLoad } from "@/components/admin/orders/print-on-load";
 import { getOrder } from "@/lib/admin/orders";
+import { describeMethod } from "@/lib/payments/labels";
 import { requireStaff } from "@/lib/auth";
 import { formatDateTime, formatPickup } from "@/lib/datetime";
 import { formatBRL } from "@/lib/money";
@@ -73,11 +74,19 @@ export default async function OrderSlipPage({ params }: Props) {
           </p>
         </>
       )}
-      <p className="text-center text-[11px]">
-        {order.fulfillment === "entrega" && order.delivery_fee_cents === null
-          ? "Pagamento e taxa de entrega combinados no WhatsApp."
-          : "Pagamento combinado no WhatsApp."}
-      </p>
+      {order.payment_status === "pago" ? (
+        <p className="border-y border-black py-1 text-center text-base font-bold">
+          PAGO PELO SITE · {describeMethod(order.capture_method, order.installments)}
+        </p>
+      ) : (
+        <p className="text-center text-[11px]">
+          {order.payment_status === "conferir"
+            ? "Pagamento online a conferir no painel."
+            : order.fulfillment === "entrega" && order.delivery_fee_cents === null
+              ? "Pagamento e taxa de entrega combinados no WhatsApp."
+              : "Pagamento combinado no WhatsApp."}
+        </p>
+      )}
     </main>
   );
 }

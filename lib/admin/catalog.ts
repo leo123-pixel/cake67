@@ -33,7 +33,7 @@ export async function listAdminStores(supabase: Client) {
   const { data, error } = await supabase
     .from("stores")
     .select(
-      "id, slug, name, address, phone, whatsapp_ready, whatsapp_made_to_order, whatsapp_support, hours, active, sort, address_street, address_number, address_district, delivery_category_id, delivery_category_name",
+      "id, slug, name, address, phone, whatsapp_ready, whatsapp_made_to_order, whatsapp_support, hours, active, sort, address_street, address_number, address_district, delivery_category_id, delivery_category_name, payment_handle",
     )
     .order("sort");
   if (error) throw new Error(`Could not load stores: ${error.message}`);

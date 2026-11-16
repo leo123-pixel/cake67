@@ -56,6 +56,20 @@ const deliveryCategory = z
     return { delivery_category_id: match[1], delivery_category_name: match[2] };
   });
 
+// Stage 12: InfiniteTag of the store's InfinitePay account, without "$"; empty = off.
+const paymentHandle = z
+  .string()
+  .optional()
+  .transform((value, ctx) => {
+    const handle = value?.trim().replace(/^\$/, "").toLowerCase() ?? "";
+    if (!handle) return null;
+    if (!/^[a-z0-9][a-z0-9_.-]{1,39}$/.test(handle)) {
+      ctx.addIssue({ code: "custom", message: "Use a InfiniteTag sem o $, ex. cake-zsf" });
+      return z.NEVER;
+    }
+    return handle;
+  });
+
 export const storeSchema = z.object({
   name: requiredText("Informe o nome"),
   address: requiredText("Informe o endereço"),
@@ -69,6 +83,7 @@ export const storeSchema = z.object({
   address_number: limited(20),
   address_district: limited(80),
   delivery_category: deliveryCategory,
+  payment_handle: paymentHandle,
   hours: z.object(
     Object.fromEntries(WEEK_DAYS.map((day) => [day, openDay.nullable()])) as Record<
       WeekDay,

@@ -5,6 +5,8 @@ import { z } from "zod";
 import { listAdminStores } from "@/lib/admin/catalog";
 import { requireAdmin } from "@/lib/auth";
 import { hasJumaCredentials, loadJumaCategories } from "@/lib/delivery/quote";
+import { apiKeyVariable, isHandle } from "@/lib/infinitepay";
+import { onlinePaymentReady } from "@/lib/payments/server";
 import { StoreForm } from "../store-form";
 
 export const metadata: Metadata = { title: "Loja" };
@@ -34,7 +36,15 @@ export default async function StorePage({ params }: Props) {
         </Link>
         <h1 className="text-3xl text-olive">{store?.name ?? "Nova loja"}</h1>
       </header>
-      <StoreForm store={store} categories={categories} hasCredentials={hasJumaCredentials()} />
+      <StoreForm
+        store={store}
+        categories={categories}
+        hasCredentials={hasJumaCredentials()}
+        payment={{
+          ready: onlinePaymentReady(store?.payment_handle),
+          keyVariable: isHandle(store?.payment_handle) ? apiKeyVariable(store.payment_handle) : null,
+        }}
+      />
     </section>
   );
 }

@@ -4,6 +4,7 @@ import type { OrderListItem } from "@/lib/admin/orders";
 import { formatPickup, formatSince } from "@/lib/datetime";
 import { formatBRL } from "@/lib/money";
 import { minutesLeft, STATUS_LABELS, STATUS_TONES } from "@/lib/order-status";
+import { PAYMENT_STATUS_LABELS, PAYMENT_STATUS_TONES } from "@/lib/payments/labels";
 
 const URGENT_MINUTES = 30;
 
@@ -22,6 +23,11 @@ export function OrderRow({ order, showStore }: { order: OrderListItem; showStore
           <p className="flex flex-wrap items-center gap-2">
             <span className="font-medium tabular-nums">{order.code}</span>
             <StatusBadge tone={STATUS_TONES[order.status]}>{STATUS_LABELS[order.status]}</StatusBadge>
+            {(order.payment_status === "pago" || order.payment_status === "conferir" || order.payment_status === "aguardando_pagamento") && (
+              <StatusBadge tone={PAYMENT_STATUS_TONES[order.payment_status]}>
+                {order.payment_status === "pago" ? "Pago" : PAYMENT_STATUS_LABELS[order.payment_status]}
+              </StatusBadge>
+            )}
             {left !== null && left < URGENT_MINUTES && (
               <StatusBadge tone="red">{left === 0 ? "expirando" : `expira em ${left} min`}</StatusBadge>
             )}

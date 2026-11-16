@@ -336,7 +336,8 @@ export function CheckoutForm({ stores }: { stores: CheckoutStore[] }) {
       <div className="space-y-2 rounded-2xl border border-cocoa/10 bg-white p-4 text-sm">
         <p>
           Usamos seu nome, WhatsApp e, se informados, endereço e CPF/CNPJ só para atender este pedido e emitir a nota. Na
-          entrega, o endereço vai para a Juma Entregas, que calcula a taxa e faz a entrega. Para falar sobre seus dados,
+          entrega, o endereço vai para a Juma Entregas, que calcula a taxa e faz a entrega. No pagamento pelo site, nome e
+          WhatsApp vão para a InfinitePay, que processa o pagamento. Para falar sobre seus dados,
           chame a loja no WhatsApp. <Link href="/privacidade" className="underline">Política de privacidade</Link>.
         </p>
         <label className="flex min-h-11 items-center gap-3 font-medium">

@@ -12,7 +12,7 @@ Documento de referência para construir o sistema no repositório `leo123-pixel/
 | Estoque | Quantidade por loja, só para itens de vitrine |
 | Baixa de estoque | Reserva ao criar o pedido. Cancelado ou expirado devolve ao estoque |
 | Encomendas | Sem limite de capacidade por dia no MVP. Só antecedência mínima por produto |
-| Pedido | Gravado no sistema com número e status. Em seguida o cliente abre o WhatsApp da loja com o resumo pronto (link wa.me). Pagamento combinado no WhatsApp |
+| Pedido | Gravado no sistema com número e status. Em seguida o cliente abre o WhatsApp da loja com o resumo pronto (link wa.me). Pagamento combinado no WhatsApp. A partir da etapa 12 (AD-021), pedido só de vitrine (retirada, ou entrega com taxa calculada) é pago no site pela InfinitePay, na conta da loja; encomenda continua no WhatsApp |
 | Entrega | Retirada na loja ou "quero entrega". Endereço em campos; a taxa é calculada no site pela **Juma Entregas** e entra no total. Se a Juma não calcular, a taxa é combinada no WhatsApp (etapa 11, AD-020; antes: taxa e endereço combinados no WhatsApp) |
 | Cliente | Sem conta. Nome, WhatsApp e observações ficam no pedido |
 | Painel | Perfis admin (dona) e atendente (vinculado a uma loja) |
@@ -26,7 +26,7 @@ Documento de referência para construir o sistema no repositório `leo123-pixel/
 - Supabase: `@supabase/ssr` para sessão em cookies, `@supabase/supabase-js`.
 - Zod para validar formulários e o payload do pedido.
 - `browser-image-compression` para reduzir fotos no navegador antes do upload (WebP, máx. 1600 px).
-- Sem gateway de pagamento no MVP.
+- Sem gateway de pagamento no MVP. Etapa 12: Checkout Integrado da InfinitePay (API REST, sem SDK), uma conta por loja (AD-021).
 
 ## 3. Estrutura de pastas
 
@@ -176,7 +176,7 @@ O painel deve funcionar bem no celular, porque a equipe opera no balcão.
 - LGPD: coleta mínima (nome, WhatsApp, endereço opcional), aviso no checkout, página de privacidade.
 - SEO local: metadados por página, `sitemap.xml`, dados estruturados `Bakery` e `Product`.
 - Supabase Free pausa o projeto após 7 dias sem uso. Em produção isso não acontece com tráfego real. No desenvolvimento, basta abrir o site ou o painel de vez em quando; se pausar, reativar no painel do Supabase.
-- Variáveis de ambiente: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_SITE_URL`.
+- Variáveis de ambiente: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_SITE_URL`. Etapa 12: `INFINITEPAY_API_KEY_<TAG>` por conta de loja (ou `INFINITEPAY_HANDLE` + `INFINITEPAY_API_KEY`), só servidor, e `NEXT_PUBLIC_PAYMENT_MODE` (`whatsapp` desliga).
 
 ## 11. Etapas e critérios de aceite
 

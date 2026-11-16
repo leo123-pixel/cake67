@@ -1,11 +1,31 @@
 # State
 
-**Last Updated:** 2026-11-11
-**Current Work:** Etapa 11 (taxa de entrega calculada no site pela Juma, AD-020): spec aprovada, design, tarefas, migrations e código prontos na branch `claude/inspiring-mccarthy-58jpeq` (2026-11-11). Migration `20261111000100` aplicada no projeto e variáveis `MACHINE_*` na Vercel (2026-11-11). `npm run juma:check` passou no computador do Leonardo: login ok, uma categoria (39792 · MOTOBOY INTEGRAÇÕES) e estimativa a partir da loja Jeribá. As três lojas já têm origem e categoria no banco: Estiva (Rua Estiva, 200 · Vila Santo Eugênio), Afonso Pena (Avenida Afonso Pena, 2716 · Centro), Jeribá (Rua Jeribá, 454 · Chácara Cachoeira). Um login da Juma para as três por ora; perguntado à Juma se cada loja precisa de cadastro próprio (cobrança da etapa 12) e se a tarifa muda por loja. Falta: `npm run test:integration`, PR + deploy; depois do deploy, a migration `20261111000200` (modelo da mensagem). O endereço exibido da Jeribá está com "Chacará" (sugerir corrigir para "Chácara" pelo painel). O pagamento online pela Stripe (branch `claude/fervent-franklin-ux8f2g`) ficou de lado: o Leonardo vai trocar de checkout. Sistema no ar em https://www.cake67.com.br (produção = `main`; `cake67.vercel.app` continua respondendo). Etapas 08 (WhatsApp por setor) e 09 (linha do tempo do pedido) no ar desde 2026-09-28; etapa 10 (bolo inteiro por peso na vitrine, AD-018) no ar desde 2026-09-29. Próximo: M2 · Lançamento (pendências da cliente); hospedagem segue nos planos gratuitos por decisão do Leonardo (AD-017).
+**Last Updated:** 2026-11-16
+**Current Work:** Etapa 12 (pagamento online pela InfinitePay, AD-021) na branch `feature/infinitepay` (2026-11-16): a Stripe saiu, a migration `20261116201549_infinitepay` foi aplicada no projeto e o código, os testes e o README estão prontos. Falta: chave `INFINITEPAY_API_KEY_CAKE_ZSF` da Jeribá na Vercel, `npm run test:integration`, PR, deploy e o teste real de R$ 1,00 (README, "Pagamentos"). Antes, etapa 11: Etapa 11 (taxa de entrega calculada no site pela Juma, AD-020): spec aprovada, design, tarefas, migrations e código prontos na branch `claude/inspiring-mccarthy-58jpeq` (2026-11-11). Migration `20261111000100` aplicada no projeto e variáveis `MACHINE_*` na Vercel (2026-11-11). `npm run juma:check` passou no computador do Leonardo: login ok, uma categoria (39792 · MOTOBOY INTEGRAÇÕES) e estimativa a partir da loja Jeribá. As três lojas já têm origem e categoria no banco: Estiva (Rua Estiva, 200 · Vila Santo Eugênio), Afonso Pena (Avenida Afonso Pena, 2716 · Centro), Jeribá (Rua Jeribá, 454 · Chácara Cachoeira). Um login da Juma para as três por ora; perguntado à Juma se cada loja precisa de cadastro próprio (cobrança da etapa 12) e se a tarifa muda por loja. Falta: `npm run test:integration`, PR + deploy; depois do deploy, a migration `20261111000200` (modelo da mensagem). O endereço exibido da Jeribá está com "Chacará" (sugerir corrigir para "Chácara" pelo painel). O pagamento online pela Stripe (branch `claude/fervent-franklin-ux8f2g`) ficou de lado: o Leonardo vai trocar de checkout. Sistema no ar em https://www.cake67.com.br (produção = `main`; `cake67.vercel.app` continua respondendo). Etapas 08 (WhatsApp por setor) e 09 (linha do tempo do pedido) no ar desde 2026-09-28; etapa 10 (bolo inteiro por peso na vitrine, AD-018) no ar desde 2026-09-29. Próximo: M2 · Lançamento (pendências da cliente); hospedagem segue nos planos gratuitos por decisão do Leonardo (AD-017).
 
 ---
 
 ## Recent Decisions (Last 60 days)
+
+### AD-021: Pagamento online pela InfinitePay, uma conta por loja (2026-11-16)
+
+**Decision:** Substitui a AD-019 (Stripe), que não foi ao ar; as tabelas, colunas e funções da Stripe foram removidas do projeto (estavam vazias).
+- **O que paga online:** pedido só de vitrine, na retirada ou na entrega com taxa calculada, paga no site pelo Checkout Integrado da InfinitePay (Pix e cartão de crédito), com o `total_cents` do banco.
+- **O que continua no WhatsApp:** encomenda, taxa a combinar e loja sem conta.
+- **Uma conta por loja:** cada loja é um CNPJ, com a InfiniteTag em `stores.payment_handle` e a chave em `INFINITEPAY_API_KEY_<TAG>`. A primeira é a Jeribá (`cake-zsf`).
+- **Link:** de 60 min, pago uma vez. A reserva dura até ele vencer.
+- **Webhook:** sem assinatura, por isso é sempre confirmado por `payment_check`. É idempotente por `transaction_nsu`.
+- **Pagamento não confirma o pedido:** a equipe confirma, e o estoque não muda de novo.
+- **Dinheiro que não encaixa:** valor diferente, segundo pagamento ou pedido cancelado vai para "Pagamento a conferir". O estorno é pelo App da InfinitePay (a API não estorna).
+- **Desligar:** `NEXT_PUBLIC_PAYMENT_MODE=whatsapp` desliga tudo.
+
+Etapa 12.
+**Reason:** Pedido do Leonardo (2026-11-16): trocar a Stripe pela InfinitePay; encomendas e erro no cálculo da entrega vão para o WhatsApp; vitrine paga na retirada e na entrega.
+**Trade-off:** O Leonardo queria parcelamento só na loja, mas a API não limita parcelas (o cartão mostra até 12x). Com `assured_installments: 0`, os juros ficam com o cliente. Sem sandbox, o teste é uma compra real de R$ 1,00. Os previews da Vercel pedem login, então o webhook só chega em produção (ou com bypass); o retorno do cliente confirma sozinho como plano B.
+**Impact:**
+- `get_order_public`, `report_summary`, `cancel_order` e `expire_orders` recriadas; `report_summary` manteve as chaves (`online_cents`).
+- O site no ar (código da `main`) continuou funcionando depois da migration, porque não lê colunas de pagamento.
+- A etapa "chamar o entregador da Juma" passa a ser a próxima depois desta.
 
 ### AD-020: Taxa de entrega calculada no site pela Juma (2026-11-11)
 
@@ -148,7 +168,11 @@
 
 ## Active Blockers
 
-### B-007: Migrations da Stripe aplicadas no projeto e ausentes da `main`
+### B-007: ~~Migrations da Stripe aplicadas no projeto e ausentes da `main`~~ — resolvido 2026-11-16
+
+Os dois arquivos da Stripe entraram sem mudança na branch `feature/infinitepay` (o `db push` volta a aceitar), e a `20261116201549_infinitepay` removeu o que eles criaram (AD-021).
+
+### B-007 (histórico)
 
 **Discovered:** 2026-11-11 (confirmado no projeto: as duas versões aparecem em `list_migrations`; `order_payments`, `orders.payment_status`, `stores.payment_account`)
 **Impact:** `20261021000100_online_payment_enums.sql` e `20261021000200_online_payment.sql` (branch `claude/fervent-franklin-ux8f2g`) estão aplicadas no projeto, mas não existem na `main`. O `supabase db push` da `main` deve recusar por "remote migration versions not found in local migrations directory", e um banco novo criado da `main` não tem as tabelas e funções de pagamento.

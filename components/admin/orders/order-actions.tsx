@@ -19,9 +19,16 @@ import {
 } from "@/lib/order-status";
 
 // notifyHref: wa.me link to the customer with the confirmation message (spec 08).
-type Props = { orderId: string; status: OrderStatus; hasMadeToOrder: boolean; notifyHref: string | null };
+// paidText: what the customer paid on the site (stage 12), to warn before cancelling.
+type Props = {
+  orderId: string;
+  status: OrderStatus;
+  hasMadeToOrder: boolean;
+  notifyHref: string | null;
+  paidText?: string | null;
+};
 
-export function OrderActions({ orderId, status, hasMadeToOrder, notifyHref }: Props) {
+export function OrderActions({ orderId, status, hasMadeToOrder, notifyHref, paidText = null }: Props) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -124,6 +131,12 @@ export function OrderActions({ orderId, status, hasMadeToOrder, notifyHref }: Pr
             />
           )}
           <p className="text-sm text-cocoa-soft">Os itens da vitrine voltam para o estoque.</p>
+          {paidText && (
+            <p role="alert" className="rounded-xl bg-raspberry/10 p-3 text-sm text-raspberry">
+              Este pedido foi pago pelo site ({paidText}). Cancelar não devolve o dinheiro: faça o estorno pelo app ou pela
+              Conta Web da InfinitePay.
+            </p>
+          )}
           <div className="flex flex-wrap gap-2">
             <button
               type="button"

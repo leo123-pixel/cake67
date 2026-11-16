@@ -13,16 +13,25 @@ export type CheckoutStore = {
   name: string;
   address: string;
   hours: StoreHours;
+  // Stage 12: the store takes InfinitePay payments (account + key on the server).
+  onlinePayment: boolean;
 };
 
-export async function listCheckoutStores(): Promise<CheckoutStore[]> {
+// `ready` says whether a store's InfinitePay account has its key on the server
+// (lib/payments/server.ts); this file is also imported by client components,
+// so it does not read server env itself.
+export async function listCheckoutStores(ready: (handle: string | null) => boolean = () => false): Promise<CheckoutStore[]> {
   const supabase = await createPublicClient();
   const { data, error } = await supabase
     .from("stores")
-    .select("id, slug, name, address, hours")
+    .select("id, slug, name, address, hours, payment_handle")
     .order("sort");
   if (error) throw new Error(`Could not load stores: ${error.message}`);
-  return data.map((store) => ({ ...store, hours: parseStoredHours(store.hours) }));
+  return data.map(({ payment_handle, ...store }) => ({
+    ...store,
+    hours: parseStoredHours(store.hours),
+    onlinePayment: ready(payment_handle),
+  }));
 }
 
 export type Addon = { id: string; name: string; priceCents: number };
@@ -204,12 +213,36 @@ export async function getProductPage(slug: string): Promise<ProductPage | null> 
   };
 }
 
+export type PublicPayment = {
+  status: "aguardando_pagamento" | "pago" | "expirado" | "cancelado" | "conferir" | null;
+  method: "credit_card" | "pix" | null;
+  installments: number | null;
+  amount_cents: number | null;
+  paid_amount_cents: number | null;
+  paid_at: string | null;
+  receipt_url: string | null;
+  // InfiniteTag while the order can be paid on the site, else null (stage 12).
+  handle: string | null;
+};
+
 export type PublicOrder = OrderSummary & {
   status: "novo" | "confirmado" | "em_producao" | "pronto" | "entregue" | "cancelado" | "expirado";
   created_at: string;
   expires_at: string | null;
   has_made_to_order: boolean;
   events: OrderEvent[];
+  payment: PublicPayment;
+};
+
+const NO_PAYMENT: PublicPayment = {
+  status: null,
+  method: null,
+  installments: null,
+  amount_cents: null,
+  paid_amount_cents: null,
+  paid_at: null,
+  receipt_url: null,
+  handle: null,
 };
 
 export async function getOrderPublic(code: string, token: string): Promise<PublicOrder | null> {
@@ -228,6 +261,7 @@ export async function getOrderPublic(code: string, token: string): Promise<Publi
   const fee = delivery.data as { delivery_fee_cents: number | null; total_cents: number } | null;
   return {
     ...data,
+    payment: data.payment ?? NO_PAYMENT,
     delivery_fee_cents: fee?.delivery_fee_cents ?? null,
     total_cents: fee?.total_cents ?? data.subtotal_cents,
   };

@@ -10,6 +10,7 @@ import { formatDateTime, formatPickup } from "@/lib/datetime";
 import { siteUrl } from "@/lib/env";
 import { formatBRL } from "@/lib/money";
 import { minutesLeft, STATUS_LABELS, STATUS_TONES } from "@/lib/order-status";
+import { describeMethod, describePaid, PAYMENT_STATUS_LABELS, PAYMENT_STATUS_TONES } from "@/lib/payments/labels";
 import { formatWhatsapp } from "@/lib/phone";
 import { formatTaxId } from "@/lib/tax-id";
 import { describeItem, renderConfirmationMessage, whatsappLink } from "@/lib/whatsapp";
@@ -26,7 +27,8 @@ export default async function OrderDetailPage({ params }: Props) {
   // RLS hides orders from other stores: they come back as not found.
   const [detail, confirmationTemplate] = await Promise.all([getOrder(supabase, id), getConfirmationTemplate(supabase)]);
   if (!detail) notFound();
-  const { order, items, events } = detail;
+  const { order, items, events, paymentEvents } = detail;
+  const moneyIn = order.payment_status === "pago" || order.payment_status === "conferir";
 
   const left = order.status === "novo" ? minutesLeft(order.expires_at) : null;
   const greeting = `Olá, ${order.customer_name}! Sobre o pedido ${order.code} da Cake 67…`;
@@ -46,13 +48,90 @@ export default async function OrderDetailPage({ params }: Props) {
           <h1 className="text-3xl text-olive tabular-nums">{order.code}</h1>
           <StatusBadge tone={STATUS_TONES[order.status]}>{STATUS_LABELS[order.status]}</StatusBadge>
           {left !== null && <StatusBadge tone={left < 30 ? "red" : "amber"}>expira em {left} min</StatusBadge>}
+          {order.payment_status && (
+            <StatusBadge tone={PAYMENT_STATUS_TONES[order.payment_status]}>{PAYMENT_STATUS_LABELS[order.payment_status]}</StatusBadge>
+          )}
         </div>
         <p className="text-sm text-cocoa-soft">
           {order.store?.name} · feito {formatDateTime(order.created_at)}
         </p>
       </header>
 
-      <OrderActions orderId={order.id} status={order.status} hasMadeToOrder={order.has_made_to_order} notifyHref={notifyHref} />
+      <OrderActions
+        orderId={order.id}
+        status={order.status}
+        hasMadeToOrder={order.has_made_to_order}
+        notifyHref={notifyHref}
+        paidText={moneyIn ? describePaid(order.amount_cents, order.paid_amount_cents) : null}
+      />
+
+      {order.payment_status && (
+        <section className="space-y-2 rounded-2xl border border-cocoa/10 bg-white p-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-xl text-olive">Pagamento online</h2>
+            <StatusBadge tone={PAYMENT_STATUS_TONES[order.payment_status]}>{PAYMENT_STATUS_LABELS[order.payment_status]}</StatusBadge>
+          </div>
+          {order.payment_note && (
+            <p role="alert" className="rounded-xl bg-raspberry/10 p-3 text-sm text-raspberry">
+              {order.payment_note}
+            </p>
+          )}
+          {order.status === "cancelado" && order.payment_status === "pago" && (
+            <p role="alert" className="rounded-xl bg-raspberry/10 p-3 text-sm text-raspberry">
+              Pedido cancelado com pagamento recebido: faça o estorno pelo app ou pela Conta Web da InfinitePay.
+            </p>
+          )}
+          <dl className="grid gap-x-4 gap-y-1 text-sm sm:grid-cols-[auto_1fr]">
+            <dt className="text-cocoa-soft">Valor cobrado</dt>
+            <dd className="tabular-nums">{order.amount_cents === null ? "—" : formatBRL(order.amount_cents)}</dd>
+            {moneyIn && (
+              <>
+                <dt className="text-cocoa-soft">Forma</dt>
+                <dd>{describeMethod(order.capture_method, order.installments)}</dd>
+                <dt className="text-cocoa-soft">Valor pago</dt>
+                <dd className="tabular-nums">{describePaid(order.amount_cents, order.paid_amount_cents)}</dd>
+                {order.paid_at && (
+                  <>
+                    <dt className="text-cocoa-soft">Pago em</dt>
+                    <dd>{formatDateTime(order.paid_at)}</dd>
+                  </>
+                )}
+                {order.transaction_nsu && (
+                  <>
+                    <dt className="text-cocoa-soft">Transação</dt>
+                    <dd className="break-all">{order.transaction_nsu}</dd>
+                  </>
+                )}
+              </>
+            )}
+            {order.payment_status === "aguardando_pagamento" && order.payment_valid_until && (
+              <>
+                <dt className="text-cocoa-soft">Link vale até</dt>
+                <dd>{formatDateTime(order.payment_valid_until)}</dd>
+              </>
+            )}
+            <dt className="text-cocoa-soft">Conta</dt>
+            <dd>{order.payment_handle ? "$" + order.payment_handle : "—"}</dd>
+          </dl>
+          {order.receipt_url && (
+            <a href={order.receipt_url} target="_blank" rel="noopener noreferrer" className="btn btn-secondary">
+              Ver comprovante
+            </a>
+          )}
+          {paymentEvents.length > 0 && (
+            <details className="text-sm">
+              <summary className="min-h-11 cursor-pointer py-2 text-cocoa-soft">Registro da InfinitePay ({paymentEvents.length})</summary>
+              <ol className="space-y-1">
+                {paymentEvents.map((event) => (
+                  <li key={event.id}>
+                    <span className="text-cocoa-soft">{formatDateTime(event.created_at)}</span> · {event.source} · {event.kind}
+                  </li>
+                ))}
+              </ol>
+            </details>
+          )}
+        </section>
+      )}
 
       <section className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2 rounded-2xl border border-cocoa/10 bg-white p-4">

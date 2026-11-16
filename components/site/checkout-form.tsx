@@ -41,6 +41,22 @@ function FieldError({ errors, name }: { errors: FieldErrors; name: string }) {
   ) : null;
 }
 
+// Opens the InfinitePay link of a just-created order; null = stay on the order
+// page, which offers "Pagar agora" again and WhatsApp.
+async function openPayment(code: string, token: string): Promise<string | null> {
+  try {
+    const response = await fetch("/api/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code, token }),
+    });
+    const result = (await response.json()) as { ok: boolean; url?: string };
+    return result.ok && result.url ? result.url : null;
+  } catch {
+    return null;
+  }
+}
+
 // Not a <form action>: a failed submit must keep everything the customer typed.
 export function CheckoutForm({ stores }: { stores: CheckoutStore[] }) {
   const router = useRouter();
@@ -82,10 +98,16 @@ export function CheckoutForm({ stores }: { stores: CheckoutStore[] }) {
   const feeLoading = isDelivery && deliveryFee.status === "loading";
   // What the customer saw; the server only compares it with its own quote.
   const feeSeen = deliveryFee.status === "ok" ? String(deliveryFee.feeCents) : "a_combinar";
+  // Stage 12: vitrine orders pay on the site (pickup, or delivery with a
+  // calculated fee). Made-to-order and "taxa a combinar" stay on WhatsApp.
+  const payOnline =
+    store.onlinePayment && quote !== null && !quote.has_made_to_order && (!isDelivery || deliveryFee.status === "ok");
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = Object.fromEntries(new FormData(event.currentTarget)) as Record<string, string>;
+    const submitter = (event.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
+    const online = payOnline && submitter?.value !== "whatsapp";
     setMessage(null);
     setErrors({});
     startTransition(async () => {
@@ -93,7 +115,14 @@ export function CheckoutForm({ stores }: { stores: CheckoutStore[] }) {
         const result = await placeOrder(store!.id, toOrderItems(cart), form);
         if (result.ok) {
           clear();
-          router.push(`/pedido/${result.code}?t=${result.token}`);
+          const orderUrl = `/pedido/${result.code}?t=${result.token}`;
+          if (!online) {
+            router.push(orderUrl);
+            return;
+          }
+          const url = await openPayment(result.code, result.token);
+          if (url) window.location.assign(url);
+          else router.push(`${orderUrl}&pagamento=falhou`);
           return;
         }
         setMessage(result.message);
@@ -156,7 +185,8 @@ export function CheckoutForm({ stores }: { stores: CheckoutStore[] }) {
           </>
         )}
         <p className="text-sm text-cocoa-soft">
-          Loja: {store.name} · {store.address}. Pagamento combinado no WhatsApp.
+          Loja: {store.name} · {store.address}.{" "}
+          {payOnline ? "Pagamento pelo site, com Pix ou cartão." : "Pagamento combinado no WhatsApp."}
         </p>
         {problems && (
           <p role="alert" className="text-sm text-raspberry">
@@ -287,9 +317,13 @@ export function CheckoutForm({ stores }: { stores: CheckoutStore[] }) {
           </div>
         ) : (
           <p className="rounded-2xl bg-peach-light p-4 text-sm">
-            {isDelivery
-              ? `Separamos seus itens da vitrine por até ${reservation}. Finalize no WhatsApp para a loja confirmar a entrega.`
-              : `Separamos seus itens da vitrine. Retire em até ${reservation} depois de finalizar no WhatsApp.`}
+            {payOnline
+              ? isDelivery
+                ? "Separamos seus itens da vitrine. Pague pelo site e a loja confirma a entrega."
+                : "Separamos seus itens da vitrine. Pague pelo site e a loja confirma a retirada."
+              : isDelivery
+                ? `Separamos seus itens da vitrine por até ${reservation}. Finalize no WhatsApp para a loja confirmar a entrega.`
+                : `Separamos seus itens da vitrine. Retire em até ${reservation} depois de finalizar no WhatsApp.`}
           </p>
         )}
       </fieldset>
@@ -302,7 +336,8 @@ export function CheckoutForm({ stores }: { stores: CheckoutStore[] }) {
       <div className="space-y-2 rounded-2xl border border-cocoa/10 bg-white p-4 text-sm">
         <p>
           Usamos seu nome, WhatsApp e, se informados, endereço e CPF/CNPJ só para atender este pedido e emitir a nota. Na
-          entrega, o endereço vai para a Juma Entregas, que calcula a taxa e faz a entrega. Para falar sobre seus dados,
+          entrega, o endereço vai para a Juma Entregas, que calcula a taxa e faz a entrega. No pagamento pelo site, nome e
+          WhatsApp vão para a InfinitePay, que processa o pagamento. Para falar sobre seus dados,
           chame a loja no WhatsApp. <Link href="/privacidade" className="underline">Política de privacidade</Link>.
         </p>
         <label className="flex min-h-11 items-center gap-3 font-medium">
@@ -318,13 +353,32 @@ export function CheckoutForm({ stores }: { stores: CheckoutStore[] }) {
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={pending || loading || !quote || problems || feeLoading}
-        className="btn w-full bg-olive text-linen hover:bg-olive-dark sm:w-auto"
-      >
-        {pending ? "Enviando…" : "Fazer pedido"}
-      </button>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <button
+          type="submit"
+          value={payOnline ? "online" : "whatsapp"}
+          disabled={pending || loading || !quote || problems || feeLoading}
+          className="btn w-full bg-olive text-linen hover:bg-olive-dark sm:w-auto"
+        >
+          {pending ? "Enviando…" : payOnline ? "Pagar agora" : "Fazer pedido"}
+        </button>
+        {payOnline && (
+          <button
+            type="submit"
+            value="whatsapp"
+            disabled={pending || loading || !quote || problems || feeLoading}
+            className="btn btn-secondary w-full sm:w-auto"
+          >
+            Prefiro combinar no WhatsApp
+          </button>
+        )}
+      </div>
+      {payOnline && (
+        <p className="text-sm text-cocoa-soft">
+          Você vai para a página segura da InfinitePay (Pix ou cartão de crédito). Parcelamento no cartão tem juros da
+          operadora.
+        </p>
+      )}
     </form>
   );
 }

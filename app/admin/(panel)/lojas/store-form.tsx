@@ -25,9 +25,13 @@ const ADDRESS_FIELDS = [
   { name: "address_district", label: "Bairro", maxLength: 80 },
 ] as const;
 
-type Props = { store?: AdminStore; categories: JumaCategories; hasCredentials: boolean };
+// Stage 12: whether the InfinitePay account has its key on the server, and
+// which variable holds it (the key itself never reaches the panel).
+type PaymentSetup = { ready: boolean; keyVariable: string | null };
 
-export function StoreForm({ store, categories, hasCredentials }: Props) {
+type Props = { store?: AdminStore; categories: JumaCategories; hasCredentials: boolean; payment?: PaymentSetup };
+
+export function StoreForm({ store, categories, hasCredentials, payment }: Props) {
   const [state, action, round] = useAdminForm(saveStore.bind(null, store?.id ?? null), { ok: false });
   const echoed = state.values;
   const text = (key: string, saved: string) => (echoed ? String(echoed[key] ?? "") : saved);
@@ -75,6 +79,42 @@ export function StoreForm({ store, categories, hasCredentials }: Props) {
       </fieldset>
 
       <DeliverySection store={store} categories={categories} hasCredentials={hasCredentials} text={text} errors={errors} />
+
+      <fieldset className="space-y-4">
+        <legend className="mb-2 text-xl text-olive">Pagamento online (InfinitePay)</legend>
+        <p className="text-sm text-cocoa-soft">
+          Conta InfinitePay do CNPJ desta loja. Pedidos só de vitrine (retirada ou entrega com taxa calculada) podem ser
+          pagos no site com Pix ou cartão; encomendas continuam no WhatsApp.
+        </p>
+        {store && (
+          <p
+            role="status"
+            className={`rounded-xl px-4 py-3 text-sm ${payment?.ready ? "bg-olive/10 text-olive-dark" : "bg-peach text-cocoa"}`}
+          >
+            {payment?.ready
+              ? "Ativo: o site oferece “Pagar agora”."
+              : payment?.keyVariable
+                ? `Sem chave no servidor: cadastre ${payment.keyVariable} nas variáveis da Vercel. Até lá, só WhatsApp.`
+                : "Desligado: só WhatsApp."}
+          </p>
+        )}
+        <Field
+          label="InfiniteTag"
+          name="payment_handle"
+          errors={errors.payment_handle}
+          hint="Sem o $, como aparece no app InfinitePay. Vazio desliga o pagamento online."
+        >
+          <input
+            id="payment_handle"
+            name="payment_handle"
+            autoComplete="off"
+            maxLength={41}
+            defaultValue={text("payment_handle", store?.payment_handle ?? "")}
+            aria-invalid={Boolean(errors.payment_handle)}
+            className="field-input"
+          />
+        </Field>
+      </fieldset>
 
       <HoursEditor hours={parseStoredHours(store?.hours)} echoed={echoed} errors={errors} />
 

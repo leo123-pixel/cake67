@@ -8,7 +8,7 @@ import type { OrderItemSummary } from "@/lib/whatsapp";
 type Client = SupabaseClient<Database>;
 
 const LIST_COLUMNS =
-  "id, code, status, created_at, expires_at, customer_name, fulfillment, scheduled_for, subtotal_cents, total_cents, has_made_to_order, store_id, store:stores(name)";
+  "id, code, status, created_at, expires_at, customer_name, fulfillment, scheduled_for, subtotal_cents, total_cents, has_made_to_order, store_id, payment_status, store:stores(name)";
 
 // Overdue orders become "expirado" before any list is shown (SPEC §5.6).
 async function expireOverdue(supabase: Client) {
@@ -51,15 +51,17 @@ export type OrderListItem = Awaited<ReturnType<typeof listOrders>>[number];
 export async function getOrder(supabase: Client, id: string) {
   const { data, error } = await supabase
     .from("orders")
-    .select("*, store:stores(name, address), order_items(*), order_events(*)")
+    .select("*, store:stores(name, address), order_items(*), order_events(*), payment_events(id, source, kind, created_at)")
     .eq("id", id)
     .maybeSingle();
   if (error) throw new Error(`Could not load order: ${error.message}`);
   if (!data) return null;
 
-  const { order_items, order_events, ...order } = data;
+  const { order_items, order_events, payment_events, ...order } = data;
   return {
     order,
+    // Stage 12: audit trail of the online payment, newest first.
+    paymentEvents: [...payment_events].sort((a, b) => b.id - a.id).slice(0, 20),
     items: [...order_items]
       .sort((a, b) => a.position - b.position)
       .map((item) => ({ ...item, name: item.name_snapshot, options: item.options as OrderItemSummary["options"] })),

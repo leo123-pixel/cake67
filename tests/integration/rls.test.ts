@@ -36,6 +36,7 @@ const PRIVATE_TABLES = [
   "staff",
   "settings",
   "delivery_quotes",
+  "payment_events",
 ] as const satisfies TableName[];
 
 const id = randomUUID();
@@ -71,6 +72,7 @@ const INSERTS: { [T in TableName]: Database["public"]["Tables"][T]["Insert"] } =
   showcase_pieces: { product_id: id, store_id: id, weight_g: 1000 },
   settings: { id: 1, order_whatsapp_template: "x" },
   delivery_quotes: { store_id: id, address_key: "x", street: "x", number: "1", district: "x", status: "ok", fee_cents: 1 },
+  payment_events: { source: "webhook", kind: "received", payload: {} },
 };
 
 describe.skipIf(!configured)("anon access (RLS)", () => {

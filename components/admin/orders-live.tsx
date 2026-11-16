@@ -42,6 +42,8 @@ export function OrdersLive() {
   const lastSound = useRef(0);
   const refreshTimer = useRef<number | undefined>(undefined);
   const baseTitle = useRef("");
+  // Orders whose payment already beeped (Realtime may repeat the update).
+  const paidSeen = useRef(new Set<string>());
 
   useEffect(() => setSoundOn(readSoundPreference()), []);
 
@@ -82,6 +84,15 @@ export function OrdersLive() {
         .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, (payload) => {
           scheduleRefresh();
           if (payload.eventType === "INSERT" && (payload.new as { status?: string }).status === "novo") onNewOrder();
+          // Stage 12: a payment confirmed in the last two minutes counts as news too.
+          if (payload.eventType === "UPDATE") {
+            const row = payload.new as { id?: string; payment_status?: string; paid_at?: string | null };
+            const recent = row.paid_at && Date.now() - new Date(row.paid_at).getTime() < 120_000;
+            if (row.id && row.payment_status === "pago" && recent && !paidSeen.current.has(row.id)) {
+              paidSeen.current.add(row.id);
+              onNewOrder();
+            }
+          }
         })
         .subscribe((status) => {
           if (status === "SUBSCRIBED") {

@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { CheckoutForm } from "@/components/site/checkout-form";
+import { onlinePaymentReady } from "@/lib/payments/server";
 import { listCheckoutStores } from "@/lib/storefront";
 
 export const metadata: Metadata = { title: "Finalizar pedido", robots: { index: false } };
 
 export default async function CheckoutPage() {
-  const stores = await listCheckoutStores();
+  const stores = await listCheckoutStores(onlinePaymentReady);
 
   return (
     <div className="bg-linen text-cocoa">

@@ -15,7 +15,7 @@
 | T8 Testes unitários | ✅ | `tests/unit/infinitepay.test.ts`, `tests/unit/payments-webhook.test.ts` |
 | T9 Testes de integração `tests/integration/payments.test.ts` | ✅ | `npm run test:integration` passou inteiro no computador do Leonardo (2026-11-16). Depois da rodada, conferido no banco: nenhum pedido "QA pagamento" ficou e a Estiva voltou sem InfiniteTag |
 | T10 README (Pagamentos), `.env.example`, `scripts/simulate-webhook.sh` | ✅ | |
-| T11 Entrega | ⏳ | lint, typecheck, test (298), build e `test:integration` passando. Falta: chave da Jeribá na Vercel, PR, deploy e o teste real de R$ 1,00 |
+| T11 Entrega | ⏳ | lint, typecheck, test (298), build e `test:integration` passando. PR #29 mergeado em 2026-11-16 e deploy de produção. Falta: chave da Jeribá na Vercel e o teste real de R$ 1,00 |
 
 ## Antes de ligar em produção (com o Leonardo)
 

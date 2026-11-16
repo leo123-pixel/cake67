@@ -83,7 +83,7 @@ Cada feature = uma etapa do SPEC (seção 11). Uma por vez, com commit e deploy 
 - Endereço em campos; taxa da Juma (plataforma Machine, Entregas v2) calculada no servidor e somada ao total (AD-020)
 - Sem cálculo, taxa a combinar; painel com endereço e categoria da Juma por loja; taxa e total no pedido, comanda e CSV
 
-**12 · Pagamento online pela InfinitePay** - IN PROGRESS (migration aplicada no projeto e código na branch `feature/infinitepay` em 2026-11-16; `test:integration` passando; falta a chave da Jeribá na Vercel, PR, deploy e o teste de R$ 1,00)
+**12 · Pagamento online pela InfinitePay** - IN PROGRESS (migration aplicada no projeto e código na branch `feature/infinitepay` em 2026-11-16; `test:integration` passando; PR #29 no ar em 2026-11-16; falta a chave da Jeribá na Vercel e o teste de R$ 1,00)
 
 - Pedido só de vitrine (retirada, ou entrega com taxa calculada) paga no site com Pix ou cartão, na conta InfinitePay do CNPJ da loja; encomenda e taxa a combinar seguem no WhatsApp (AD-021)
 - Webhook confirmado por `payment_check`, idempotente por `transaction_nsu`; painel com status, forma, valor pago e comprovante. Substitui a etapa da Stripe (AD-019), que não foi ao ar

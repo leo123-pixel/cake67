@@ -35,6 +35,8 @@ export type Database = {
           address_district: string | null;
           delivery_category_id: string | null;
           delivery_category_name: string | null;
+          // stage 12: InfiniteTag of the store's InfinitePay account (key only in env)
+          payment_handle: string | null;
         } & Timestamps;
         Insert: {
           id?: string;
@@ -53,6 +55,7 @@ export type Database = {
           address_district?: string | null;
           delivery_category_id?: string | null;
           delivery_category_name?: string | null;
+          payment_handle?: string | null;
         } & Partial<Timestamps>;
         Update: Partial<Database["public"]["Tables"]["stores"]["Insert"]>;
         Relationships: [];
@@ -290,6 +293,20 @@ export type Database = {
           delivery_quote_id: string | null;
           // Generated: subtotal_cents + coalesce(delivery_fee_cents, 0).
           total_cents: number;
+          // stage 12: InfinitePay (written only by the server, through functions)
+          payment_status: Database["public"]["Enums"]["online_payment_status"] | null;
+          payment_handle: string | null;
+          checkout_url: string | null;
+          invoice_slug: string | null;
+          transaction_nsu: string | null;
+          capture_method: "credit_card" | "pix" | null;
+          installments: number | null;
+          amount_cents: number | null;
+          paid_amount_cents: number | null;
+          receipt_url: string | null;
+          paid_at: string | null;
+          payment_valid_until: string | null;
+          payment_note: string | null;
         } & Timestamps;
         Insert: {
           id?: string;
@@ -319,6 +336,19 @@ export type Database = {
           delivery_fee_cents?: number | null;
           delivery_quote_id?: string | null;
           total_cents?: never;
+          payment_status?: Database["public"]["Enums"]["online_payment_status"] | null;
+          payment_handle?: string | null;
+          checkout_url?: string | null;
+          invoice_slug?: string | null;
+          transaction_nsu?: string | null;
+          capture_method?: "credit_card" | "pix" | null;
+          installments?: number | null;
+          amount_cents?: number | null;
+          paid_amount_cents?: number | null;
+          receipt_url?: string | null;
+          paid_at?: string | null;
+          payment_valid_until?: string | null;
+          payment_note?: string | null;
         } & Partial<Timestamps>;
         Update: Partial<Database["public"]["Tables"]["orders"]["Insert"]>;
         Relationships: [
@@ -455,6 +485,36 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "order_events_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      payment_events: {
+        Row: {
+          id: number;
+          order_id: string | null;
+          source: "webhook" | "return" | "checkout";
+          kind: string;
+          transaction_nsu: string | null;
+          payload: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: never;
+          order_id?: string | null;
+          source: "webhook" | "return" | "checkout";
+          kind: string;
+          transaction_nsu?: string | null;
+          payload?: Json;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["payment_events"]["Insert"]>;
+        Relationships: [
+          {
+            foreignKeyName: "payment_events_order_id_fkey";
             columns: ["order_id"];
             isOneToOne: false;
             referencedRelation: "orders";
@@ -648,6 +708,25 @@ export type Database = {
       discard_piece: { Args: { p_piece_id: string }; Returns: undefined };
       set_piece_weight: { Args: { p_piece_id: string; p_weight_g: number }; Returns: undefined };
       delete_product: { Args: { p_product_id: string }; Returns: string[] };
+      // stage 12 (service role only)
+      begin_online_payment: { Args: { p_code: string; p_token: string }; Returns: Json };
+      attach_payment_link: {
+        Args: { p_order_id: string; p_valid_until: string; p_checkout_url: string; p_invoice_slug: string | null };
+        Returns: boolean;
+      };
+      settle_online_payment: {
+        Args: {
+          p_order_id: string;
+          p_transaction_nsu: string;
+          p_invoice_slug: string | null;
+          p_amount_cents: number;
+          p_paid_amount_cents: number | null;
+          p_installments: number | null;
+          p_capture_method: string | null;
+          p_receipt_url: string | null;
+        };
+        Returns: Json;
+      };
     };
     Enums: {
       category_kind: "vitrine" | "encomenda";
@@ -666,6 +745,7 @@ export type Database = {
       staff_role: "admin" | "atendente";
       highlight_slot: "bolo_do_mes" | "combo_semana" | "banner";
       delivery_quote_status: "ok" | "falhou";
+      online_payment_status: "aguardando_pagamento" | "pago" | "expirado" | "cancelado" | "conferir";
     };
     CompositeTypes: {
       [_ in never]: never;

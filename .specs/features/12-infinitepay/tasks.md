@@ -13,9 +13,9 @@
 | T6 Checkout e página do pedido | ✅ | **Conferência visual pendente** (a tela depende do banco e da chave) |
 | T7 Painel: lista, detalhe, comanda, Realtime, Lojas | ✅ | |
 | T8 Testes unitários | ✅ | `tests/unit/infinitepay.test.ts`, `tests/unit/payments-webhook.test.ts` |
-| T9 Testes de integração `tests/integration/payments.test.ts` | ✅ escrito / ⏳ rodar | Roda contra o projeto real (Leonardo); `rls.test.ts` ganhou `payment_events` |
+| T9 Testes de integração `tests/integration/payments.test.ts` | ✅ | `npm run test:integration` passou inteiro no computador do Leonardo (2026-11-16). Depois da rodada, conferido no banco: nenhum pedido "QA pagamento" ficou e a Estiva voltou sem InfiniteTag |
 | T10 README (Pagamentos), `.env.example`, `scripts/simulate-webhook.sh` | ✅ | |
-| T11 Entrega | ⏳ | Falta: chave da Jeribá na Vercel, `test:integration`, PR, deploy e o teste real de R$ 1,00 |
+| T11 Entrega | ⏳ | lint, typecheck, test (298), build e `test:integration` passando. Falta: chave da Jeribá na Vercel, PR, deploy e o teste real de R$ 1,00 |
 
 ## Antes de ligar em produção (com o Leonardo)
 

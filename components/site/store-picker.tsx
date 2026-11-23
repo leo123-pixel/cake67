@@ -21,7 +21,7 @@ export function StorePicker({ stores, current }: { stores: Store[]; current: str
   const needed = !current;
 
   return (
-    <Form action="/cardapio" className="flex items-center gap-2.5 text-sm">
+    <Form action="/cardapio" className="flex w-full min-w-0 flex-col gap-2 text-sm sm:w-auto sm:flex-row sm:items-center sm:gap-2.5">
       <label
         htmlFor="loja"
         className={`text-xs font-semibold tracking-[0.14em] uppercase ${needed ? "text-peach" : "text-linen"}`}
@@ -36,7 +36,7 @@ export function StorePicker({ stores, current }: { stores: Store[]; current: str
         required
         aria-describedby={needed ? "loja-hint" : undefined}
         onChange={(event) => event.currentTarget.form?.requestSubmit()}
-        className={`min-h-11 rounded-full bg-olive-dark px-4 py-2 text-linen ${
+        className={`min-h-11 w-full min-w-0 max-w-full truncate rounded-full bg-olive-dark px-4 py-2 text-linen sm:w-auto ${
           needed ? "border-2 border-peach ring-4 ring-peach/20" : "border border-peach/30"
         }`}
       >

@@ -111,7 +111,16 @@ html {
 .ck-doodle .ck-tip { stroke-dasharray: none; }
 
 /* CAKES */
-.ck-cakes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 48px; }
+.ck-cakes { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 44px) / 3); gap: 22px; margin-top: 48px; }
+.ck-rail { margin-top: 0; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; padding-bottom: 4px; }
+.ck-rail::-webkit-scrollbar { display: none; }
+.ck-rail > .ck-cake { scroll-snap-align: start; }
+.ck-rail-wrap { margin-top: 40px; }
+.ck-rail-nav { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-bottom: 18px; }
+.ck-rail-count { font-size: .74rem; letter-spacing: .12em; text-transform: uppercase; color: var(--color-cocoa-soft); margin-right: 6px; }
+.ck-rail-nav button { width: 44px; height: 44px; border-radius: 50%; border: 1px solid #DCCBB9; background: transparent; color: var(--color-olive); font-size: 1.5rem; line-height: 1; cursor: pointer; transition: background .2s, color .2s, border-color .2s; }
+.ck-rail-nav button:hover:not(:disabled) { background: var(--color-olive); border-color: var(--color-olive); color: var(--color-linen); }
+.ck-rail-nav button:disabled { opacity: .35; cursor: default; }
 .ck-cake { position: relative; display: flex; flex-direction: column; gap: 14px; }
 .ck-cake .ck-ph { position: relative; border-radius: 200px 200px 18px 18px; overflow: hidden; aspect-ratio: 4/5; background: var(--color-peach-light); }
 .ck-cake .ck-ph img { width: 100%; height: 100%; object-fit: cover; transition: transform .8s cubic-bezier(.2,.7,.2,1); }
@@ -123,8 +132,8 @@ html {
 .ck-cake .ck-row span { font-size: .8rem; letter-spacing: .06em; color: var(--color-cocoa-soft); }
 .ck-cake .ck-row button { background: none; border: 0; color: var(--color-olive); font-weight: 600; font-size: .76rem; letter-spacing: .14em; text-transform: uppercase; padding: 12px 0; border-bottom: 1px solid currentColor; cursor: pointer; }
 .ck-ai { font-size: .7rem; color: var(--color-cocoa-soft); margin-top: 18px; font-style: italic; }
-@media (max-width: 900px) { .ck-cakes { grid-template-columns: 1fr 1fr; } .ck-cakes .ck-cake:last-child:nth-child(3) { grid-column: 1/-1; max-width: calc(50% - 11px); } }
-@media (max-width: 560px) { .ck-cakes { grid-template-columns: 1fr; } .ck-cakes .ck-cake:last-child:nth-child(3) { max-width: none; } }
+@media (max-width: 900px) { .ck-cakes { grid-auto-columns: calc((100% - 22px) / 2); } }
+@media (max-width: 560px) { .ck-cakes { grid-auto-columns: 80%; gap: 16px; } .ck-rail-wrap { margin-top: 28px; } }
 
 /* BUILDER */
 .ck-build { background: var(--color-peach-light); color: var(--color-cocoa); }
@@ -148,6 +157,12 @@ html {
 .ck-chip[aria-pressed="true"] { background: var(--color-olive); border-color: var(--color-olive); color: var(--color-linen); }
 .ck-chip small { opacity: .8; margin-left: 6px; font-size: .76rem; }
 .ck-chip[aria-pressed="true"] small { opacity: .95; }
+.ck-label-n { font-weight: 500; letter-spacing: .06em; text-transform: none; }
+.ck-flavor { display: flex; gap: 14px; align-items: flex-start; margin-top: 12px; }
+.ck-flavor img { width: 72px; height: 90px; flex: none; object-fit: cover; border-radius: 40px 40px 10px 10px; background: var(--color-peach-light); }
+.ck-flavor b { display: block; font-family: var(--ck-display); font-weight: 400; font-size: 1.35rem; line-height: 1.1; color: var(--color-cocoa); }
+.ck-flavor-p { display: block; font-size: .8rem; color: var(--color-olive); font-weight: 600; margin-top: 2px; }
+.ck-flavor p { font-size: .82rem; color: var(--color-cocoa-soft); margin-top: 6px; }
 .ck-field { width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid #DCCBB9; background: #fff; font: inherit; font-size: .92rem; color: var(--color-cocoa); min-height: 44px; }
 .ck-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .ck-total { display: flex; align-items: end; justify-content: space-between; gap: 14px; margin-top: 26px; padding-top: 20px; border-top: 1px dashed #D4C0AC; flex-wrap: wrap; }

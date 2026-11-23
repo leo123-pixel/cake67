@@ -1,15 +1,16 @@
 import Image from "next/image";
 import type { ShowcaseCake } from "@/lib/storefront";
+import { CakesRail } from "./cakes-rail";
 import { PickCakeButton } from "./pick-cake-button";
 
 function kgLabel(weight: number) {
   return `${String(weight).replace(".", ",")} kg`;
 }
 
-// Up to 3 cakes (featured first, then the panel order), as in the prototype.
+// Every cake (featured first, then the panel order) in a horizontal rail:
+// three per view like the prototype, the rest by swiping or the arrows.
 export function CakesShowcase({ cakes }: { cakes: ShowcaseCake[] }) {
-  const shown = cakes.slice(0, 3);
-  if (shown.length === 0) return null;
+  if (cakes.length === 0) return null;
 
   return (
     <section className="ck-sec ck-light" id="bolos">
@@ -27,12 +28,21 @@ export function CakesShowcase({ cakes }: { cakes: ShowcaseCake[] }) {
             </svg>
           </p>
         </div>
-        <div className="ck-cakes">
-          {shown.map((cake) => (
-            <article key={cake.id} className="ck-cake ck-rv">
+        <CakesRail count={cakes.length}>
+          {cakes.map((cake, index) => (
+            <article key={cake.id} className="ck-cake" role="listitem">
               <div className="ck-ph">
-                <Image src={cake.imageUrl} alt={cake.name} width={420} height={525} sizes="(max-width: 560px) 100vw, 33vw" />
-                <span className="ck-tag">{cake.cakeOfMonth ? "Bolo do mês" : "Especial"}</span>
+                <Image
+                  src={cake.imageUrl}
+                  alt={cake.name}
+                  width={420}
+                  height={525}
+                  sizes="(max-width: 560px) 80vw, (max-width: 900px) 45vw, 33vw"
+                  loading={index < 3 ? undefined : "lazy"}
+                />
+                {(cake.cakeOfMonth || cake.featured) && (
+                  <span className="ck-tag">{cake.cakeOfMonth ? "Bolo do mês" : "Especial"}</span>
+                )}
               </div>
               <h3 className="ck-h">{cake.name.replace(/^Bolo /, "")}</h3>
               {cake.description && <p>{cake.description}</p>}
@@ -45,8 +55,8 @@ export function CakesShowcase({ cakes }: { cakes: ShowcaseCake[] }) {
               </div>
             </article>
           ))}
-        </div>
-        {shown.some((cake) => cake.illustrativePhoto) && (
+        </CakesRail>
+        {cakes.some((cake) => cake.illustrativePhoto) && (
           <p className="ck-ai">
             Fotos dos bolos geradas por IA a partir do cardápio da Cake 67. Serão trocadas pelas fotos reais da loja.
           </p>

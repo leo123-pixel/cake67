@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { keepWeight, minimumChargeNote, sizeFor, sizeName, suggestCake, weightChoices, type CakeOption } from "@/lib/cake";
@@ -14,6 +15,16 @@ import { useCart } from "../use-cart";
 export type BuilderStore = { id: string; slug: string; name: string; address: string; whatsapp: string };
 
 const DELIVERY = "entrega";
+// Up to this many cakes the flavors are chips (prototype); more than that, a list.
+const CHIP_LIMIT = 6;
+
+function flavorName(cake: ShowcaseCake) {
+  return cake.name.replace(/^Bolo /, "");
+}
+
+function kgPrice(cake: ShowcaseCake) {
+  return cake.priceCents === null ? "preço em breve" : `${formatBRL(cake.priceCents)}/kg`;
+}
 
 function kgLabel(weight: number) {
   return `${String(weight).replace(".", ",")} kg`;
@@ -67,6 +78,7 @@ export function HomeBuilder({ cakes, stores, today, hasBulk }: Props) {
   const minDate = minCakeDate(today, cake.leadTimeHours);
   const [date, setDate] = useState(minDate);
   const addButton = useRef<HTMLButtonElement>(null);
+  const byName = [...cakes].sort((a, b) => flavorName(a).localeCompare(flavorName(b), "pt-BR"));
 
   const suggestion = suggestCake(guests, cake.weightsKg, cake.formats);
   const size = sizeFor(format, weight);
@@ -200,15 +212,40 @@ export function HomeBuilder({ cakes, stores, today, hasBulk }: Props) {
             <h3 className="ck-h" id="ck-cfg-t">
               Monte seu bolo
             </h3>
-            <span className="ck-label">Sabor</span>
-            <div className="ck-chips" role="group" aria-label="Sabor">
-              {cakes.map((c) => (
-                <button key={c.id} type="button" className="ck-chip" aria-pressed={c.id === cake.id} onClick={() => chooseCake(c.id)}>
-                  {c.name.replace(/^Bolo /, "")}
-                  <small>{c.priceCents === null ? "preço em breve" : `${formatBRL(c.priceCents)}/kg`}</small>
-                </button>
-              ))}
-            </div>
+            {cakes.length <= CHIP_LIMIT ? (
+              <>
+                <span className="ck-label">Sabor</span>
+                <div className="ck-chips" role="group" aria-label="Sabor">
+                  {cakes.map((c) => (
+                    <button key={c.id} type="button" className="ck-chip" aria-pressed={c.id === cake.id} onClick={() => chooseCake(c.id)}>
+                      {flavorName(c)}
+                      <small>{kgPrice(c)}</small>
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <>
+                <label className="ck-label" htmlFor="ck-flavor">
+                  Sabor <span className="ck-label-n">· {cakes.length} opções</span>
+                </label>
+                <select id="ck-flavor" className="ck-field" value={cake.id} onChange={(e) => chooseCake(e.target.value)}>
+                  {byName.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {flavorName(c)} · {kgPrice(c)}
+                    </option>
+                  ))}
+                </select>
+                <div className="ck-flavor">
+                  <Image src={cake.imageUrl} alt="" width={72} height={90} sizes="72px" />
+                  <div>
+                    <b>{flavorName(cake)}</b>
+                    <span className="ck-flavor-p">{kgPrice(cake)}</span>
+                    {cake.description && <p>{cake.description}</p>}
+                  </div>
+                </div>
+              </>
+            )}
             <div className="ck-row2">
               <div>
                 <label className="ck-label" htmlFor="ck-kg">

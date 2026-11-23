@@ -9,6 +9,12 @@ import type { MadeToOrderProduct } from "@/lib/storefront";
 import { useCart } from "./use-cart";
 
 const MAX_MESSAGE = 60;
+// Up to this many cakes the flavors are chips; more than that, a list.
+const CHIP_LIMIT = 6;
+
+function flavorName(cake: MadeToOrderProduct) {
+  return cake.name.replace(/^Bolo /, "");
+}
 
 function kgLabel(weight: number) {
   return `${String(weight).replace(".", ",")} kg`;
@@ -39,6 +45,7 @@ export function CakeConfigurator({ cakes }: { cakes: MadeToOrderProduct[] }) {
   const [message, setMessage] = useState("");
   const [guests, setGuests] = useState(20);
   const [added, setAdded] = useState(false);
+  const byName = [...cakes].sort((a, b) => flavorName(a).localeCompare(flavorName(b), "pt-BR"));
 
   const suggestion = suggestCake(guests, cake.weightsKg, cake.formats);
   const size = sizeFor(format, weight);
@@ -82,16 +89,32 @@ export function CakeConfigurator({ cakes }: { cakes: MadeToOrderProduct[] }) {
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
       <div className="space-y-6">
-        <fieldset className="space-y-2">
-          <legend className="mb-2 font-medium">Sabor</legend>
-          <div className="flex flex-wrap gap-2">
-            {cakes.map((c) => (
-              <Chip key={c.id} pressed={c.id === cake.id} onClick={() => chooseCake(c.id)}>
-                {c.name.replace(/^Bolo /, "")} <span className="opacity-70">{formatBRL(c.priceCents)}/kg</span>
-              </Chip>
-            ))}
+        {cakes.length <= CHIP_LIMIT ? (
+          <fieldset className="space-y-2">
+            <legend className="mb-2 font-medium">Sabor</legend>
+            <div className="flex flex-wrap gap-2">
+              {cakes.map((c) => (
+                <Chip key={c.id} pressed={c.id === cake.id} onClick={() => chooseCake(c.id)}>
+                  {flavorName(c)} <span className="opacity-70">{formatBRL(c.priceCents)}/kg</span>
+                </Chip>
+              ))}
+            </div>
+          </fieldset>
+        ) : (
+          <div className="space-y-3">
+            <label htmlFor="flavor" className="block font-medium">
+              Sabor <span className="text-sm font-normal text-cocoa-soft">· {cakes.length} opções</span>
+            </label>
+            <select id="flavor" value={cake.id} onChange={(e) => chooseCake(e.target.value)} className="field-input">
+              {byName.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {flavorName(c)} · {formatBRL(c.priceCents)}/kg
+                </option>
+              ))}
+            </select>
+            {cake.description && <p className="text-sm text-cocoa-soft">{cake.description}</p>}
           </div>
-        </fieldset>
+        )}
 
         <div className="space-y-3 rounded-2xl bg-peach-light p-4">
           <label htmlFor="guests" className="font-medium">

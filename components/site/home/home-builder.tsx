@@ -237,7 +237,7 @@ export function HomeBuilder({ cakes, stores, today, hasBulk }: Props) {
                   ))}
                 </select>
                 <div className="ck-flavor">
-                  <Image src={cake.imageUrl} alt="" width={72} height={90} sizes="72px" />
+                  <Image src={cake.imageUrl} alt="" width={72} height={108} sizes="72px" />
                   <div>
                     <b>{flavorName(cake)}</b>
                     <span className="ck-flavor-p">{kgPrice(cake)}</span>

@@ -1,5 +1,5 @@
-import Image from "next/image";
 import type { ShowcaseCake } from "@/lib/storefront";
+import { CakeGallery } from "./cake-gallery";
 import { CakesRail } from "./cakes-rail";
 import { PickCakeButton } from "./pick-cake-button";
 
@@ -8,7 +8,8 @@ function kgLabel(weight: number) {
 }
 
 // Every cake (featured first, then the panel order) in a horizontal rail:
-// three per view like the prototype, the rest by swiping or the arrows.
+// four per view on a computer, the rest by swiping or the arrows. Tapping
+// a photo opens all of the cake's photos.
 export function CakesShowcase({ cakes }: { cakes: ShowcaseCake[] }) {
   if (cakes.length === 0) return null;
 
@@ -31,19 +32,13 @@ export function CakesShowcase({ cakes }: { cakes: ShowcaseCake[] }) {
         <CakesRail count={cakes.length}>
           {cakes.map((cake, index) => (
             <article key={cake.id} className="ck-cake" role="listitem">
-              <div className="ck-ph">
-                <Image
-                  src={cake.imageUrl}
-                  alt={cake.name}
-                  width={420}
-                  height={525}
-                  sizes="(max-width: 560px) 80vw, (max-width: 900px) 45vw, 33vw"
-                  loading={index < 3 ? undefined : "lazy"}
-                />
-                {(cake.cakeOfMonth || cake.featured) && (
-                  <span className="ck-tag">{cake.cakeOfMonth ? "Bolo do mês" : "Especial"}</span>
-                )}
-              </div>
+              <CakeGallery
+                cakeId={cake.id}
+                name={cake.name.replace(/^Bolo /, "")}
+                images={cake.imageUrls}
+                tag={cake.cakeOfMonth ? "Bolo do mês" : cake.featured ? "Especial" : null}
+                eager={index < 4}
+              />
               <h3 className="ck-h">{cake.name.replace(/^Bolo /, "")}</h3>
               {cake.description && <p>{cake.description}</p>}
               <div className="ck-row">

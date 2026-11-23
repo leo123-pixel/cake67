@@ -68,6 +68,8 @@ export type ShowcaseCake = {
   featured: boolean;
   cakeOfMonth: boolean;
   imageUrl: string;
+  // Every photo in the panel order (the first is imageUrl), for the gallery.
+  imageUrls: string[];
   // Seed photos are AI-generated/watercolors from the prototype.
   illustrativePhoto: boolean;
   addons: Addon[];
@@ -94,7 +96,20 @@ export async function listCakeShowcase(): Promise<ShowcaseCake[]> {
   const supabase = await createPublicClient();
   const { data, error } = await supabase.rpc("list_cake_showcase");
   if (error) throw new Error(`Could not load cakes: ${error.message}`);
-  return (data as unknown as ShowcaseRow[]).map((cake) => ({
+  const rows = data as unknown as ShowcaseRow[];
+  const { data: images, error: imagesError } = await supabase
+    .from("product_images")
+    .select("product_id, path")
+    .in(
+      "product_id",
+      rows.map((cake) => cake.id),
+    )
+    .order("sort");
+  if (imagesError) throw new Error(`Could not load cake photos: ${imagesError.message}`);
+  const photos = new Map<string, string[]>();
+  for (const image of images) photos.set(image.product_id, [...(photos.get(image.product_id) ?? []), productImageUrl(image.path)]);
+
+  return rows.map((cake) => ({
     id: cake.id,
     slug: cake.slug,
     name: cake.name,
@@ -107,6 +122,7 @@ export async function listCakeShowcase(): Promise<ShowcaseCake[]> {
     featured: cake.featured,
     cakeOfMonth: cake.cake_of_month,
     imageUrl: productImageUrl(cake.image_path),
+    imageUrls: photos.get(cake.id) ?? [productImageUrl(cake.image_path)],
     illustrativePhoto: cake.image_path?.startsWith("seed/") ?? false,
     addons: cake.addons.map((addon) => ({ id: addon.id, name: addon.name, priceCents: addon.price_cents })),
   }));
